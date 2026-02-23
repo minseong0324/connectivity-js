@@ -17,7 +17,7 @@ import {
   browserOnlineDetector,
   useConnectivity,
   useAction,
-} from 'connectivity-engine-2';
+} from '@connectivity-js/react';
 
 // 1. Provider
 function App() {
