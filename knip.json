@@ -1,0 +1,19 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "ignoreDependencies": [
+    "next",
+    "react",
+    "react-dom",
+    "nextra",
+    "nextra-theme-docs",
+    "@vitest/coverage-v8",
+    "vitest"
+  ],
+  "workspaces": {
+    "docs": {
+      "entry": ["components/**/*.{ts,tsx}", "theme.config.tsx"],
+      "project": ["**/*.{ts,tsx,mdx,md,mjs}"],
+      "ignoreDependencies": ["tailwindcss"]
+    }
+  }
+}
