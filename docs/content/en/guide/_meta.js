@@ -1,6 +1,6 @@
 export default {
-	'getting-started': 'Getting Started',
 	'connectivity-ui': 'Connectivity UI',
+	actions: 'Actions',
 	'offline-behavior': 'Offline Behavior',
 	deduplication: 'Deduplication',
 }

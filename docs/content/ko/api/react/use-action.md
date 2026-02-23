@@ -169,7 +169,7 @@ function SaveIndicator() {
 
 ## 관련 문서
 
-- [시작하기](../guide/getting-started.md) — 첫 번째 action 만들기
+- [액션](../guide/actions.md) — 첫 번째 action 만들기
 - [오프라인 동작](../guide/offline-behavior.md) — 실행 흐름
 - [Deduplication](../guide/deduplication.md) — dedupeKey
 - [actionOptions API](./action-options.md)

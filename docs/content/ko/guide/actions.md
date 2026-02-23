@@ -1,6 +1,6 @@
-# 시작하기
+# 액션
 
-첫 번째 액션을 정의하고 실행하는 방법을 설명합니다. 시작 전에 [설치하기](../installation.md)를 완료해 주세요.
+첫 번째 액션을 정의하고 실행하는 방법을 설명합니다. 시작 전에 [설치하기](../installation.md)와 [연결 상태 UI](./connectivity-ui.md)를 완료해 주세요.
 
 ## 첫 번째 Action
 
@@ -8,7 +8,7 @@
 
 ```ts
 // actions/save.ts
-import { actionOptions } from "@connectivity/core";
+import { actionOptions } from "@connectivity-js/core";
 
 export const saveAction = actionOptions({
   actionKey: "save",
@@ -20,7 +20,7 @@ export const saveAction = actionOptions({
 컴포넌트에서 사용합니다:
 
 ```tsx
-import { useAction } from "@connectivity/react";
+import { useAction } from "@connectivity-js/react";
 import { saveAction } from "./actions/save";
 
 function SaveButton({ id, data }: { id: string; data: string }) {
@@ -71,6 +71,5 @@ console.log(result.result); // TResult — request 반환 타입에서 추론
 
 ## 다음 단계
 
-- [연결 상태 UI](./connectivity-ui.md) — `useConnectivity`, `<Connectivity>`, `useOnConnectivityChange`
 - [오프라인 동작](./offline-behavior.md) — `whenOffline`, 실행 흐름, FIFO
 - [Deduplication](./deduplication.md) — `dedupeKey`로 중복 요청 합치기

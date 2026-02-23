@@ -56,5 +56,5 @@ execute({ wrong: true });             // ❌ 컴파일 에러
 ## 관련 문서
 
 - [useAction API](./use-action.md)
-- [시작하기](../guide/getting-started.md)
+- [액션](../guide/actions.md)
 

@@ -111,5 +111,5 @@ ConnectivityClient.resetInstance();
 ## Related
 
 - [ConnectivityClient API](../api/core/connectivity-client.md)
-- [Getting Started](../guide/getting-started.md)
+- [Actions](../guide/actions.md)
 

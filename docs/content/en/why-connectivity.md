@@ -111,4 +111,5 @@ The connectivity state machine has well-defined transitions (`online → offline
 ## Next Steps
 
 - [Installation](./installation.md) — Add Connectivity to your project
-- [Getting Started](./guide/getting-started.md) — Build your first action
+- [Connectivity UI](./guide/connectivity-ui.md) — Display online/offline state with `<Connectivity>`
+- [Actions](./guide/actions.md) — Build your first action

@@ -69,4 +69,5 @@ function SaveButton() {
 
 - [왜 Connectivity인가요?](./why-connectivity.md) — 이 라이브러리가 해결하는 문제
 - [설치하기](./installation.md) — 프로젝트에 추가하기
-- [시작하기](./guide/getting-started.md) — 첫 번째 액션 만들기
+- [연결 상태 UI](./guide/connectivity-ui.md) — `<Connectivity>`, `useConnectivity`로 온라인/오프라인 UI 전환
+- [액션](./guide/actions.md) — 첫 번째 액션 정의하고 실행하기

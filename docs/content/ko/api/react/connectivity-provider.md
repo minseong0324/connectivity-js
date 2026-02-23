@@ -69,7 +69,7 @@ interface ConnectivityProviderOptions {
 
 ## 관련 문서
 
-- [시작하기](../guide/getting-started.md)
+- [액션](../guide/actions.md)
 - [전역 기본값](../advanced/default-options.md)
 - [ConnectivityClient API](./connectivity-client.md)
 

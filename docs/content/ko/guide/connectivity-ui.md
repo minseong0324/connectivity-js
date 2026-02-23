@@ -249,6 +249,10 @@ useOnConnectivityChange({
 
 `useConnectivity()`가 반환하는 `ConnectivityState` 객체는 상태가 변경될 때만 새 참조를 반환합니다. `quality`만 변경되어도 새 참조가 생성됩니다.
 
+## 다음 단계
+
+- [액션](./actions.md) — `useAction`으로 첫 번째 액션 정의하고 실행하기
+
 ## 관련 문서
 
 - [useConnectivity API](../api/react/use-connectivity.md)

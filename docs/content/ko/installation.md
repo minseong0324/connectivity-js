@@ -104,4 +104,5 @@ yarn add @connectivity/core
 
 ## 다음 단계
 
-- [시작하기](./guide/getting-started.md) — 첫 번째 액션 정의하고 실행하기
+- [연결 상태 UI](./guide/connectivity-ui.md) — `<Connectivity>`, `useConnectivity`로 온라인/오프라인 UI 전환
+- [액션](./guide/actions.md) — 첫 번째 액션 정의하고 실행하기

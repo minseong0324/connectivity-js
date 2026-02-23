@@ -165,7 +165,7 @@ afterEach(() => {
 
 ## Related
 
-- [Getting Started](../guide/getting-started.md)
+- [Actions](../guide/actions.md)
 - [ConnectivityProvider API](./connectivity-provider.md)
 - [Testing Guide](../advanced/testing.md)
 

@@ -116,5 +116,5 @@ All detector events flow into the same `ConnectivityClient`. The last received `
 ## Related
 
 - [Detectors API](../api/core/detectors.md)
-- [Getting Started](../guide/getting-started.md)
+- [Actions](../guide/actions.md)
 

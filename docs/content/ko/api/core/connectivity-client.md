@@ -165,7 +165,7 @@ afterEach(() => {
 
 ## 관련 문서
 
-- [시작하기](../guide/getting-started.md)
+- [액션](../guide/actions.md)
 - [ConnectivityProvider API](./connectivity-provider.md)
 - [테스트 가이드](../advanced/testing.md)
 
