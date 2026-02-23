@@ -1,5 +1,5 @@
 {
-  "name": "@connectivity/react-devtools",
+  "name": "@connectivity-js/react-devtools",
   "version": "0.1.0",
   "description": "React devtools for Connectivity",
   "author": "@minseong0324 <KIM Minseong>",
@@ -44,8 +44,8 @@
     "react-dom": "^18 || ^19"
   },
   "dependencies": {
-    "@connectivity/core": "workspace:*",
-    "@connectivity/devtools": "workspace:*"
+    "@connectivity-js/core": "workspace:*",
+    "@connectivity-js/devtools": "workspace:*"
   },
   "devDependencies": {
     "@types/react": "^19.2.3",

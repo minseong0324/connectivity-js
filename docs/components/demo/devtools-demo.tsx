@@ -1,7 +1,7 @@
 'use client';
 
-import { useAction, useConnectivity } from '@connectivity/react';
-import { ConnectivityDevTools } from '@connectivity/react-devtools';
+import { useAction, useConnectivity } from '@connectivity-js/react';
+import { ConnectivityDevTools } from '@connectivity-js/react-devtools';
 import { useRef } from 'react';
 import { Toaster, toast } from 'sonner';
 import {

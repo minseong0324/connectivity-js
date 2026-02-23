@@ -2,7 +2,7 @@ import {
   type Detector,
   getConnectivityClient,
   type QueuedJob,
-} from '@connectivity/core';
+} from '@connectivity-js/core';
 import { type ReactNode, useEffect, useMemo, useRef } from 'react';
 import {
   ConnectivityContext,

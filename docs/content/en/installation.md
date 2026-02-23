@@ -6,26 +6,26 @@ Connectivity is split into two packages:
 
 | Package               | Description                                                  |
 | --------------------- | ------------------------------------------------------------ |
-| `@connectivity/core`  | Framework-agnostic core: state machine, queue, dedup, retry  |
-| `@connectivity/react` | React hooks and components (depends on `@connectivity/core`) |
+| `@connectivity-js/core`  | Framework-agnostic core: state machine, queue, dedup, retry  |
+| `@connectivity-js/react` | React hooks and components (depends on `@connectivity-js/core`) |
 
-For React projects, install `@connectivity/react`.
+For React projects, install `@connectivity-js/react`.
 
 ```bash tab="pnpm"
-pnpm add @connectivity/react
+pnpm add @connectivity-js/react
 ```
 
 ```bash tab="npm"
-npm install @connectivity/react
+npm install @connectivity-js/react
 ```
 
 ```bash tab="yarn"
-yarn add @connectivity/react
+yarn add @connectivity-js/react
 ```
 
 ### Peer Dependencies
 
-`@connectivity/react` requires:
+`@connectivity-js/react` requires:
 
 - `react` ^18 || ^19
 
@@ -38,7 +38,7 @@ import {
   ConnectivityProvider,
   browserOnlineDetector,
   heartbeatDetector,
-} from "@connectivity/react";
+} from "@connectivity-js/react";
 
 function App() {
   return (
@@ -79,25 +79,25 @@ Global defaults applied to all `useAction` calls and `<Connectivity>` components
 
 For a debugging DevTools panel:
 
-- **React**: `@connectivity/react-devtools`
-- **Vanilla JS**: `@connectivity/devtools`
+- **React**: `@connectivity-js/react-devtools`
+- **Vanilla JS**: `@connectivity-js/devtools`
 
 See [DevTools](./advanced/devtools.md) for details.
 
 ## Using Without React
 
-If you are not using React, you can use `@connectivity/core` directly:
+If you are not using React, you can use `@connectivity-js/core` directly:
 
 ```bash tab="pnpm"
-pnpm add @connectivity/core
+pnpm add @connectivity-js/core
 ```
 
 ```bash tab="npm"
-npm install @connectivity/core
+npm install @connectivity-js/core
 ```
 
 ```bash tab="yarn"
-yarn add @connectivity/core
+yarn add @connectivity-js/core
 ```
 
 See [Vanilla JS](./advanced/vanilla-js.md) for usage without React.

@@ -8,7 +8,7 @@ Connectivity를 사용하는 코드를 테스트하는 방법을 설명합니다
 
 ```ts
 import { describe, test, afterEach, vi } from 'vitest';
-import { ConnectivityClient } from '@connectivity/core';
+import { ConnectivityClient } from '@connectivity-js/core';
 
 afterEach(() => {
   ConnectivityClient.resetInstance();
@@ -21,7 +21,7 @@ afterEach(() => {
 테스트에서 네트워크 상태를 프로그래밍 방식으로 제어하려면 mock detector를 사용합니다:
 
 ```ts
-import type { Detector, DetectorEvent } from '@connectivity/core';
+import type { Detector, DetectorEvent } from '@connectivity-js/core';
 
 const createMockDetector = () => {
   let listener: ((event: DetectorEvent) => void) | null = null;
@@ -44,7 +44,7 @@ const createMockDetector = () => {
 ## 기본 테스트 패턴
 
 ```ts
-import { getConnectivityClient, ConnectivityClient } from '@connectivity/core';
+import { getConnectivityClient, ConnectivityClient } from '@connectivity-js/core';
 
 describe('내 컴포넌트', () => {
   afterEach(() => {
@@ -99,8 +99,8 @@ React hook은 `@testing-library/react`의 `renderHook`으로 테스트합니다:
 
 ```tsx
 import { renderHook, act } from '@testing-library/react';
-import { useConnectivity } from '@connectivity/react';
-import { getConnectivityClient, ConnectivityClient } from '@connectivity/core';
+import { useConnectivity } from '@connectivity-js/react';
+import { getConnectivityClient, ConnectivityClient } from '@connectivity-js/core';
 
 describe('useConnectivity', () => {
   afterEach(() => {

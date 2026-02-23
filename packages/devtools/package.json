@@ -1,5 +1,5 @@
 {
-  "name": "@connectivity/devtools",
+  "name": "@connectivity-js/devtools",
   "version": "0.1.0",
   "description": "Framework-agnostic devtools panel for Connectivity",
   "author": "@minseong0324 <KIM Minseong>",
@@ -40,7 +40,7 @@
     "lint": "biome lint ."
   },
   "dependencies": {
-    "@connectivity/core": "workspace:*"
+    "@connectivity-js/core": "workspace:*"
   },
   "devDependencies": {
     "tsdown": "^0.20.3"

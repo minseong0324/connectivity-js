@@ -23,7 +23,7 @@ interface DetectorEvent {
 `navigator.onLine` + `online`/`offline` 이벤트를 감지합니다.
 
 ```ts
-import { browserOnlineDetector } from '@connectivity/core';
+import { browserOnlineDetector } from '@connectivity-js/core';
 
 const detector = browserOnlineDetector();
 ```
@@ -37,7 +37,7 @@ const detector = browserOnlineDetector();
 주기적으로 서버에 HEAD 요청을 보내 실제 연결을 확인합니다.
 
 ```ts
-import { heartbeatDetector } from '@connectivity/core';
+import { heartbeatDetector } from '@connectivity-js/core';
 
 const detector = heartbeatDetector({
   url: '/api/health',

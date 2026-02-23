@@ -23,7 +23,7 @@ Call `start()` to begin detection, invoke the returned function to clean up.
 Listens to `navigator.onLine` + `online`/`offline` events.
 
 ```ts
-import { browserOnlineDetector } from '@connectivity/core';
+import { browserOnlineDetector } from '@connectivity-js/core';
 
 const detector = browserOnlineDetector();
 ```
@@ -37,7 +37,7 @@ const detector = browserOnlineDetector();
 Periodic HEAD requests to verify actual connectivity.
 
 ```ts
-import { heartbeatDetector } from '@connectivity/core';
+import { heartbeatDetector } from '@connectivity-js/core';
 
 const detector = heartbeatDetector({
   url: '/api/health',

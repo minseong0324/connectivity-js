@@ -56,13 +56,13 @@ importers:
 
   docs:
     dependencies:
-      '@connectivity/core':
+      '@connectivity-js/core':
         specifier: workspace:*
         version: link:../packages/core
-      '@connectivity/react':
+      '@connectivity-js/react':
         specifier: workspace:*
         version: link:../packages/react
-      '@connectivity/react-devtools':
+      '@connectivity-js/react-devtools':
         specifier: workspace:*
         version: link:../packages/react-devtools
       next:
@@ -117,7 +117,7 @@ importers:
 
   packages/devtools:
     dependencies:
-      '@connectivity/core':
+      '@connectivity-js/core':
         specifier: workspace:*
         version: link:../core
     devDependencies:
@@ -127,7 +127,7 @@ importers:
 
   packages/react:
     dependencies:
-      '@connectivity/core':
+      '@connectivity-js/core':
         specifier: workspace:*
         version: link:../core
     devDependencies:
@@ -161,10 +161,10 @@ importers:
 
   packages/react-devtools:
     dependencies:
-      '@connectivity/core':
+      '@connectivity-js/core':
         specifier: workspace:*
         version: link:../core
-      '@connectivity/devtools':
+      '@connectivity-js/devtools':
         specifier: workspace:*
         version: link:../devtools
     devDependencies:

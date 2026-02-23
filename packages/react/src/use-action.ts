@@ -3,7 +3,7 @@ import {
   type ActionOptionsConfig,
   getConnectivityClient,
   type UseActionCallbacks,
-} from '@connectivity/core';
+} from '@connectivity-js/core';
 import { useCallback, useEffect, useState, useSyncExternalStore } from 'react';
 import { useDefaultConnectivityOptions } from './connectivity-context';
 

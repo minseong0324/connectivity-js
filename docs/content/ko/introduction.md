@@ -10,7 +10,7 @@
 
 - **선언적** — `<Connectivity fallback={...}>` 한 줄로 온라인/오프라인 UI를 전환합니다.
 - **타입 안전** — 액션 정의에서 `TInput`과 `TResult`가 완전히 추론됩니다. 수동 타입 지정이 필요 없습니다.
-- **프레임워크 비의존** — 코어(`@connectivity/core`)는 프레임워크 의존성이 없습니다. React 어댑터(`@connectivity/react`)를 기본 제공하며, 다른 프레임워크 어댑터도 계획 중입니다.
+- **프레임워크 비의존** — 코어(`@connectivity-js/core`)는 프레임워크 의존성이 없습니다. React 어댑터(`@connectivity-js/react`)를 기본 제공하며, 다른 프레임워크 어댑터도 계획 중입니다.
 - **자동 큐잉** — 오프라인 중 실행된 액션은 자동으로 큐에 저장되고, 연결 복구 시 FIFO 순서로 전송됩니다.
 - **중복 제거** — 빠른 연속 호출(예: 저장 버튼 더블클릭)을 합쳐서 최신 데이터만 서버에 전송합니다.
 - **재시도** — 실패한 요청을 설정 가능한 백오프 전략으로 자동 재시도합니다.
@@ -31,8 +31,8 @@ ConnectivityProvider
 
 | 레이어 | 패키지                | 설명                                                    |
 | ------ | --------------------- | ------------------------------------------------------- |
-| Core   | `@connectivity/core`  | 상태 머신, 큐, 중복 제거, 재시도. React 의존성 없음.    |
-| React  | `@connectivity/react` | 훅과 컴포넌트: Provider, useAction, useConnectivity 등. |
+| Core   | `@connectivity-js/core`  | 상태 머신, 큐, 중복 제거, 재시도. React 의존성 없음.    |
+| React  | `@connectivity-js/react` | 훅과 컴포넌트: Provider, useAction, useConnectivity 등. |
 
 ## 간단한 예제
 
@@ -41,7 +41,7 @@ import {
   ConnectivityProvider,
   browserOnlineDetector,
   useAction,
-} from "@connectivity/react";
+} from "@connectivity-js/react";
 
 function App() {
   return (

@@ -1,7 +1,7 @@
 'use client';
 
-import { getConnectivityClient } from '@connectivity/core';
-import { ConnectivityProvider } from '@connectivity/react';
+import { getConnectivityClient } from '@connectivity-js/core';
+import { ConnectivityProvider } from '@connectivity-js/react';
 import {
   createContext,
   type ReactNode,

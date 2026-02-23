@@ -10,7 +10,7 @@ import {
   browserOnlineDetector,
   heartbeatDetector,
   ConnectivityClient,
-} from '@connectivity/core';
+} from '@connectivity-js/core';
 
 // 1. 인스턴스 생성 및 시작
 const client = getConnectivityClient({

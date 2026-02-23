@@ -3,7 +3,7 @@ import {
   type Detector,
   type DetectorEvent,
   getConnectivityClient,
-} from '@connectivity/core';
+} from '@connectivity-js/core';
 import { renderHook } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { afterEach, describe, expect, test, vi } from 'vitest';

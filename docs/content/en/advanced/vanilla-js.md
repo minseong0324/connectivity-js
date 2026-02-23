@@ -10,7 +10,7 @@ import {
   browserOnlineDetector,
   heartbeatDetector,
   ConnectivityClient,
-} from '@connectivity/core';
+} from '@connectivity-js/core';
 
 // 1. Create and start
 const client = getConnectivityClient({

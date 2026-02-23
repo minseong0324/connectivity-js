@@ -1,4 +1,4 @@
-export * from '@connectivity/core';
+export * from '@connectivity-js/core';
 
 export { Connectivity } from './connectivity';
 export {

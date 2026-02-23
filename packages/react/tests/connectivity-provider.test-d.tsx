@@ -1,6 +1,6 @@
 import { describe, expectTypeOf, it } from 'vitest';
-import { browserOnlineDetector } from '@connectivity/core';
-import type { QueuedJob } from '@connectivity/core';
+import { browserOnlineDetector } from '@connectivity-js/core';
+import type { QueuedJob } from '@connectivity-js/core';
 import { ConnectivityProvider } from '../src/connectivity-provider';
 
 describe('ConnectivityProvider', () => {
