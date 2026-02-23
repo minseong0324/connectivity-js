@@ -7,7 +7,7 @@ How to display the current network status to users.
 Subscribes to connectivity state. Re-renders only when state changes.
 
 ```tsx
-import { useConnectivity } from '@connectivity/react';
+import { useConnectivity } from '@connectivity-js/react';
 
 function StatusBadge() {
   const { status, quality } = useConnectivity();
@@ -79,7 +79,7 @@ function OfflineDuration() {
 Declarative children/fallback switching based on connectivity.
 
 ```tsx
-import { Connectivity } from '@connectivity/react';
+import { Connectivity } from '@connectivity-js/react';
 
 <Connectivity fallback={<OfflineScreen />}>
   <App />
@@ -156,7 +156,7 @@ function Dashboard() {
 Fires callbacks on state **transitions**. Not called on initial mount.
 
 ```tsx
-import { useOnConnectivityChange } from '@connectivity/react';
+import { useOnConnectivityChange } from '@connectivity-js/react';
 
 useOnConnectivityChange({
   offline: () => toast.warning('Connection lost'),

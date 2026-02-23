@@ -1,5 +1,5 @@
 {
-  "name": "@connectivity/react",
+  "name": "@connectivity-js/react",
   "version": "0.1.0",
   "description": "React adapter for Connectivity",
   "author": "@minseong0324 <KIM Minseong>",
@@ -40,7 +40,7 @@
     "react": "^18 || ^19"
   },
   "dependencies": {
-    "@connectivity/core": "workspace:*"
+    "@connectivity-js/core": "workspace:*"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.6.3",

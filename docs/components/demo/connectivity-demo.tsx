@@ -1,7 +1,7 @@
 'use client';
 
-import { useAction, useConnectivity, useQueue } from '@connectivity/react';
-import { ConnectivityDevTools } from '@connectivity/react-devtools';
+import { useAction, useConnectivity, useQueue } from '@connectivity-js/react';
+import { ConnectivityDevTools } from '@connectivity-js/react-devtools';
 import { useEffect, useRef, useState } from 'react';
 import { Toaster, toast } from 'sonner';
 import {
@@ -186,7 +186,7 @@ function SyntaxCode({ code }: { code: string }) {
 // Code snippets
 // ---------------------------------------------------------------------------
 
-const STATUS_CODE = `import { useConnectivity } from "@connectivity/react"
+const STATUS_CODE = `import { useConnectivity } from "@connectivity-js/react"
 import { toast } from "sonner"
 
 function NetworkStatus() {
@@ -206,7 +206,7 @@ function NetworkStatus() {
 const QUEUE_CODE = `import {
   ConnectivityProvider,
   useAction,
-} from "@connectivity/react"
+} from "@connectivity-js/react"
 
 function SaveButton() {
   const { execute, pendingCount } = useAction(

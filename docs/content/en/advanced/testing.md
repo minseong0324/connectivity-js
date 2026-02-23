@@ -8,7 +8,7 @@ How to test code that uses Connectivity.
 
 ```ts
 import { describe, test, afterEach, vi } from 'vitest';
-import { ConnectivityClient } from '@connectivity/core';
+import { ConnectivityClient } from '@connectivity-js/core';
 
 afterEach(() => {
   ConnectivityClient.resetInstance();
@@ -21,7 +21,7 @@ afterEach(() => {
 Control network state programmatically in tests:
 
 ```ts
-import type { Detector, DetectorEvent } from '@connectivity/core';
+import type { Detector, DetectorEvent } from '@connectivity-js/core';
 
 const createMockDetector = () => {
   let listener: ((event: DetectorEvent) => void) | null = null;
@@ -44,7 +44,7 @@ const createMockDetector = () => {
 ## Basic test patterns
 
 ```ts
-import { getConnectivityClient, ConnectivityClient } from '@connectivity/core';
+import { getConnectivityClient, ConnectivityClient } from '@connectivity-js/core';
 
 describe('My feature', () => {
   afterEach(() => {
@@ -99,8 +99,8 @@ Use `@testing-library/react`'s `renderHook`:
 
 ```tsx
 import { renderHook, act } from '@testing-library/react';
-import { useConnectivity } from '@connectivity/react';
-import { getConnectivityClient, ConnectivityClient } from '@connectivity/core';
+import { useConnectivity } from '@connectivity-js/react';
+import { getConnectivityClient, ConnectivityClient } from '@connectivity-js/core';
 
 describe('useConnectivity', () => {
   afterEach(() => {

@@ -5,7 +5,7 @@ Singleton client that detects connectivity, manages offline action queueing, ret
 ## Creating an instance
 
 ```ts
-import { ConnectivityClient, getConnectivityClient } from '@connectivity/core';
+import { ConnectivityClient, getConnectivityClient } from '@connectivity-js/core';
 
 // Option 1: static method
 const client = ConnectivityClient.getInstance(options);

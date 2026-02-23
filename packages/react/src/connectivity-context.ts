@@ -1,4 +1,4 @@
-import type { ActionOptions } from '@connectivity/core';
+import type { ActionOptions } from '@connectivity-js/core';
 import { createContext, type ReactNode, useContext } from 'react';
 
 /**

@@ -1,7 +1,7 @@
 import {
   type ConnectivityState,
   getConnectivityClient,
-} from '@connectivity/core';
+} from '@connectivity-js/core';
 import { useCallback, useSyncExternalStore } from 'react';
 
 const SERVER_SNAPSHOT: ConnectivityState = {

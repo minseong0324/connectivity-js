@@ -1,5 +1,5 @@
 {
-  "name": "@connectivity/core",
+  "name": "@connectivity-js/core",
   "version": "0.1.0",
   "description": "Type-safe, lightweight, framework-agnostic connectivity detection and offline action queue",
   "author": "@minseong0324 <KIM Minseong>",

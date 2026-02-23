@@ -2,7 +2,7 @@ import {
   type ConnectivityStatus,
   type ConnectivityTransition,
   getConnectivityClient,
-} from '@connectivity/core';
+} from '@connectivity-js/core';
 import { useEffect, useRef } from 'react';
 
 export type ConnectivityChangeHandlers = Partial<

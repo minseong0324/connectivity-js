@@ -10,7 +10,7 @@ Modern web applications need to work reliably regardless of network conditions. 
 
 - **Declarative** — Switch between online and offline UI with a single component: `<Connectivity fallback={...}>`
 - **Type-safe** — `TInput` and `TResult` are fully inferred from your action definitions. No manual type annotations needed.
-- **Framework-agnostic** — The core (`@connectivity/core`) has zero framework dependencies. The React adapter (`@connectivity/react`) is provided out of the box, with more adapters planned.
+- **Framework-agnostic** — The core (`@connectivity-js/core`) has zero framework dependencies. The React adapter (`@connectivity-js/react`) is provided out of the box, with more adapters planned.
 - **Auto-queue** — Actions executed while offline are automatically queued and flushed in FIFO order when connectivity is restored.
 - **Deduplication** — Rapid duplicate calls (e.g. a save button clicked twice) are collapsed so only the latest payload reaches the server.
 - **Retry** — Failed requests are automatically retried with configurable backoff strategies.
@@ -31,8 +31,8 @@ ConnectivityProvider
 
 | Layer | Package               | Description                                                      |
 | ----- | --------------------- | ---------------------------------------------------------------- |
-| Core  | `@connectivity/core`  | State machine, queue, dedup, retry. No React dependency.         |
-| React | `@connectivity/react` | Hooks and components: Provider, useAction, useConnectivity, etc. |
+| Core  | `@connectivity-js/core`  | State machine, queue, dedup, retry. No React dependency.         |
+| React | `@connectivity-js/react` | Hooks and components: Provider, useAction, useConnectivity, etc. |
 
 ## Quick Example
 
@@ -41,7 +41,7 @@ import {
   ConnectivityProvider,
   browserOnlineDetector,
   useAction,
-} from "@connectivity/react";
+} from "@connectivity-js/react";
 
 function App() {
   return (

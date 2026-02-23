@@ -8,7 +8,7 @@ Define an action that saves data to a server:
 
 ```ts
 // actions/save.ts
-import { actionOptions } from "@connectivity/core";
+import { actionOptions } from "@connectivity-js/core";
 
 export const saveAction = actionOptions({
   actionKey: "save",
@@ -20,7 +20,7 @@ export const saveAction = actionOptions({
 Use it in a component:
 
 ```tsx
-import { useAction } from "@connectivity/react";
+import { useAction } from "@connectivity-js/react";
 import { saveAction } from "./actions/save";
 
 function SaveButton({ id, data }: { id: string; data: string }) {

@@ -7,7 +7,7 @@
 현재 연결 상태를 구독합니다. 상태가 변경될 때만 re-render됩니다.
 
 ```tsx
-import { useConnectivity } from '@connectivity/react';
+import { useConnectivity } from '@connectivity-js/react';
 
 function StatusBadge() {
   const { status, quality } = useConnectivity();
@@ -79,7 +79,7 @@ function OfflineDuration() {
 연결 상태에 따라 선언적으로 children/fallback을 전환합니다.
 
 ```tsx
-import { Connectivity } from '@connectivity/react';
+import { Connectivity } from '@connectivity-js/react';
 
 <Connectivity fallback={<OfflineScreen />}>
   <App />
@@ -164,7 +164,7 @@ function Dashboard() {
 상태가 **전환**될 때 콜백을 실행합니다. 최초 마운트 시에는 호출되지 않습니다.
 
 ```tsx
-import { useOnConnectivityChange } from '@connectivity/react';
+import { useOnConnectivityChange } from '@connectivity-js/react';
 
 useOnConnectivityChange({
   offline: () => toast.warning('인터넷 연결이 끊겼습니다'),

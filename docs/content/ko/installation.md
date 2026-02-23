@@ -6,26 +6,26 @@ Connectivity는 두 개의 패키지로 구성됩니다:
 
 | 패키지                | 설명                                                     |
 | --------------------- | -------------------------------------------------------- |
-| `@connectivity/core`  | 프레임워크 비의존 코어: 상태 머신, 큐, 중복 제거, 재시도 |
-| `@connectivity/react` | React 훅과 컴포넌트 (`@connectivity/core`에 의존)        |
+| `@connectivity-js/core`  | 프레임워크 비의존 코어: 상태 머신, 큐, 중복 제거, 재시도 |
+| `@connectivity-js/react` | React 훅과 컴포넌트 (`@connectivity-js/core`에 의존)        |
 
-React 프로젝트에서는 `@connectivity/react`를 설치합니다.
+React 프로젝트에서는 `@connectivity-js/react`를 설치합니다.
 
 ```bash tab="pnpm"
-pnpm add @connectivity/react
+pnpm add @connectivity-js/react
 ```
 
 ```bash tab="npm"
-npm install @connectivity/react
+npm install @connectivity-js/react
 ```
 
 ```bash tab="yarn"
-yarn add @connectivity/react
+yarn add @connectivity-js/react
 ```
 
 ### Peer Dependencies
 
-`@connectivity/react`는 다음이 필요합니다:
+`@connectivity-js/react`는 다음이 필요합니다:
 
 - `react` ^18 || ^19
 
@@ -38,7 +38,7 @@ import {
   ConnectivityProvider,
   browserOnlineDetector,
   heartbeatDetector,
-} from "@connectivity/react";
+} from "@connectivity-js/react";
 
 function App() {
   return (
@@ -79,25 +79,25 @@ function App() {
 
 디버깅용 DevTools 패널을 사용하려면:
 
-- **React**: `@connectivity/react-devtools`
-- **Vanilla JS**: `@connectivity/devtools`
+- **React**: `@connectivity-js/react-devtools`
+- **Vanilla JS**: `@connectivity-js/devtools`
 
 자세한 내용은 [DevTools](./advanced/devtools.md)를 참고하세요.
 
 ## React 없이 사용하기
 
-React를 사용하지 않는 경우 `@connectivity/core`만 단독으로 사용할 수 있습니다:
+React를 사용하지 않는 경우 `@connectivity-js/core`만 단독으로 사용할 수 있습니다:
 
 ```bash tab="pnpm"
-pnpm add @connectivity/core
+pnpm add @connectivity-js/core
 ```
 
 ```bash tab="npm"
-npm install @connectivity/core
+npm install @connectivity-js/core
 ```
 
 ```bash tab="yarn"
-yarn add @connectivity/core
+yarn add @connectivity-js/core
 ```
 
 자세한 내용은 [Vanilla JS](./advanced/vanilla-js.md)를 참고하세요.

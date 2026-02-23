@@ -1,4 +1,4 @@
-import { getConnectivityClient } from '@connectivity/core';
+import { getConnectivityClient } from '@connectivity-js/core';
 import {
   useCallback,
   useEffect,

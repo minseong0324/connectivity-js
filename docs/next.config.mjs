@@ -10,10 +10,10 @@ export default withNextra({
   reactStrictMode: true,
   // 데모·DevTools·hooks가 동일한 ConnectivityClient singleton을 공유하도록
   transpilePackages: [
-    '@connectivity/core',
-    '@connectivity/react',
-    '@connectivity/devtools',
-    '@connectivity/react-devtools',
+    '@connectivity-js/core',
+    '@connectivity-js/react',
+    '@connectivity-js/devtools',
+    '@connectivity-js/react-devtools',
   ],
   i18n: {
     locales: ['en', 'ko'],

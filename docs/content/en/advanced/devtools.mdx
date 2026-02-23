@@ -12,19 +12,19 @@ In the demo below, **switch to offline** and run actions to see jobs queuing up 
 
 ## React Usage
 
-Install `@connectivity/react-devtools` and add `<ConnectivityDevTools />` to your app:
+Install `@connectivity-js/react-devtools` and add `<ConnectivityDevTools />` to your app:
 
 ```bash
-pnpm add @connectivity/react-devtools
+pnpm add @connectivity-js/react-devtools
 ```
 
 ```tsx
 import {
   ConnectivityProvider,
   browserOnlineDetector,
-} from "@connectivity/react";
-import { getConnectivityClient } from "@connectivity/core";
-import { ConnectivityDevTools } from "@connectivity/react-devtools";
+} from "@connectivity-js/react";
+import { getConnectivityClient } from "@connectivity-js/core";
+import { ConnectivityDevTools } from "@connectivity-js/react-devtools";
 
 function App() {
   return (
@@ -47,18 +47,18 @@ function App() {
 
 ## Vanilla JS Usage
 
-Use `@connectivity/devtools` without React:
+Use `@connectivity-js/devtools` without React:
 
 ```bash
-pnpm add @connectivity/core @connectivity/devtools
+pnpm add @connectivity-js/core @connectivity-js/devtools
 ```
 
 ```ts
 import {
   getConnectivityClient,
   browserOnlineDetector,
-} from "@connectivity/core";
-import { renderConnectivityDevTools } from "@connectivity/devtools";
+} from "@connectivity-js/core";
+import { renderConnectivityDevTools } from "@connectivity-js/devtools";
 
 const client = getConnectivityClient({
   detectors: [browserOnlineDetector()],

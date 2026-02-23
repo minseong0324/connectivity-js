@@ -1,4 +1,4 @@
-import { getConnectivityClient, type QueuedJob } from '@connectivity/core';
+import { getConnectivityClient, type QueuedJob } from '@connectivity-js/core';
 import { useCallback, useSyncExternalStore } from 'react';
 
 const EMPTY_JOBS: QueuedJob[] = [];
