@@ -6,7 +6,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/your-org/connectivity.git",
+    "url": "git+https://github.com/minseong0324/connectivity-js.git",
     "directory": "packages/react-devtools"
   },
   "keywords": [

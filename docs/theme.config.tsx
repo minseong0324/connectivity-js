@@ -1,7 +1,8 @@
 export default {
   logo: <span>connectivity</span>,
-  project: { link: 'https://github.com/your-org/connectivity' },
-  docsRepositoryBase: 'https://github.com/your-org/connectivity/tree/main/docs',
+  project: { link: 'https://github.com/minseong0324/connectivity-js' },
+  docsRepositoryBase:
+    'https://github.com/minseong0324/connectivity-js/tree/main/docs',
   footer: { text: 'connectivity' },
   i18n: [
     { locale: 'en', name: 'English' },
