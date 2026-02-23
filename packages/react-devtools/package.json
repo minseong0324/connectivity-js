@@ -1,0 +1,56 @@
+{
+  "name": "@connectivity/react-devtools",
+  "version": "0.1.0",
+  "description": "React devtools for Connectivity",
+  "author": "@minseong0324 <KIM Minseong>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/your-org/connectivity.git",
+    "directory": "packages/react-devtools"
+  },
+  "keywords": [
+    "react",
+    "connectivity",
+    "devtools"
+  ],
+  "private": false,
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.cts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "sideEffects": false,
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "biome lint ."
+  },
+  "peerDependencies": {
+    "react": "^18 || ^19",
+    "react-dom": "^18 || ^19"
+  },
+  "dependencies": {
+    "@connectivity/core": "workspace:*",
+    "@connectivity/devtools": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.3",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
+    "tsdown": "^0.20.3"
+  }
+}
