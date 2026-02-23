@@ -76,6 +76,6 @@ Implement the `Detector` interface for any detection strategy. See [Custom Detec
 
 ## Related
 
-- [Getting Started](../guide/getting-started.md)
+- [Actions](../guide/actions.md)
 - [Custom Detectors](../advanced/custom-detectors.md)
 

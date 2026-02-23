@@ -69,7 +69,7 @@ See [Without React](../advanced/vanilla-js.md).
 
 ## Related
 
-- [Getting Started](../guide/getting-started.md)
+- [Actions](../guide/actions.md)
 - [Default Options](../advanced/default-options.md)
 - [ConnectivityClient API](./connectivity-client.md)
 
