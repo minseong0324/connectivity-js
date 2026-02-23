@@ -54,5 +54,5 @@ For single-component usage, pass config inline to `useAction()`.
 ## Related
 
 - [useAction API](./use-action.md)
-- [Getting Started](../guide/getting-started.md)
+- [Actions](../guide/actions.md)
 

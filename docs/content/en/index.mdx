@@ -1,3 +1,8 @@
+---
+description: Declarative, type-safe, offline-first connectivity management for React
+---
+
+import Image from "next/image";
 import Link from "next/link";
 import { ConnectivityDemo } from "@/components/demo/connectivity-demo";
 import { NpmInstall } from "@/components/npm-install";
@@ -6,8 +11,17 @@ import { NpmInstall } from "@/components/npm-install";
   <div className="flex flex-col lg:flex-row gap-10 lg:gap-16 items-start">
 
     <div className="flex flex-col items-start lg:w-80 flex-shrink-0 self-start lg:sticky lg:top-8">
-      <div className="mb-6 text-6xl">🔌</div>
-      <h1 className="text-5xl font-extrabold tracking-tight mb-4">Connectivity</h1>
+      <div className="mb-6 flex flex-col gap-3">
+        <Image
+          src="/img/logo.png"
+          alt=""
+          width={64}
+          height={64}
+          className="rounded-lg"
+          unoptimized
+        />
+        <h1 className="text-5xl font-extrabold tracking-tight">connectivity-js</h1>
+      </div>
       <div className="text-xl text-gray-600 dark:text-gray-400 mb-10">
         Declarative, type-safe, offline-first solution for connectivity management.
       </div>

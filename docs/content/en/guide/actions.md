@@ -1,6 +1,11 @@
-# Getting Started
+---
+title: Actions
+description: Define and execute actions with useAction, actionOptions
+---
 
-This guide walks you through defining and executing your first action. Make sure you have completed [Installation](../installation.md) before proceeding.
+# Actions
+
+This guide walks you through defining and executing your first action. Make sure you have completed [Installation](../installation.md) and [Connectivity UI](./connectivity-ui.md) before proceeding.
 
 ## Your First Action
 
@@ -71,6 +76,5 @@ Branching on `result.enqueued` automatically narrows the remaining fields.
 
 ## Next steps
 
-- [Connectivity UI](./connectivity-ui.md) — `useConnectivity`, `<Connectivity>`, `useOnConnectivityChange`
 - [Offline Behavior](./offline-behavior.md) — `whenOffline`, execution flow, FIFO
 - [Deduplication](./deduplication.md) — collapsing duplicate requests with `dedupeKey`

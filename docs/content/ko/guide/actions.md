@@ -1,6 +1,11 @@
-# 시작하기
+---
+title: 액션
+description: useAction, actionOptions로 액션 정의 및 실행
+---
 
-첫 번째 액션을 정의하고 실행하는 방법을 설명합니다. 시작 전에 [설치하기](../installation.md)를 완료해 주세요.
+# 액션
+
+첫 번째 액션을 정의하고 실행하는 방법을 설명합니다. 시작 전에 [설치하기](../installation.md)와 [연결 상태 UI](./connectivity-ui.md)를 완료해 주세요.
 
 ## 첫 번째 Action
 
@@ -71,6 +76,5 @@ console.log(result.result); // TResult — request 반환 타입에서 추론
 
 ## 다음 단계
 
-- [연결 상태 UI](./connectivity-ui.md) — `useConnectivity`, `<Connectivity>`, `useOnConnectivityChange`
 - [오프라인 동작](./offline-behavior.md) — `whenOffline`, 실행 흐름, FIFO
 - [Deduplication](./deduplication.md) — `dedupeKey`로 중복 요청 합치기

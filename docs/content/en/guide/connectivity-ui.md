@@ -1,3 +1,8 @@
+---
+title: Connectivity UI
+description: Display online/offline state with useConnectivity, Connectivity, useOnConnectivityChange
+---
+
 # Connectivity UI
 
 How to display the current network status to users.
@@ -235,6 +240,10 @@ All hooks return `'unknown'` during SSR. `<Connectivity>` treats `unknown` as on
 ### Reference stability
 
 The `ConnectivityState` object returned by `useConnectivity()` is a new reference only when state actually changes.
+
+## Next steps
+
+- [Actions](./actions.md) — Define and execute your first action with `useAction`
 
 ## Related
 

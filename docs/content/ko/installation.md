@@ -1,3 +1,8 @@
+---
+title: 설치하기
+description: "@connectivity-js/react 설치 및 ConnectivityProvider 설정"
+---
+
 # 설치하기
 
 ## 패키지
@@ -104,4 +109,5 @@ yarn add @connectivity-js/core
 
 ## 다음 단계
 
-- [시작하기](./guide/getting-started.md) — 첫 번째 액션 정의하고 실행하기
+- [연결 상태 UI](./guide/connectivity-ui.md) — `<Connectivity>`, `useConnectivity`로 온라인/오프라인 UI 전환
+- [액션](./guide/actions.md) — 첫 번째 액션 정의하고 실행하기

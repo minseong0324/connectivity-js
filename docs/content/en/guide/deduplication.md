@@ -1,3 +1,8 @@
+---
+title: Deduplication
+description: Collapse duplicate requests with dedupeKey
+---
+
 # Deduplication
 
 How to automatically collapse duplicate requests for the same logical resource.

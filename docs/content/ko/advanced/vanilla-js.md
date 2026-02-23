@@ -130,5 +130,5 @@ ConnectivityClient.resetInstance();
 ## 관련 문서
 
 - [ConnectivityClient API](../api/core/connectivity-client.md)
-- [시작하기](../guide/getting-started.md)
+- [액션](../guide/actions.md)
 

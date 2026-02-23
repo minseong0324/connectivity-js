@@ -1,3 +1,8 @@
+---
+title: 왜 Connectivity인가요?
+description: 이 라이브러리가 해결하는 문제 — 오프라인 처리, 재시도, 중복 제거
+---
+
 # 왜 Connectivity인가요?
 
 ## 문제
@@ -111,4 +116,5 @@ _어떻게_ 연결하는지가 아니라 *무엇*이 일어나야 하는지를 �
 ## 다음 단계
 
 - [설치하기](./installation.md) — 프로젝트에 Connectivity 추가
-- [시작하기](./guide/getting-started.md) — 첫 번째 액션 만들기
+- [연결 상태 UI](./guide/connectivity-ui.md) — `<Connectivity>`로 온라인/오프라인 UI 전환
+- [액션](./guide/actions.md) — 첫 번째 액션 만들기

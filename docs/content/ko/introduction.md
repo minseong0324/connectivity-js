@@ -1,3 +1,8 @@
+---
+title: 소개
+description: 선언적이고 타입 안전한 React용 오프라인 우선 연결 관리
+---
+
 # 소개
 
 **Connectivity**는 선언적이고, 타입 안전하며, 오프라인 우선인 연결 관리 라이브러리입니다.
@@ -69,4 +74,5 @@ function SaveButton() {
 
 - [왜 Connectivity인가요?](./why-connectivity.md) — 이 라이브러리가 해결하는 문제
 - [설치하기](./installation.md) — 프로젝트에 추가하기
-- [시작하기](./guide/getting-started.md) — 첫 번째 액션 만들기
+- [연결 상태 UI](./guide/connectivity-ui.md) — `<Connectivity>`, `useConnectivity`로 온라인/오프라인 UI 전환
+- [액션](./guide/actions.md) — 첫 번째 액션 정의하고 실행하기

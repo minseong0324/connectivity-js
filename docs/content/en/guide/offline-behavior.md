@@ -1,3 +1,8 @@
+---
+title: Offline Behavior
+description: whenOffline, execution flow, FIFO queue behavior
+---
+
 # Offline Behavior
 
 How actions behave depending on network status.

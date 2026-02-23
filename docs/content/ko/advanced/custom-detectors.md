@@ -134,5 +134,5 @@ const qualityDetector = (probeUrl: string) =>
 ## 관련 문서
 
 - [Detectors API](../api/core/detectors.md)
-- [시작하기](../guide/getting-started.md)
+- [액션](../guide/actions.md)
 

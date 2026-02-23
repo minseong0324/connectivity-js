@@ -1,3 +1,8 @@
+---
+title: Installation
+description: Install @connectivity-js/react and set up ConnectivityProvider
+---
+
 # Installation
 
 ## Packages
@@ -104,4 +109,5 @@ See [Vanilla JS](./advanced/vanilla-js.md) for usage without React.
 
 ## Next Steps
 
-- [Getting Started](./guide/getting-started.md) — Define and execute your first action
+- [Connectivity UI](./guide/connectivity-ui.md) — Display online/offline state with `<Connectivity>`, `useConnectivity`
+- [Actions](./guide/actions.md) — Define and execute your first action

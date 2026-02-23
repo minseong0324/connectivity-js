@@ -154,7 +154,7 @@ function SaveIndicator() {
 
 ## Related
 
-- [Getting Started](../guide/getting-started.md)
+- [Actions](../guide/actions.md)
 - [Offline Behavior](../guide/offline-behavior.md)
 - [Deduplication](../guide/deduplication.md)
 - [actionOptions API](./action-options.md)

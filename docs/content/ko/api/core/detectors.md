@@ -76,7 +76,7 @@ const detector = heartbeatDetector({
 
 ## 관련 문서
 
-- [시작하기](../guide/getting-started.md)
+- [액션](../guide/actions.md)
 - [Connection Quality 활용](../guide/connectivity-ui.md)
 - [커스텀 Detector](../advanced/custom-detectors.md)
 

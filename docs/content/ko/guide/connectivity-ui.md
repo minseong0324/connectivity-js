@@ -1,3 +1,8 @@
+---
+title: 연결 상태 UI
+description: useConnectivity, Connectivity, useOnConnectivityChange로 온라인/오프라인 상태 표시
+---
+
 # 연결 상태 UI
 
 유저에게 현재 네트워크 상태를 보여주는 방법을 설명합니다.
@@ -248,6 +253,10 @@ useOnConnectivityChange({
 ### 참조 안정성
 
 `useConnectivity()`가 반환하는 `ConnectivityState` 객체는 상태가 변경될 때만 새 참조를 반환합니다. `quality`만 변경되어도 새 참조가 생성됩니다.
+
+## 다음 단계
+
+- [액션](./actions.md) — `useAction`으로 첫 번째 액션 정의하고 실행하기
 
 ## 관련 문서
 

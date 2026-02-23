@@ -1,3 +1,8 @@
+---
+title: Introduction
+description: Declarative, type-safe, offline-first connectivity management for React
+---
+
 # Introduction
 
 **Connectivity** is a declarative, type-safe, offline-first connectivity management library for JavaScript and React applications.
@@ -69,4 +74,5 @@ function SaveButton() {
 
 - [Why Connectivity?](./why-connectivity.md) — Problems this library solves
 - [Installation](./installation.md) — Get up and running
-- [Getting Started](./guide/getting-started.md) — Build your first action
+- [Connectivity UI](./guide/connectivity-ui.md) — Display online/offline state with `<Connectivity>`, `useConnectivity`
+- [Actions](./guide/actions.md) — Define and execute your first action
