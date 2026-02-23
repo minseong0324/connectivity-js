@@ -8,27 +8,32 @@ import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: {
-    template: '%s | Connectivity',
-    default: 'Connectivity | Offline-first connectivity engine',
+    template: '%s | connectivity-js',
+    default:
+      'connectivity-js | Declarative, offline-first connectivity management',
   },
-  description: 'Offline-first connectivity engine for React applications.',
-  metadataBase: new URL('https://github.com/minseong0324/connectivity-js'),
+  description:
+    'Declarative, type-safe, offline-first connectivity management for React. Auto-queue, deduplication, retry.',
+  metadataBase: new URL('https://connectivity-js-docs.vercel.app'),
   openGraph: {
-    title: 'Connectivity',
-    description: 'Offline-first connectivity engine for React applications.',
+    title: 'connectivity-js',
+    description:
+      'Declarative, type-safe, offline-first connectivity management for React.',
   },
   icons: { icon: '/favicon.ico' },
 };
 
 const navbar = (
   <Navbar
-    logo={<b className="text-lg font-bold">Connectivity</b>}
+    logo={<b className="text-lg font-bold">connectivity-js</b>}
     projectLink="https://github.com/minseong0324/connectivity-js"
   >
     <LocaleSwitch />
   </Navbar>
 );
-const footer = <Footer>MIT {new Date().getFullYear()} © connectivity.</Footer>;
+const footer = (
+  <Footer>MIT {new Date().getFullYear()} © connectivity-js</Footer>
+);
 
 const I18N: { locale: string; name: string }[] = [
   { locale: 'en', name: 'English' },

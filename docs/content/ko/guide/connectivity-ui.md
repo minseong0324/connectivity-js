@@ -1,3 +1,8 @@
+---
+title: 연결 상태 UI
+description: useConnectivity, Connectivity, useOnConnectivityChange로 온라인/오프라인 상태 표시
+---
+
 # 연결 상태 UI
 
 유저에게 현재 네트워크 상태를 보여주는 방법을 설명합니다.

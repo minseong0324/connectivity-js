@@ -1,3 +1,8 @@
+---
+title: Installation
+description: Install @connectivity-js/react and set up ConnectivityProvider
+---
+
 # Installation
 
 ## Packages

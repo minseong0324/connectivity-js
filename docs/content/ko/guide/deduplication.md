@@ -1,3 +1,8 @@
+---
+title: Deduplication
+description: dedupeKey로 중복 요청 합치기
+---
+
 # Deduplication
 
 같은 논리적 대상에 대한 중복 요청을 자동으로 합치는 방법을 설명합니다.

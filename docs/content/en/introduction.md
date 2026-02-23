@@ -1,3 +1,8 @@
+---
+title: Introduction
+description: Declarative, type-safe, offline-first connectivity management for React
+---
+
 # Introduction
 
 **Connectivity** is a declarative, type-safe, offline-first connectivity management library for JavaScript and React applications.

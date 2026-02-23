@@ -2,8 +2,9 @@ import { Head } from 'nextra/components';
 import type { ReactNode } from 'react';
 
 export const metadata = {
-  title: 'connectivity',
-  description: 'connectivity documentation',
+  title: 'connectivity-js',
+  description:
+    'Declarative, type-safe, offline-first connectivity management for React.',
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {

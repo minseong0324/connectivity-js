@@ -1,3 +1,8 @@
+---
+title: Actions
+description: Define and execute actions with useAction, actionOptions
+---
+
 # Actions
 
 This guide walks you through defining and executing your first action. Make sure you have completed [Installation](../installation.md) and [Connectivity UI](./connectivity-ui.md) before proceeding.

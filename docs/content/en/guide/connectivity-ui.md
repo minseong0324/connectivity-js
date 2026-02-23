@@ -1,3 +1,8 @@
+---
+title: Connectivity UI
+description: Display online/offline state with useConnectivity, Connectivity, useOnConnectivityChange
+---
+
 # Connectivity UI
 
 How to display the current network status to users.

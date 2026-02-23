@@ -1,3 +1,8 @@
+---
+title: 왜 Connectivity인가요?
+description: 이 라이브러리가 해결하는 문제 — 오프라인 처리, 재시도, 중복 제거
+---
+
 # 왜 Connectivity인가요?
 
 ## 문제

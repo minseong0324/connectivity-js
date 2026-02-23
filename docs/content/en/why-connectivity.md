@@ -1,3 +1,8 @@
+---
+title: Why Connectivity?
+description: Problems this library solves — offline handling, retry, deduplication
+---
+
 # Why Connectivity?
 
 ## The Problem

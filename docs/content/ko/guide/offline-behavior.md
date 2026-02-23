@@ -1,3 +1,8 @@
+---
+title: 오프라인 동작
+description: whenOffline, 실행 흐름, FIFO 큐 동작
+---
+
 # 오프라인 동작
 
 action을 실행했을 때 네트워크 상태에 따라 어떻게 동작하는지 설명합니다.

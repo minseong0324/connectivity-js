@@ -1,3 +1,8 @@
+---
+title: 액션
+description: useAction, actionOptions로 액션 정의 및 실행
+---
+
 # 액션
 
 첫 번째 액션을 정의하고 실행하는 방법을 설명합니다. 시작 전에 [설치하기](../installation.md)와 [연결 상태 UI](./connectivity-ui.md)를 완료해 주세요.
