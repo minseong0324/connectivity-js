@@ -1,5 +1,8 @@
+import type {
+  ConnectionQuality,
+  ConnectivityStatus,
+} from '@connectivity-js/core';
 import { describe, expectTypeOf, it } from 'vitest';
-import type { ConnectionQuality, ConnectivityStatus } from '@connectivity-js/core';
 import { useConnectivity } from '../src/use-connectivity';
 
 describe('useConnectivity', () => {
