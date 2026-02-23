@@ -59,22 +59,4 @@ function SaveButton({ id, data }: { id: string; data: string }) {
 
 ## 문서
 
-| 가이드 | API 참조 | 고급 기능 |
-|---|---|---|
-| [시작하기](docs/ko/guide/getting-started.md) | [useAction](docs/ko/api/use-action.md) | [Retry](docs/ko/advanced/retry.md) |
-| [연결 상태 UI](docs/ko/guide/connectivity-ui.md) | [useConnectivity](docs/ko/api/use-connectivity.md) | [Flush 제어](docs/ko/advanced/flush-control.md) |
-| [오프라인 동작](docs/ko/guide/offline-behavior.md) | [Connectivity](docs/ko/api/connectivity.md) | [Grace Period](docs/ko/advanced/grace-period.md) |
-| [Deduplication](docs/ko/guide/deduplication.md) | [useOnConnectivityChange](docs/ko/api/use-on-connectivity-change.md) | [커스텀 Detector](docs/ko/advanced/custom-detectors.md) |
-| | [useQueue](docs/ko/api/use-queue.md) | [전역 기본값](docs/ko/advanced/default-options.md) |
-| | [ConnectivityClient](docs/ko/api/connectivity-client.md) | [React 없이 사용](docs/ko/advanced/vanilla-js.md) |
-| | [ConnectivityProvider](docs/ko/api/connectivity-provider.md) | [테스트](docs/ko/advanced/testing.md) |
-| | [actionOptions](docs/ko/api/action-options.md) | |
-| | [Detectors](docs/ko/api/detectors.md) | |
-| | [Types](docs/ko/api/types.md) | |
-
-## 아키텍처
-
-```
-ConnectivityProvider → ConnectivityClient (singleton) → ActionObserver (hook당 1개)
-                                                      → useConnectivity / useQueue / ...
-```
+[문서](https://connectivity-js-docs.vercel.app/ko)
