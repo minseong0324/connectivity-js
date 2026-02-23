@@ -48,4 +48,4 @@ You can submit a PR directly. All commit messages and pull request titles should
 
 ## License
 
-All code contributed to this project will be distributed under the [project's license](https://github.com/minseong0324/connectivity/blob/main/LICENSE).
+All code contributed to this project will be distributed under the [project's license](https://github.com/minseong0324/connectivity-js/blob/main/LICENSE).
