@@ -25,6 +25,7 @@ Declarative, type-safe, offline-first solution for connectivity management for w
 ```tsx
 import {
   ConnectivityProvider,
+  Connectivity,
   browserOnlineDetector,
   useConnectivity,
   useAction,
@@ -37,7 +38,9 @@ function App() {
       detectors={[browserOnlineDetector()]}
       gracePeriodMs={3_000}
     >
-      <MyApp />
+      <Connectivity fallback={<div>You're offline</div>} delayMs={3_000}>
+        <MyApp />
+      </Connectivity>
     </ConnectivityProvider>
   );
 }
@@ -73,6 +76,12 @@ function SaveButton({ id, data }: { id: string; data: string }) {
 We welcome contribution from everyone in the community. Read for detailed [contribution guide](https://github.com/offlegacy/event-tracker/blob/main/CONTRIBUTING.md).
 
 
-## Documentation
+## [Check out the docs](https://connectivity-js-docs.vercel.app/en)
 
-[Documentation](https://connectivity-js-docs.vercel.app/en)
+[Check out the docs](https://connectivity-js-docs.vercel.app/en) for installation guides, usage examples, API reference, and more.
+
+## License
+
+See [LICENSE](LICENSE) for more information.
+
+MIT © minseong0324
