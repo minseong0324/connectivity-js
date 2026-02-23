@@ -1,4 +1,4 @@
-# connectivity-engine
+# connectivity-js
 
 선언적이고 type-safe한 offline-first 연결 관리 라이브러리.
 
