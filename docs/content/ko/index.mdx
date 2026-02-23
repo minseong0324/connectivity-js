@@ -1,0 +1,65 @@
+import Link from "next/link";
+import { ConnectivityDemo } from "@/components/demo/connectivity-demo";
+import { NpmInstall } from "@/components/npm-install";
+
+<div className="max-w-6xl mx-auto px-4 py-12 lg:py-20">
+  <div className="flex flex-col lg:flex-row gap-10 lg:gap-16 items-start">
+
+    <div className="flex flex-col items-start lg:w-80 flex-shrink-0 self-start lg:sticky lg:top-8">
+      <div className="mb-6 text-6xl">🔌</div>
+      <h1 className="text-5xl font-extrabold tracking-tight mb-4">Connectivity</h1>
+      <div className="text-xl text-gray-600 dark:text-gray-400 mb-10">
+        선언적이고 타입 안전한 오프라인 우선 연결 관리 라이브러리
+      </div>
+      <div className="flex flex-col gap-3">
+        <Link
+          href="/ko/introduction"
+          className="inline-flex items-center justify-center px-6 py-3 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 transition-colors"
+        >
+          시작하기
+        </Link>
+        <NpmInstall />
+      </div>
+    </div>
+
+    <div className="flex-1 w-full min-w-0">
+      <div className="mb-4">
+        <h2 className="text-2xl font-bold mb-1">직접 체험해 보세요</h2>
+        <div className="text-sm text-gray-500 dark:text-gray-400">
+          네트워크 상태를 전환하고 액션을 실행해서 오프라인 큐가 동작하는 모습을 확인하세요.
+        </div>
+      </div>
+      <ConnectivityDemo lang="ko" />
+    </div>
+
+  </div>
+</div>
+
+<div className='max-w-4xl mx-auto px-4 pb-12'>
+  <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+    <div className='p-6 rounded-xl border border-gray-200 dark:border-neutral-800'>
+      <h3 className='font-bold text-lg mb-3'>실시간 연결 상태 감지</h3>
+      <div className='text-sm text-gray-600 dark:text-gray-400'>
+        브라우저의 <code>navigator.onLine</code>부터 서버 heartbeat 프로브까지, 플러그인 방식의 detector로 온/오프라인 상태를 감지합니다. grace period로 일시적 네트워크 끊김에 의한 깜빡임을 방지합니다.
+      </div>
+    </div>
+    <div className='p-6 rounded-xl border border-gray-200 dark:border-neutral-800'>
+      <h3 className='font-bold text-lg mb-3'>선언적 UI 분기</h3>
+      <div className='text-sm text-gray-600 dark:text-gray-400'>
+        <code>{'<Connectivity>'}</code> 컴포넌트 하나로 온라인/오프라인 UI를 전환합니다. 코드 곳곳에 <code>if/else</code>를 흩뿌릴 필요 없이, fallback만 선언하면 라이브러리가 전환을 처리합니다.
+      </div>
+    </div>
+    <div className='p-6 rounded-xl border border-gray-200 dark:border-neutral-800'>
+      <h3 className='font-bold text-lg mb-3'>타입 안전한 오프라인 액션 큐</h3>
+      <div className='text-sm text-gray-600 dark:text-gray-400'>
+        오프라인에서 실행된 액션은 자동으로 큐에 저장되고 연결 복구 시 재실행됩니다. <code>TInput</code>과 <code>TResult</code>가 완전히 추론되며, FIFO 순서 보장, 중복 제거, 설정 가능한 백오프 재시도를 지원합니다.
+      </div>
+    </div>
+    <div className='p-6 rounded-xl border border-gray-200 dark:border-neutral-800'>
+      <h3 className='font-bold text-lg mb-3'>프레임워크 비의존 코어</h3>
+      <div className='text-sm text-gray-600 dark:text-gray-400'>
+        코어 엔진은 의존성 제로이며 JavaScript가 실행되는 어디서든 동작합니다. React 어댑터(<code>useConnectivity</code>, <code>useAction</code>, <code>useQueue</code>)를 기본 제공하며, 다른 프레임워크 어댑터도 계획 중입니다.
+      </div>
+    </div>
+  </div>
+</div>

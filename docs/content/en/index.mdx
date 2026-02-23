@@ -1,0 +1,65 @@
+import Link from "next/link";
+import { ConnectivityDemo } from "@/components/demo/connectivity-demo";
+import { NpmInstall } from "@/components/npm-install";
+
+<div className="max-w-6xl mx-auto px-4 py-12 lg:py-20">
+  <div className="flex flex-col lg:flex-row gap-10 lg:gap-16 items-start">
+
+    <div className="flex flex-col items-start lg:w-80 flex-shrink-0 self-start lg:sticky lg:top-8">
+      <div className="mb-6 text-6xl">🔌</div>
+      <h1 className="text-5xl font-extrabold tracking-tight mb-4">Connectivity</h1>
+      <div className="text-xl text-gray-600 dark:text-gray-400 mb-10">
+        Declarative, type-safe, offline-first solution for connectivity management.
+      </div>
+      <div className="flex flex-col gap-3">
+        <Link
+          href="/en/introduction"
+          className="inline-flex items-center justify-center px-6 py-3 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 transition-colors"
+        >
+          Get Started
+        </Link>
+        <NpmInstall />
+      </div>
+    </div>
+
+    <div className="flex-1 w-full min-w-0">
+      <div className="mb-4">
+        <h2 className="text-2xl font-bold mb-1">See it in action</h2>
+        <div className="text-sm text-gray-500 dark:text-gray-400">
+          Toggle the network status and trigger actions to watch the offline queue in real time.
+        </div>
+      </div>
+      <ConnectivityDemo lang="en" />
+    </div>
+
+  </div>
+</div>
+
+<div className='max-w-4xl mx-auto px-4 pb-12'>
+  <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+    <div className='p-6 rounded-xl border border-gray-200 dark:border-neutral-800'>
+      <h3 className='font-bold text-lg mb-3'>Real-Time Connectivity Detection</h3>
+      <div className='text-sm text-gray-600 dark:text-gray-400'>
+        Detect online/offline status with pluggable detectors — from the browser's <code>navigator.onLine</code> to server heartbeat probes. Grace periods prevent flicker from brief network hiccups.
+      </div>
+    </div>
+    <div className='p-6 rounded-xl border border-gray-200 dark:border-neutral-800'>
+      <h3 className='font-bold text-lg mb-3'>Declarative UI Branching</h3>
+      <div className='text-sm text-gray-600 dark:text-gray-400'>
+        Switch between online and offline UI with a single <code>{'<Connectivity>'}</code> component. No manual state tracking, no <code>if/else</code> scattered across your codebase — just declare your fallback and let the library handle transitions.
+      </div>
+    </div>
+    <div className='p-6 rounded-xl border border-gray-200 dark:border-neutral-800'>
+      <h3 className='font-bold text-lg mb-3'>Type-Safe Offline Action Queue</h3>
+      <div className='text-sm text-gray-600 dark:text-gray-400'>
+        Actions executed while offline are automatically queued and replayed on reconnect. Define your actions with full <code>TInput</code> and <code>TResult</code> inference — the queue handles FIFO ordering, deduplication, and retry with configurable backoff.
+      </div>
+    </div>
+    <div className='p-6 rounded-xl border border-gray-200 dark:border-neutral-800'>
+      <h3 className='font-bold text-lg mb-3'>Framework-Agnostic Core</h3>
+      <div className='text-sm text-gray-600 dark:text-gray-400'>
+        The core engine has zero dependencies and works anywhere JavaScript runs. React adapter with hooks (<code>useConnectivity</code>, <code>useAction</code>, <code>useQueue</code>) included out of the box, with more framework adapters planned.
+      </div>
+    </div>
+  </div>
+</div>

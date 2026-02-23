@@ -1,0 +1,81 @@
+import { ConnectivityDemo } from "@/components/demo/connectivity-demo";
+
+# DevTools
+
+Connectivity DevTools is a debugging panel that visualizes connectivity state and the job queue, and lets you manually control retry, cancel, and flush.
+
+## Demo
+
+In the demo below, **switch to offline** and run actions to see jobs queuing up in the DevTools panel (bottom-right). You can manually control them with Retry, Cancel, and Flush All buttons.
+
+<ConnectivityDemo lang='en' showDevTools />
+
+## React Usage
+
+Install `@connectivity/react-devtools` and add `<ConnectivityDevTools />` to your app:
+
+```bash
+pnpm add @connectivity/react-devtools
+```
+
+```tsx
+import {
+  ConnectivityProvider,
+  browserOnlineDetector,
+} from "@connectivity/react";
+import { getConnectivityClient } from "@connectivity/core";
+import { ConnectivityDevTools } from "@connectivity/react-devtools";
+
+function App() {
+  return (
+    <ConnectivityProvider detectors={[browserOnlineDetector()]}>
+      <YourApp />
+      <ConnectivityDevTools client={getConnectivityClient()} />
+    </ConnectivityProvider>
+  );
+}
+```
+
+### Props
+
+| Prop          | Type                              | Default          | Description                          |
+| ------------- | --------------------------------- | ---------------- | ------------------------------------ |
+| `client`      | `ConnectivityClient`              | —                | ConnectivityClient instance (required) |
+| `position`    | `'bottom-left' \| 'bottom-right'` | `'bottom-right'` | Panel position                       |
+| `initialOpen` | `boolean`                         | `true`           | Whether panel is open initially      |
+| `enabled`     | `boolean`                         | `true`           | Whether to show the panel            |
+
+## Vanilla JS Usage
+
+Use `@connectivity/devtools` without React:
+
+```bash
+pnpm add @connectivity/core @connectivity/devtools
+```
+
+```ts
+import {
+  getConnectivityClient,
+  browserOnlineDetector,
+} from "@connectivity/core";
+import { renderConnectivityDevTools } from "@connectivity/devtools";
+
+const client = getConnectivityClient({
+  detectors: [browserOnlineDetector()],
+});
+client.start();
+
+const cleanup = renderConnectivityDevTools(document.body, client, {
+  position: "bottom-right",
+  initialOpen: true,
+});
+
+// on unmount
+cleanup();
+```
+
+## Panel Features
+
+- **Status**: Current connectivity state (online/offline/unknown), duration, quality (rtt, effectiveType, downlink)
+- **Queue**: Job list with actionKey, status, input, Retry/Cancel buttons
+- **Flush All**: Flush all pending jobs

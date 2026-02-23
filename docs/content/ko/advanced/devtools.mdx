@@ -1,0 +1,81 @@
+import { DevToolsDemo } from "@/components/demo/devtools-demo";
+
+# DevTools
+
+Connectivity DevTools는 connectivity 상태와 job 큐를 시각화하고, retry/cancel/flush를 수동으로 제어할 수 있는 디버깅 패널입니다.
+
+## 데모
+
+아래 데모에서 **오프라인으로 전환**한 뒤 액션을 실행하면 DevTools 패널(우측 하단)에서 큐에 쌓이는 job을 확인할 수 있습니다. Retry, Cancel, Flush All 버튼으로 수동 제어도 가능합니다.
+
+<DevToolsDemo />
+
+## React 사용
+
+`@connectivity/react-devtools`를 설치하고 `<ConnectivityDevTools />`를 앱에 추가합니다:
+
+```bash
+pnpm add @connectivity/react-devtools
+```
+
+```tsx
+import {
+  ConnectivityProvider,
+  browserOnlineDetector,
+} from "@connectivity/react";
+import { getConnectivityClient } from "@connectivity/core";
+import { ConnectivityDevTools } from "@connectivity/react-devtools";
+
+function App() {
+  return (
+    <ConnectivityProvider detectors={[browserOnlineDetector()]}>
+      <YourApp />
+      <ConnectivityDevTools client={getConnectivityClient()} />
+    </ConnectivityProvider>
+  );
+}
+```
+
+### Props
+
+| Prop          | 타입                              | 기본값           | 설명                               |
+| ------------- | --------------------------------- | ---------------- | ---------------------------------- |
+| `client`      | `ConnectivityClient`              | —                | ConnectivityClient 인스턴스 (필수) |
+| `position`    | `'bottom-left' \| 'bottom-right'` | `'bottom-right'` | 패널 위치                          |
+| `initialOpen` | `boolean`                         | `true`           | 초기 펼침 여부                     |
+| `enabled`     | `boolean`                         | `true`           | 표시 여부                          |
+
+## Vanilla JS 사용
+
+React 없이 `@connectivity/devtools`만 사용할 수 있습니다:
+
+```bash
+pnpm add @connectivity/core @connectivity/devtools
+```
+
+```ts
+import {
+  getConnectivityClient,
+  browserOnlineDetector,
+} from "@connectivity/core";
+import { renderConnectivityDevTools } from "@connectivity/devtools";
+
+const client = getConnectivityClient({
+  detectors: [browserOnlineDetector()],
+});
+client.start();
+
+const cleanup = renderConnectivityDevTools(document.body, client, {
+  position: "bottom-right",
+  initialOpen: true,
+});
+
+// unmount 시
+cleanup();
+```
+
+## 패널 기능
+
+- **Status**: 현재 connectivity 상태 (online/offline/unknown), 유지 시간, quality (rtt, effectiveType, downlink)
+- **Queue**: job 목록, actionKey, status, input, Retry/Cancel 버튼
+- **Flush All**: 대기 중인 job 전체 flush
