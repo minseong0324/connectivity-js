@@ -1,6 +1,6 @@
 import { describe, expectTypeOf, it } from 'vitest';
+import type { ConnectivityClient, UseActionCallbacks } from '../src/index';
 import { ActionObserver, actionOptions } from '../src/index';
-import type { UseActionCallbacks, ConnectivityClient } from '../src/index';
 
 describe('UseActionCallbacks', () => {
   describe('TResult propagation — callback parameter types', () => {

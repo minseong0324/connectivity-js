@@ -1,6 +1,6 @@
 import { describe, expectTypeOf, it } from 'vitest';
-import { actionOptions } from '../src/action-options';
 import type { ActionOptionsConfig } from '../src/action-options';
+import { actionOptions } from '../src/action-options';
 
 describe('actionOptions', () => {
   describe('TInput inference', () => {
