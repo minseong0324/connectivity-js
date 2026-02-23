@@ -11,6 +11,13 @@ export async function generateMetadata(props: {
 }) {
   const params = await props.params;
   const { metadata } = await importPage(params.mdxPath, params.lang);
+  if (!params.mdxPath?.length) {
+    const indexTitle =
+      params.lang === 'ko'
+        ? 'connectivity-js | 선언적이고 타입 안전한 React용 오프라인 우선 연결 관리'
+        : 'connectivity-js | Declarative, type-safe, offline-first connectivity management for React';
+    return { ...metadata, title: { absolute: indexTitle } };
+  }
   return metadata;
 }
 

@@ -4,6 +4,11 @@ import packageJson from './package.json' with { type: 'json' };
 
 export default defineConfig({
   plugins: [react()],
+  resolve: {
+    alias: {
+      '@connectivity-js/core': `${import.meta.dirname}/../core/src/index.ts`,
+    },
+  },
   test: {
     name: packageJson.name,
     watch: false,
