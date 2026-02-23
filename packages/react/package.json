@@ -1,0 +1,66 @@
+{
+  "name": "@connectivity/react",
+  "version": "0.1.0",
+  "description": "React adapter for Connectivity",
+  "author": "@minseong0324 <KIM Minseong>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/your-org/connectivity.git",
+    "directory": "packages/react"
+  },
+  "keywords": [
+    "react",
+    "connectivity",
+    "offline",
+    "online",
+    "hooks"
+  ],
+  "private": false,
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.cts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "sideEffects": false,
+  "engines": {
+    "node": ">=18"
+  },
+  "peerDependencies": {
+    "react": "^18 || ^19"
+  },
+  "dependencies": {
+    "@connectivity/core": "workspace:*"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.0.0",
+    "@types/react": "^19.2.3",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^4.3.4",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
+    "tsdown": "^0.20.3",
+    "vitest": "^4.0.18"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "biome lint .",
+    "test": "vitest run --passWithNoTests",
+    "test:types": "vitest --typecheck.only run",
+    "test:coverage": "vitest run --coverage",
+    "publint": "publint",
+    "test:watch": "vitest --passWithNoTests"
+  }
+}
