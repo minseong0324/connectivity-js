@@ -1,4 +1,4 @@
-# connectivity-engine
+# connectivity-js
 
 Declarative, type-safe, offline-first connectivity management.
 
