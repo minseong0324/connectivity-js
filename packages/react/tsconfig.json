@@ -1,7 +1,10 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
+    "paths": {
+      "@connectivity-js/core": ["../core/src/index.ts"]
+    }
   },
   "include": ["src", "vitest.config.ts", "tests"],
   "exclude": ["eslint.config.js"]
