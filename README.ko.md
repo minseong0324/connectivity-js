@@ -14,6 +14,7 @@
 ```tsx
 import {
   ConnectivityProvider,
+  Connectivity,
   browserOnlineDetector,
   useConnectivity,
   useAction,
@@ -26,7 +27,9 @@ function App() {
       detectors={[browserOnlineDetector()]}
       gracePeriodMs={3_000}
     >
-      <MyApp />
+      <Connectivity fallback={<div>오프라인입니다</div>} delayMs={3_000}>
+        <MyApp />
+      </Connectivity>
     </ConnectivityProvider>
   );
 }
@@ -57,6 +60,12 @@ function SaveButton({ id, data }: { id: string; data: string }) {
 }
 ```
 
-## 문서
+## [공식 문서](https://connectivity-js-docs.vercel.app/ko)
 
-[문서](https://connectivity-js-docs.vercel.app/ko)
+설치 가이드, 사용 예시, API 참고 등은 [공식 문서](https://connectivity-js-docs.vercel.app/ko)에서 확인할 수 있습니다.
+
+## License
+
+See [LICENSE](LICENSE) for more information.
+
+MIT © minseong0324
