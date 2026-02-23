@@ -1,0 +1,48 @@
+{
+  "name": "@connectivity/devtools",
+  "version": "0.1.0",
+  "description": "Framework-agnostic devtools panel for Connectivity",
+  "author": "@minseong0324 <KIM Minseong>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/your-org/connectivity.git",
+    "directory": "packages/devtools"
+  },
+  "keywords": [
+    "connectivity",
+    "devtools",
+    "debugging"
+  ],
+  "private": false,
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.cts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "sideEffects": false,
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "biome lint ."
+  },
+  "dependencies": {
+    "@connectivity/core": "workspace:*"
+  },
+  "devDependencies": {
+    "tsdown": "^0.20.3"
+  }
+}
