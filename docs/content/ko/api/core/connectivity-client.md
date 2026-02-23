@@ -5,7 +5,7 @@ connectivity 상태를 감지하고, offline action 큐잉·retry·dedupe를 관
 ## 인스턴스 생성
 
 ```ts
-import { ConnectivityClient, getConnectivityClient } from '@connectivity/core';
+import { ConnectivityClient, getConnectivityClient } from '@connectivity-js/core';
 
 // 방법 1: static 메서드
 const client = ConnectivityClient.getInstance(options);

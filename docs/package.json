@@ -9,9 +9,9 @@
 		"typecheck": "tsc -p tsconfig.json --noEmit"
 	},
 	"dependencies": {
-		"@connectivity/core": "workspace:*",
-		"@connectivity/react": "workspace:*",
-		"@connectivity/react-devtools": "workspace:*",
+		"@connectivity-js/core": "workspace:*",
+		"@connectivity-js/react": "workspace:*",
+		"@connectivity-js/react-devtools": "workspace:*",
 		"next": "^15.1.0",
 		"nextra": "^4.0.0",
 		"nextra-theme-docs": "^4.0.0",

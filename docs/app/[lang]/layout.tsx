@@ -12,7 +12,7 @@ export const metadata: Metadata = {
     default: 'Connectivity | Offline-first connectivity engine',
   },
   description: 'Offline-first connectivity engine for React applications.',
-  metadataBase: new URL('https://github.com/your-org/connectivity'),
+  metadataBase: new URL('https://github.com/minseong0324/connectivity-js'),
   openGraph: {
     title: 'Connectivity',
     description: 'Offline-first connectivity engine for React applications.',
@@ -23,7 +23,7 @@ export const metadata: Metadata = {
 const navbar = (
   <Navbar
     logo={<b className="text-lg font-bold">Connectivity</b>}
-    projectLink="https://github.com/your-org/connectivity"
+    projectLink="https://github.com/minseong0324/connectivity-js"
   >
     <LocaleSwitch />
   </Navbar>
@@ -51,7 +51,7 @@ export default async function LangLayout({
         i18n={I18N}
         navbar={navbar}
         pageMap={pageMap}
-        docsRepositoryBase="https://github.com/your-org/connectivity/tree/main/docs"
+        docsRepositoryBase="https://github.com/minseong0324/connectivity-js/tree/main/docs"
         footer={footer}
       >
         {children}

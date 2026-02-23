@@ -16,7 +16,11 @@ describe('heartbeatDetector', () => {
 
   it('returns Detector when url and optional options are passed', () => {
     expectTypeOf(
-      heartbeatDetector({ url: '/api/health', intervalMs: 10_000, timeoutMs: 3_000 }),
+      heartbeatDetector({
+        url: '/api/health',
+        intervalMs: 10_000,
+        timeoutMs: 3_000,
+      }),
     ).toExtend<Detector>();
   });
 

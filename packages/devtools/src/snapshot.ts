@@ -1,4 +1,4 @@
-import type { ConnectivityState, QueuedJob } from '@connectivity/core';
+import type { ConnectivityState, QueuedJob } from '@connectivity-js/core';
 
 const INPUT_TRUNCATE_LENGTH = 80;
 

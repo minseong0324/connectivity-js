@@ -1,5 +1,8 @@
+import type {
+  ConnectivityStatus,
+  ConnectivityTransition,
+} from '@connectivity-js/core';
 import { describe, expectTypeOf, it } from 'vitest';
-import type { ConnectivityStatus, ConnectivityTransition } from '@connectivity/core';
 import { useOnConnectivityChange } from '../src/use-on-connectivity-change';
 
 describe('useOnConnectivityChange', () => {

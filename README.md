@@ -1,4 +1,4 @@
-# connectivity-engine
+# connectivity-js
 
 Declarative, type-safe, offline-first connectivity management.
 
@@ -17,7 +17,7 @@ import {
   browserOnlineDetector,
   useConnectivity,
   useAction,
-} from 'connectivity-engine-2';
+} from '@connectivity-js/react';
 
 // 1. Provider
 function App() {
@@ -59,26 +59,4 @@ function SaveButton({ id, data }: { id: string; data: string }) {
 
 ## Documentation
 
-| | Guide | API Reference | Advanced |
-|---|---|---|---|
-| EN | [Getting Started](docs/en/guide/getting-started.md) | [useAction](docs/en/api/use-action.md) | [Retry](docs/en/advanced/retry.md) |
-| | [Connectivity UI](docs/en/guide/connectivity-ui.md) | [useConnectivity](docs/en/api/use-connectivity.md) | [Flush Control](docs/en/advanced/flush-control.md) |
-| | [Offline Behavior](docs/en/guide/offline-behavior.md) | [Connectivity](docs/en/api/connectivity.md) | [Grace Period](docs/en/advanced/grace-period.md) |
-| | [Deduplication](docs/en/guide/deduplication.md) | [useOnConnectivityChange](docs/en/api/use-on-connectivity-change.md) | [Custom Detectors](docs/en/advanced/custom-detectors.md) |
-| | | [useQueue](docs/en/api/use-queue.md) | [Default Options](docs/en/advanced/default-options.md) |
-| | | [ConnectivityClient](docs/en/api/connectivity-client.md) | [Without React](docs/en/advanced/vanilla-js.md) |
-| | | [ConnectivityProvider](docs/en/api/connectivity-provider.md) | [Testing](docs/en/advanced/testing.md) |
-| | | [actionOptions](docs/en/api/action-options.md) | |
-| | | [Detectors](docs/en/api/detectors.md) | |
-| | | [Types](docs/en/api/types.md) | |
-| KO | [시작하기](docs/ko/guide/getting-started.md) | [useAction](docs/ko/api/use-action.md) | [Retry](docs/ko/advanced/retry.md) |
-| | [연결 상태 UI](docs/ko/guide/connectivity-ui.md) | [useConnectivity](docs/ko/api/use-connectivity.md) | [Flush 제어](docs/ko/advanced/flush-control.md) |
-| | [오프라인 동작](docs/ko/guide/offline-behavior.md) | [Connectivity](docs/ko/api/connectivity.md) | [Grace Period](docs/ko/advanced/grace-period.md) |
-| | [Deduplication](docs/ko/guide/deduplication.md) | [ConnectivityClient](docs/ko/api/connectivity-client.md) | [테스트](docs/ko/advanced/testing.md) |
-
-## Architecture
-
-```
-ConnectivityProvider → ConnectivityClient (singleton) → ActionObserver (per hook)
-                                                      → useConnectivity / useQueue / ...
-```
+[Documentation](https://connectivity-js-docs.vercel.app/en)

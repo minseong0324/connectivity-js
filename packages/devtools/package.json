@@ -1,12 +1,12 @@
 {
-  "name": "@connectivity/devtools",
+  "name": "@connectivity-js/devtools",
   "version": "0.1.0",
   "description": "Framework-agnostic devtools panel for Connectivity",
   "author": "@minseong0324 <KIM Minseong>",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/your-org/connectivity.git",
+    "url": "git+https://github.com/minseong0324/connectivity-js.git",
     "directory": "packages/devtools"
   },
   "keywords": [
@@ -40,7 +40,7 @@
     "lint": "biome lint ."
   },
   "dependencies": {
-    "@connectivity/core": "workspace:*"
+    "@connectivity-js/core": "workspace:*"
   },
   "devDependencies": {
     "tsdown": "^0.20.3"

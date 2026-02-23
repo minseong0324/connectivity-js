@@ -1,4 +1,4 @@
-import type { ConnectivityClient } from '@connectivity/core';
+import type { ConnectivityClient } from '@connectivity-js/core';
 import { createDevToolsSnapshot, type DevToolsSnapshot } from './snapshot';
 
 export type { DevToolsSnapshot } from './snapshot';

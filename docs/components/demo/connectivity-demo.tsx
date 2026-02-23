@@ -1,7 +1,7 @@
 'use client';
 
-import { useAction, useConnectivity, useQueue } from '@connectivity/react';
-import { ConnectivityDevTools } from '@connectivity/react-devtools';
+import { useAction, useConnectivity, useQueue } from '@connectivity-js/react';
+import { ConnectivityDevTools } from '@connectivity-js/react-devtools';
 import { useEffect, useRef, useState } from 'react';
 import { Toaster, toast } from 'sonner';
 import {
@@ -186,7 +186,7 @@ function SyntaxCode({ code }: { code: string }) {
 // Code snippets
 // ---------------------------------------------------------------------------
 
-const STATUS_CODE = `import { useConnectivity } from "@connectivity/react"
+const STATUS_CODE = `import { useConnectivity } from "@connectivity-js/react"
 import { toast } from "sonner"
 
 function NetworkStatus() {
@@ -206,7 +206,7 @@ function NetworkStatus() {
 const QUEUE_CODE = `import {
   ConnectivityProvider,
   useAction,
-} from "@connectivity/react"
+} from "@connectivity-js/react"
 
 function SaveButton() {
   const { execute, pendingCount } = useAction(
@@ -415,9 +415,7 @@ function QueueDemo({
                 className="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 dark:border-neutral-700 hover:border-blue-300 dark:hover:border-blue-700 hover:bg-blue-50/50 dark:hover:bg-blue-950/20 text-left transition-all text-gray-700 dark:text-gray-300 cursor-pointer group"
               >
                 <span className="text-sm">{a.icon}</span>
-                <span className="text-xs font-medium flex-1">
-                  {a.label}
-                </span>
+                <span className="text-xs font-medium flex-1">{a.label}</span>
                 <span
                   className={`text-[10px] font-mono opacity-0 group-hover:opacity-100 transition-opacity ${
                     status === 'online' ? 'text-emerald-500' : 'text-amber-500'

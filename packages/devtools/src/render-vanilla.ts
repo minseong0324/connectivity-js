@@ -1,4 +1,4 @@
-import type { ConnectivityClient } from '@connectivity/core';
+import type { ConnectivityClient } from '@connectivity-js/core';
 import { createDevToolsBridge } from './bridge';
 
 function escapeHtml(s: string): string {

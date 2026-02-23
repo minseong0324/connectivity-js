@@ -3,7 +3,7 @@
 import { useState } from 'react';
 
 export function NpmInstall({
-  command = 'npm i @connectivity/react',
+  command = 'npm i @connectivity-js/react',
 }: {
   command?: string;
 }) {

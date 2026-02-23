@@ -12,19 +12,19 @@ Connectivity DevTools는 connectivity 상태와 job 큐를 시각화하고, retr
 
 ## React 사용
 
-`@connectivity/react-devtools`를 설치하고 `<ConnectivityDevTools />`를 앱에 추가합니다:
+`@connectivity-js/react-devtools`를 설치하고 `<ConnectivityDevTools />`를 앱에 추가합니다:
 
 ```bash
-pnpm add @connectivity/react-devtools
+pnpm add @connectivity-js/react-devtools
 ```
 
 ```tsx
 import {
   ConnectivityProvider,
   browserOnlineDetector,
-} from "@connectivity/react";
-import { getConnectivityClient } from "@connectivity/core";
-import { ConnectivityDevTools } from "@connectivity/react-devtools";
+} from "@connectivity-js/react";
+import { getConnectivityClient } from "@connectivity-js/core";
+import { ConnectivityDevTools } from "@connectivity-js/react-devtools";
 
 function App() {
   return (
@@ -47,18 +47,18 @@ function App() {
 
 ## Vanilla JS 사용
 
-React 없이 `@connectivity/devtools`만 사용할 수 있습니다:
+React 없이 `@connectivity-js/devtools`만 사용할 수 있습니다:
 
 ```bash
-pnpm add @connectivity/core @connectivity/devtools
+pnpm add @connectivity-js/core @connectivity-js/devtools
 ```
 
 ```ts
 import {
   getConnectivityClient,
   browserOnlineDetector,
-} from "@connectivity/core";
-import { renderConnectivityDevTools } from "@connectivity/devtools";
+} from "@connectivity-js/core";
+import { renderConnectivityDevTools } from "@connectivity-js/devtools";
 
 const client = getConnectivityClient({
   detectors: [browserOnlineDetector()],

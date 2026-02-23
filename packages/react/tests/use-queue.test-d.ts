@@ -1,5 +1,5 @@
+import type { QueuedJob } from '@connectivity-js/core';
 import { describe, expectTypeOf, it } from 'vitest';
-import type { QueuedJob } from '@connectivity/core';
 import { useQueue } from '../src/use-queue';
 
 describe('useQueue', () => {
