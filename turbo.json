@@ -27,6 +27,10 @@
       "dependsOn": ["^build"],
       "outputs": ["dist/**", ".next/**"]
     },
+    "publint": {
+      "cache": true,
+      "dependsOn": ["build"]
+    },
     "dev": {
       "cache": false,
       "persistent": true
