@@ -1,5 +1,5 @@
-import { describe, expectTypeOf, it } from 'vitest';
 import { actionOptions } from '@connectivity-js/core';
+import { describe, expectTypeOf, it } from 'vitest';
 import { useAction } from '../src/use-action';
 
 describe('useAction', () => {
