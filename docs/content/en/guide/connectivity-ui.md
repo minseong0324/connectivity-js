@@ -236,6 +236,10 @@ All hooks return `'unknown'` during SSR. `<Connectivity>` treats `unknown` as on
 
 The `ConnectivityState` object returned by `useConnectivity()` is a new reference only when state actually changes.
 
+## Next steps
+
+- [Actions](./actions.md) — Define and execute your first action with `useAction`
+
 ## Related
 
 - [useConnectivity API](../api/react/use-connectivity.md)
