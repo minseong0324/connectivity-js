@@ -1,0 +1,55 @@
+{
+  "name": "@connectivity/core",
+  "version": "0.1.0",
+  "description": "Type-safe, lightweight, framework-agnostic connectivity detection and offline action queue",
+  "author": "@minseong0324 <KIM Minseong>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/your-org/connectivity.git",
+    "directory": "packages/core"
+  },
+  "keywords": [
+    "connectivity",
+    "offline",
+    "online",
+    "network",
+    "queue",
+    "typescript"
+  ],
+  "private": false,
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.cts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "sideEffects": false,
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "biome lint .",
+    "test": "vitest run",
+    "test:types": "vitest --typecheck.only run",
+    "test:coverage": "vitest run --coverage",
+    "publint": "publint",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "jsdom": "^25.0.0",
+    "tsdown": "^0.20.3",
+    "vitest": "^4.0.18"
+  }
+}
