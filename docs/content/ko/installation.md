@@ -1,6 +1,6 @@
 ---
 title: 설치하기
-description: @connectivity-js/react 설치 및 ConnectivityProvider 설정
+description: "@connectivity-js/react 설치 및 ConnectivityProvider 설정"
 ---
 
 # 설치하기
