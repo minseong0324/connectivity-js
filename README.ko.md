@@ -6,6 +6,13 @@
 
 웹 애플리케이션을 위한 선언적이고 type-safe한 offline-first 연결 관리 라이브러리.
 
+| Package | Version | Description |
+|---------|---------|-------------|
+| [`@connectivity-js/core`](./packages/core) | [![NPM Version](https://img.shields.io/npm/v/%40connectivity-js%2Fcore)](https://www.npmjs.com/package/@connectivity-js/core) | Framework-agnostic core |
+| [`@connectivity-js/react`](./packages/react) | [![NPM Version](https://img.shields.io/npm/v/%40connectivity-js%2Freact)](https://www.npmjs.com/package/@connectivity-js/react) | React adapter |
+| [`@connectivity-js/devtools`](./packages/devtools) | [![NPM Version](https://img.shields.io/npm/v/%40connectivity-js%2Fdevtools)](https://www.npmjs.com/package/@connectivity-js/devtools) | Framework-agnostic DevTools panel |
+| [`@connectivity-js/react-devtools`](./packages/react-devtools) | [![NPM Version](https://img.shields.io/npm/v/%40connectivity-js%2Freact-devtools)](https://www.npmjs.com/package/@connectivity-js/react-devtools) | React DevTools panel |
+
 - **선언적**: `<Connectivity fallback={...}>` 한 줄로 online/offline UI 전환
 - **Type-safe**: 타입 명시 없이 `TInput`, `TResult`가 완전 추론
 - **Framework-agnostic**: core는 프레임워크 무관. React adapter 제공, 다른 프레임워크 추가 예정
