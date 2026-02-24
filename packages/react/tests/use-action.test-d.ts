@@ -45,6 +45,29 @@ describe('useAction', () => {
     });
   });
 
+  describe('callback parameter types', () => {
+    const saveAction = actionOptions({
+      actionKey: 'save',
+      request: async (_input: { designId: string }) => ({ saved: true }),
+    });
+
+    it('onError parameter is unknown (immediate execution or flush failure)', () => {
+      useAction(saveAction, {
+        onError: (error) => {
+          expectTypeOf(error).toBeUnknown();
+        },
+      });
+    });
+
+    it('onEnqueued parameter is string (jobId)', () => {
+      useAction(saveAction, {
+        onEnqueued: (jobId) => {
+          expectTypeOf(jobId).toBeString();
+        },
+      });
+    });
+  });
+
   describe('return value types', () => {
     const saveAction = actionOptions({
       actionKey: 'save',
