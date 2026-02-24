@@ -1,3 +1,7 @@
+<div align="center">
+  <img width=340 height=340 src="https://github.com/user-attachments/assets/71b662a7-25ff-423c-9e11-55ef1e16112e" />
+</div>
+
 # connectivity-js 
 
 웹 애플리케이션을 위한 선언적이고 type-safe한 offline-first 연결 관리 라이브러리.

@@ -1,8 +1,8 @@
-# @connectivity-js/devtools &middot; [![MIT License](https://img.shields.io/github/license/minseong0324/connectivity-js?color=blue)](https://github.com/minseong0324/connectivity-js/blob/main/LICENSE) [![NPM Version](https://img.shields.io/npm/v/%40connectivity-js%2Fdevtools)](https://www.npmjs.com/package/@connectivity-js/devtools)
-
 <div align="center">
-  <img src="https://raw.githubusercontent.com/minseong0324/connectivity-js/main/docs/public/img/og-webp.webp" alt="connectivity-js" width="600" />
+  <img width=340 height=340 src="https://github.com/user-attachments/assets/71b662a7-25ff-423c-9e11-55ef1e16112e" />
 </div>
+
+# @connectivity-js/devtools &middot; [![MIT License](https://img.shields.io/github/license/minseong0324/connectivity-js?color=blue)](https://github.com/minseong0324/connectivity-js/blob/main/LICENSE) [![NPM Version](https://img.shields.io/npm/v/%40connectivity-js%2Fdevtools)](https://www.npmjs.com/package/@connectivity-js/devtools)
 
 Framework-agnostic DevTools panel for connectivity-js. Renders a debug panel into a DOM element showing real-time job queue state.
 

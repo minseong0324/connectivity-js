@@ -1,8 +1,8 @@
-# @connectivity-js/react-devtools &middot; [![MIT License](https://img.shields.io/github/license/minseong0324/connectivity-js?color=blue)](https://github.com/minseong0324/connectivity-js/blob/main/LICENSE) [![NPM Version](https://img.shields.io/npm/v/%40connectivity-js%2Freact-devtools)](https://www.npmjs.com/package/@connectivity-js/react-devtools)
-
 <div align="center">
-  <img src="https://raw.githubusercontent.com/minseong0324/connectivity-js/main/docs/public/img/og-webp.webp" alt="connectivity-js" width="600" />
+  <img width=340 height=340 src="https://github.com/user-attachments/assets/71b662a7-25ff-423c-9e11-55ef1e16112e" />
 </div>
+
+# @connectivity-js/react-devtools &middot; [![MIT License](https://img.shields.io/github/license/minseong0324/connectivity-js?color=blue)](https://github.com/minseong0324/connectivity-js/blob/main/LICENSE) [![NPM Version](https://img.shields.io/npm/v/%40connectivity-js%2Freact-devtools)](https://www.npmjs.com/package/@connectivity-js/react-devtools)
 
 React DevTools panel for connectivity-js. Displays real-time job queue state during development.
 
