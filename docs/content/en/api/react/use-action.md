@@ -42,7 +42,7 @@ Can be extracted with `actionOptions()` or passed inline. Type inference works e
 | `onSuccess` | `(result: TResult) => void` | Immediate execution succeeded. `result` inferred from `request` return type |
 | `onEnqueued` | `(jobId: string) => void` | Queued (offline or hasRunningDupe) |
 | `onError` | `(error: unknown) => void` | Execution failed. When provided, error is not re-thrown |
-| `onSettled` | `() => void` | Always called regardless of outcome |
+| `onSettled` | `() => void` | Called after direct execution (success or error). When queued, called after the job flushes (success or final failure) — not at enqueue time |
 
 Callbacks are synced on every render internally — **inline functions are safe, no stale closures**.
 
