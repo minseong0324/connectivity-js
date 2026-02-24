@@ -31,7 +31,7 @@ describe('ActionObserver', () => {
     ConnectivityClient.resetInstance();
   });
 
-  test('constructor에서 action을 등록한다', async () => {
+  test('registers action in constructor', async () => {
     const mock = createMockDetector();
     const client = getConnectivityClient({ detectors: [mock.detector] });
     client.start();
@@ -42,11 +42,11 @@ describe('ActionObserver', () => {
       request: vi.fn().mockResolvedValue('ok'),
     });
 
-    // action이 등록되었으므로 execute가 throw하지 않아야 함
+    // action is registered, so execute should not throw
     await expect(client.execute('save', {})).resolves.toBeDefined();
   });
 
-  test('setOptions로 action을 재등록한다', async () => {
+  test('re-registers action via setOptions', async () => {
     const mock = createMockDetector();
     const client = getConnectivityClient({ detectors: [mock.detector] });
     client.start();
@@ -67,7 +67,7 @@ describe('ActionObserver', () => {
     expect(fn2).toHaveBeenCalledOnce();
   });
 
-  test('getCurrentResult가 pendingCount와 lastError를 반환한다', async () => {
+  test('getCurrentResult returns pendingCount and lastError', async () => {
     const mock = createMockDetector();
     const client = getConnectivityClient({ detectors: [mock.detector] });
     client.start();
@@ -87,7 +87,7 @@ describe('ActionObserver', () => {
     expect(result.lastError).toBeUndefined();
   });
 
-  test('execute 성공 시 onSuccess callback이 호출된다', async () => {
+  test('onSuccess callback is called when execute succeeds', async () => {
     const mock = createMockDetector();
     const client = getConnectivityClient({ detectors: [mock.detector] });
     client.start();
@@ -105,7 +105,7 @@ describe('ActionObserver', () => {
     expect(onSuccess).toHaveBeenCalledWith({ id: '42' });
   });
 
-  test('execute 큐잉 시 onEnqueued callback이 호출된다', async () => {
+  test('onEnqueued callback is called when execute is queued', async () => {
     const mock = createMockDetector();
     const client = getConnectivityClient({ detectors: [mock.detector] });
     client.start();
@@ -124,7 +124,7 @@ describe('ActionObserver', () => {
     expect(onEnqueued).toHaveBeenCalledWith(expect.stringContaining('job_'));
   });
 
-  test('execute 실패 + onError callback이 에러를 삼킨다', async () => {
+  test('execute failure + onError callback swallows error', async () => {
     const mock = createMockDetector();
     const client = getConnectivityClient({ detectors: [mock.detector] });
     client.start();
@@ -134,7 +134,7 @@ describe('ActionObserver', () => {
     const observer = new ActionObserver(client, {
       actionKey: 'save',
       request: async () => {
-        throw new Error('실패');
+        throw new Error('failed');
       },
     });
     observer.setCallbacks({ onError });
@@ -142,12 +142,12 @@ describe('ActionObserver', () => {
     const result = await observer.execute({});
 
     expect(onError).toHaveBeenCalledWith(
-      expect.objectContaining({ message: '실패' }),
+      expect.objectContaining({ message: 'failed' }),
     );
     expect(result).toBeUndefined();
   });
 
-  test('onSettled가 성공/실패 모두에서 호출된다', async () => {
+  test('onSettled is called on both success and failure', async () => {
     const mock = createMockDetector();
     const client = getConnectivityClient({ detectors: [mock.detector] });
     client.start();
@@ -164,7 +164,7 @@ describe('ActionObserver', () => {
     expect(onSettled).toHaveBeenCalledOnce();
   });
 
-  test('getCurrentResult는 값이 같으면 동일 참조를 반환한다 (memoize)', async () => {
+  test('getCurrentResult returns same reference when value is equal (memoize)', async () => {
     const mock = createMockDetector();
     const client = getConnectivityClient({ detectors: [mock.detector] });
     client.start();
@@ -181,11 +181,11 @@ describe('ActionObserver', () => {
     const result1 = observer.getCurrentResult();
     const result2 = observer.getCurrentResult();
 
-    // 값이 같으므로 같은 참조 → useSyncExternalStore가 re-render하지 않음
+    // same value → same reference → useSyncExternalStore does not re-render
     expect(result1).toBe(result2);
   });
 
-  test('getCurrentResult는 값이 달라지면 새 참조를 반환한다', async () => {
+  test('getCurrentResult returns new reference when value changes', async () => {
     const mock = createMockDetector();
     const client = getConnectivityClient({ detectors: [mock.detector] });
     client.start();
@@ -207,7 +207,7 @@ describe('ActionObserver', () => {
     expect(result1).not.toBe(result2);
   });
 
-  test('다른 action의 큐 변경 시 getCurrentResult 참조가 유지된다', async () => {
+  test('getCurrentResult reference is preserved when other action queue changes', async () => {
     const mock = createMockDetector();
     const client = getConnectivityClient({ detectors: [mock.detector] });
     client.start();
@@ -227,16 +227,16 @@ describe('ActionObserver', () => {
     await observer.execute({});
     const result1 = observer.getCurrentResult();
 
-    // 다른 action에 job 추가
+    // add job to other action
     await client.execute('other', {});
 
     const result2 = observer.getCurrentResult();
 
-    // save의 pendingCount는 여전히 1 → 같은 참조
+    // save's pendingCount is still 1 → same reference
     expect(result1).toBe(result2);
   });
 
-  test('setCallbacks로 callback을 갱신하면 최신 callback이 호출된다', async () => {
+  test('updating callback via setCallbacks invokes the latest callback', async () => {
     const mock = createMockDetector();
     const client = getConnectivityClient({ detectors: [mock.detector] });
     client.start();
@@ -250,7 +250,7 @@ describe('ActionObserver', () => {
     });
 
     observer.setCallbacks({ onSuccess: onSuccess1 });
-    observer.setCallbacks({ onSuccess: onSuccess2 }); // 갱신
+    observer.setCallbacks({ onSuccess: onSuccess2 }); // update
 
     await observer.execute({});
 
@@ -258,8 +258,8 @@ describe('ActionObserver', () => {
     expect(onSuccess2).toHaveBeenCalledOnce();
   });
 
-  describe('flush 경로 콜백', () => {
-    test('flush 성공 시 onSuccess와 onSettled가 호출된다', async () => {
+  describe('flush path callbacks', () => {
+    test('onSuccess and onSettled are called when flush succeeds', async () => {
       const mock = createMockDetector();
       const client = getConnectivityClient({ detectors: [mock.detector] });
       client.start();
@@ -283,7 +283,7 @@ describe('ActionObserver', () => {
       expect(onSettled).toHaveBeenCalledOnce();
     });
 
-    test('flush 최종 실패 시 onError와 onSettled가 호출된다', async () => {
+    test('onError and onSettled are called when flush finally fails', async () => {
       const mock = createMockDetector();
       const client = getConnectivityClient({ detectors: [mock.detector] });
       client.start();
@@ -293,7 +293,7 @@ describe('ActionObserver', () => {
       const onSettled = vi.fn();
       const observer = new ActionObserver(client, {
         actionKey: 'save',
-        request: vi.fn().mockRejectedValue(new Error('flush 실패')),
+        request: vi.fn().mockRejectedValue(new Error('flush failed')),
         whenOffline: 'queue',
       });
       observer.setCallbacks({ onError, onSettled });
@@ -304,12 +304,12 @@ describe('ActionObserver', () => {
       await vi.advanceTimersByTimeAsync(0);
 
       expect(onError).toHaveBeenCalledWith(
-        expect.objectContaining({ message: 'flush 실패' }),
+        expect.objectContaining({ message: 'flush failed' }),
       );
       expect(onSettled).toHaveBeenCalledOnce();
     });
 
-    test('flush 시 setCallbacks 갱신 후 최신 callback이 호출된다', async () => {
+    test('latest callback is called after setCallbacks update during flush', async () => {
       const mock = createMockDetector();
       const client = getConnectivityClient({ detectors: [mock.detector] });
       client.start();
@@ -326,7 +326,7 @@ describe('ActionObserver', () => {
       observer.setCallbacks({ onSuccess: onSuccess1 });
       await observer.execute({});
 
-      observer.setCallbacks({ onSuccess: onSuccess2 }); // re-render 시뮬레이션
+      observer.setCallbacks({ onSuccess: onSuccess2 }); // simulate re-render
 
       mock.emit({ status: 'online', reason: 'test' });
       await vi.advanceTimersByTimeAsync(0);
