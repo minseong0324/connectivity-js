@@ -1,6 +1,6 @@
-# connectivity-js
+# connectivity-js 
 
-선언적이고 type-safe한 offline-first 연결 관리 라이브러리.
+웹 애플리케이션을 위한 선언적이고 type-safe한 offline-first 연결 관리 라이브러리.
 
 - **선언적**: `<Connectivity fallback={...}>` 한 줄로 online/offline UI 전환
 - **Type-safe**: 타입 명시 없이 `TInput`, `TResult`가 완전 추론
@@ -56,6 +56,11 @@ function SaveButton({ id, data }: { id: string; data: string }) {
   );
 }
 ```
+
+## 기여하기
+
+커뮤니티의 모든 분들의 기여를 환영합니다. [기여 가이드](https://github.com/offlegacy/event-tracker/blob/main/CONTRIBUTING.md).
+
 
 ## 문서
 
