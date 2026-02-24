@@ -55,6 +55,7 @@ export class ConnectivityClient {
   #detectorCleanups: Array<() => void> = [];
   #gracePeriodMs: number;
   #pendingGraceTimerId: ReturnType<typeof setTimeout> | null = null;
+  #pendingGraceReason: string | undefined = undefined;
   #onJobError?: (error: unknown, job: QueuedJob) => void;
   #defaultActionOptions?: ActionOptions;
 
@@ -262,6 +263,7 @@ export class ConnectivityClient {
     }
     clearTimeout(this.#pendingGraceTimerId);
     this.#pendingGraceTimerId = null;
+    this.#pendingGraceReason = undefined;
   }
 
   #updateStatus(
@@ -282,13 +284,16 @@ export class ConnectivityClient {
       return;
     }
     if (this.#gracePeriodMs > 0 && newStatus !== 'online') {
+      this.#pendingGraceReason = reason;
       if (this.#pendingGraceTimerId !== null) {
         return;
       }
       this.#pendingGraceTimerId = setTimeout(() => {
+        const latestReason = this.#pendingGraceReason;
+        this.#pendingGraceReason = undefined;
         this.#pendingGraceTimerId = null;
         if (this.#state.status !== newStatus) {
-          this.#commitStatusChange(newStatus, reason, this.#state.quality);
+          this.#commitStatusChange(newStatus, latestReason, this.#state.quality);
         }
       }, this.#gracePeriodMs);
       return;
