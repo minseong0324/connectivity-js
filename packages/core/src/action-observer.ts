@@ -99,6 +99,7 @@ export class ActionObserver<TInput = unknown, TResult = unknown> {
    * Executes the action and handles callbacks.
    */
   async execute(input: TInput) {
+    let wasEnqueued = false;
     try {
       const engineResult = await this.#client.execute(
         this.#options.actionKey,
@@ -106,6 +107,7 @@ export class ActionObserver<TInput = unknown, TResult = unknown> {
       );
 
       if (engineResult.enqueued) {
+        wasEnqueued = true;
         this.#callbacks?.onEnqueued?.(engineResult.jobId);
         return { enqueued: true as const, jobId: engineResult.jobId };
       }
@@ -120,7 +122,9 @@ export class ActionObserver<TInput = unknown, TResult = unknown> {
       this.#callbacks.onError(error);
       return undefined;
     } finally {
-      this.#callbacks?.onSettled?.();
+      if (!wasEnqueued) {
+        this.#callbacks?.onSettled?.();
+      }
     }
   }
 
@@ -143,6 +147,10 @@ export class ActionObserver<TInput = unknown, TResult = unknown> {
           this.#options.dedupeOnFlush ??
           this.#defaultActionOptions?.dedupeOnFlush,
       },
+      onFlushSuccess: (result) =>
+        this.#callbacks?.onSuccess?.(result as TResult),
+      onFlushError: (error) => this.#callbacks?.onError?.(error),
+      onFlushSettled: () => this.#callbacks?.onSettled?.(),
     });
   }
 }

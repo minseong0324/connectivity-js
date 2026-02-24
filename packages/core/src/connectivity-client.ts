@@ -699,13 +699,15 @@ export class ConnectivityClient {
     this.#notifyQueue();
 
     try {
-      await action.request(job.input);
+      const result = await action.request(job.input);
       this.#queuePatch(job.id, { status: 'succeeded' });
       this.#notifyQueue();
       this.#scheduleTimer(() => {
         this.#queueRemove(job.id);
         this.#notifyQueue();
       }, SUCCEEDED_JOB_CLEANUP_DELAY_MS);
+      action.onFlushSuccess?.(result);
+      action.onFlushSettled?.();
     } catch (error: unknown) {
       const maxAttempts = action.options.retry?.maxAttempts ?? 1;
       const currentAttempt = job.attempt + 1;
@@ -720,6 +722,8 @@ export class ConnectivityClient {
         if (latestJob) {
           this.#onJobError?.(error, latestJob);
         }
+        action.onFlushError?.(error);
+        action.onFlushSettled?.();
         return;
       }
 
