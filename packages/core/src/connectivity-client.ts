@@ -292,7 +292,11 @@ export class ConnectivityClient {
         this.#pendingGraceReason = undefined;
         this.#pendingGraceTimerId = null;
         if (this.#state.status !== newStatus) {
-          this.#commitStatusChange(newStatus, latestReason, this.#state.quality);
+          this.#commitStatusChange(
+            newStatus,
+            latestReason,
+            this.#state.quality,
+          );
         }
       }, this.#gracePeriodMs);
       return;

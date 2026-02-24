@@ -1338,7 +1338,9 @@ describe('ConnectivityClient', () => {
       client.registerAction('save', {
         request: () => {
           callCount++;
-          if (callCount < 3) { return Promise.reject(new Error('retry')); }
+          if (callCount < 3) {
+            return Promise.reject(new Error('retry'));
+          }
           return Promise.resolve('ok');
         },
         options: {
