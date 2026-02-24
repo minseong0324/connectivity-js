@@ -1,6 +1,17 @@
+<div align="center">
+  <img width=340 height=340 src="https://github.com/user-attachments/assets/71b662a7-25ff-423c-9e11-55ef1e16112e" />
+</div>
+
 # connectivity-js
 
-Declarative, type-safe, offline-first connectivity management.
+Declarative, type-safe, offline-first solution for connectivity management for web apps.
+
+| Package | Version | Description |
+|---------|---------|-------------|
+| [`@connectivity-js/core`](./packages/core) | [![NPM Version](https://img.shields.io/npm/v/%40connectivity-js%2Fcore)](https://www.npmjs.com/package/@connectivity-js/core) | Framework-agnostic core |
+| [`@connectivity-js/react`](./packages/react) | [![NPM Version](https://img.shields.io/npm/v/%40connectivity-js%2Freact)](https://www.npmjs.com/package/@connectivity-js/react) | React adapter |
+| [`@connectivity-js/devtools`](./packages/devtools) | [![NPM Version](https://img.shields.io/npm/v/%40connectivity-js%2Fdevtools)](https://www.npmjs.com/package/@connectivity-js/devtools) | Framework-agnostic DevTools panel |
+| [`@connectivity-js/react-devtools`](./packages/react-devtools) | [![NPM Version](https://img.shields.io/npm/v/%40connectivity-js%2Freact-devtools)](https://www.npmjs.com/package/@connectivity-js/react-devtools) | React DevTools panel |
 
 - **Declarative**: `<Connectivity fallback={...}>` for online/offline UI switching
 - **Type-safe**: `TInput` and `TResult` fully inferred — no manual annotation
@@ -59,6 +70,11 @@ function SaveButton({ id, data }: { id: string; data: string }) {
   );
 }
 ```
+
+## Contributing
+
+We welcome contribution from everyone in the community. Read for detailed [contribution guide](https://github.com/offlegacy/event-tracker/blob/main/CONTRIBUTING.md).
+
 
 ## [Check out the docs](https://connectivity-js-docs.vercel.app/en)
 
