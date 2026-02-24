@@ -119,6 +119,9 @@ export interface ActionOptions {
 export interface RegisteredAction {
   request: (input: unknown) => Promise<unknown>;
   options: ActionOptions;
+  onFlushSuccess?: (result: unknown) => void;
+  onFlushError?: (error: unknown) => void;
+  onFlushSettled?: () => void;
 }
 
 /** Current status of a job */

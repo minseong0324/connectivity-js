@@ -2,7 +2,6 @@ import {
   DEFAULT_BACKOFF_MS,
   delay,
   SUCCEEDED_JOB_CLEANUP_DELAY_MS,
-  toErrorMessage,
 } from './engine-utils';
 import type {
   ActionOptions,
@@ -55,6 +54,7 @@ export class ConnectivityClient {
   #detectorCleanups: Array<() => void> = [];
   #gracePeriodMs: number;
   #pendingGraceTimerId: ReturnType<typeof setTimeout> | null = null;
+  #pendingGraceReason: string | undefined = undefined;
   #onJobError?: (error: unknown, job: QueuedJob) => void;
   #defaultActionOptions?: ActionOptions;
 
@@ -262,6 +262,7 @@ export class ConnectivityClient {
     }
     clearTimeout(this.#pendingGraceTimerId);
     this.#pendingGraceTimerId = null;
+    this.#pendingGraceReason = undefined;
   }
 
   #updateStatus(
@@ -282,13 +283,20 @@ export class ConnectivityClient {
       return;
     }
     if (this.#gracePeriodMs > 0 && newStatus !== 'online') {
+      this.#pendingGraceReason = reason;
       if (this.#pendingGraceTimerId !== null) {
         return;
       }
       this.#pendingGraceTimerId = setTimeout(() => {
+        const latestReason = this.#pendingGraceReason;
+        this.#pendingGraceReason = undefined;
         this.#pendingGraceTimerId = null;
         if (this.#state.status !== newStatus) {
-          this.#commitStatusChange(newStatus, reason, this.#state.quality);
+          this.#commitStatusChange(
+            newStatus,
+            latestReason,
+            this.#state.quality,
+          );
         }
       }, this.#gracePeriodMs);
       return;
@@ -577,7 +585,7 @@ export class ConnectivityClient {
     if (maxAttempts <= 1) {
       this.#queuePatch(jobId, {
         status: 'failed',
-        lastError: toErrorMessage(error),
+        lastError: error,
       });
       this.#notifyQueue();
       void this.#flushQueue();
@@ -598,7 +606,7 @@ export class ConnectivityClient {
     if (hasNewerQueuedJob) {
       this.#queuePatch(jobId, {
         status: 'canceled',
-        lastError: toErrorMessage(error),
+        lastError: error,
       });
       this.#notifyQueue();
       void this.#flushQueue();
@@ -610,7 +618,7 @@ export class ConnectivityClient {
       mergedOptions.retry?.backoffMs(currentAttempt) ?? DEFAULT_BACKOFF_MS;
     this.#queuePatch(jobId, {
       status: 'queued',
-      lastError: toErrorMessage(error),
+      lastError: error,
       nextRunAt: Date.now() + backoffMs,
     });
     this.#notifyQueue();
@@ -695,13 +703,15 @@ export class ConnectivityClient {
     this.#notifyQueue();
 
     try {
-      await action.request(job.input);
+      const result = await action.request(job.input);
       this.#queuePatch(job.id, { status: 'succeeded' });
       this.#notifyQueue();
       this.#scheduleTimer(() => {
         this.#queueRemove(job.id);
         this.#notifyQueue();
       }, SUCCEEDED_JOB_CLEANUP_DELAY_MS);
+      action.onFlushSuccess?.(result);
+      action.onFlushSettled?.();
     } catch (error: unknown) {
       const maxAttempts = action.options.retry?.maxAttempts ?? 1;
       const currentAttempt = job.attempt + 1;
@@ -709,13 +719,15 @@ export class ConnectivityClient {
       if (currentAttempt >= maxAttempts) {
         this.#queuePatch(job.id, {
           status: 'failed',
-          lastError: toErrorMessage(error),
+          lastError: error,
         });
         this.#notifyQueue();
         const latestJob = this.#queueGet(job.id);
         if (latestJob) {
           this.#onJobError?.(error, latestJob);
         }
+        action.onFlushError?.(error);
+        action.onFlushSettled?.();
         return;
       }
 
@@ -723,7 +735,7 @@ export class ConnectivityClient {
         action.options.retry?.backoffMs(currentAttempt) ?? DEFAULT_BACKOFF_MS;
       this.#queuePatch(job.id, {
         status: 'queued',
-        lastError: toErrorMessage(error),
+        lastError: error,
         nextRunAt: Date.now() + backoffMs,
       });
       this.#notifyQueue();

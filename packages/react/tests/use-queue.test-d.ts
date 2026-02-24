@@ -28,6 +28,16 @@ describe('useQueue', () => {
     });
   });
 
+  describe('QueuedJob.lastError type', () => {
+    it('job.lastError is unknown (original Error stored, not stringified)', () => {
+      const { jobs } = useQueue();
+      const job = jobs[0];
+      if (job) {
+        expectTypeOf(job.lastError).toBeUnknown();
+      }
+    });
+  });
+
   describe('type error cases', () => {
     it('type error when passing non-string to retry', () => {
       const { retry } = useQueue();

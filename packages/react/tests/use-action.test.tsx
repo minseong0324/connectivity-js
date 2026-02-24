@@ -7,7 +7,7 @@ import {
 } from '@connectivity-js/core';
 import { act, renderHook } from '@testing-library/react';
 import type { ReactNode } from 'react';
-import { afterEach, describe, expect, test, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { ConnectivityProvider } from '../src/connectivity-provider';
 import { useAction } from '../src/use-action';
 
@@ -184,5 +184,107 @@ describe('useAction', () => {
       await result.current.execute({ orderId: '1' });
     });
     expect(onSettled).toHaveBeenCalledOnce();
+  });
+
+  describe('flush path callbacks', () => {
+    beforeEach(() => {
+      vi.useFakeTimers();
+    });
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    test('flush success calls onSuccess and onSettled', async () => {
+      const { Wrapper, mock } = createTestWrapper();
+      const request = vi.fn().mockResolvedValue({ id: '42' });
+      const action = actionOptions({
+        actionKey: 'purchase',
+        request,
+        whenOffline: 'queue',
+      });
+
+      const onSuccess = vi.fn();
+      const onSettled = vi.fn();
+      const { result } = renderHook(
+        () => useAction(action, { onSuccess, onSettled }),
+        { wrapper: Wrapper },
+      );
+
+      await act(async () => {
+        mock.emit({ status: 'offline', reason: 'test' });
+      });
+
+      await act(async () => {
+        await result.current.execute({ orderId: '1' });
+      });
+
+      await act(async () => {
+        mock.emit({ status: 'online', reason: 'test' });
+      });
+      await vi.advanceTimersByTimeAsync(0);
+
+      expect(onSuccess).toHaveBeenCalledWith({ id: '42' });
+      expect(onSettled).toHaveBeenCalledOnce();
+    });
+
+    test('flush final failure calls onError and onSettled', async () => {
+      const { Wrapper, mock } = createTestWrapper();
+      const request = vi.fn().mockRejectedValue(new Error('server error'));
+      const action = actionOptions({
+        actionKey: 'purchase',
+        request,
+        whenOffline: 'queue',
+      });
+
+      const onError = vi.fn();
+      const onSettled = vi.fn();
+      const { result } = renderHook(
+        () => useAction(action, { onError, onSettled }),
+        { wrapper: Wrapper },
+      );
+
+      await act(async () => {
+        mock.emit({ status: 'offline', reason: 'test' });
+      });
+
+      await act(async () => {
+        await result.current.execute({ orderId: '1' });
+      });
+
+      await act(async () => {
+        mock.emit({ status: 'online', reason: 'test' });
+      });
+      await vi.advanceTimersByTimeAsync(0);
+
+      expect(onError).toHaveBeenCalledWith(
+        expect.objectContaining({ message: 'server error' }),
+      );
+      expect(onSettled).toHaveBeenCalledOnce();
+    });
+
+    test('enqueue does not call onSettled', async () => {
+      const { Wrapper, mock } = createTestWrapper();
+      const request = vi.fn().mockResolvedValue({ id: '42' });
+      const action = actionOptions({
+        actionKey: 'purchase',
+        request,
+        whenOffline: 'queue',
+      });
+
+      const onSettled = vi.fn();
+      const { result } = renderHook(() => useAction(action, { onSettled }), {
+        wrapper: Wrapper,
+      });
+
+      await act(async () => {
+        mock.emit({ status: 'offline', reason: 'test' });
+      });
+
+      await act(async () => {
+        await result.current.execute({ orderId: '1' });
+      });
+
+      expect(onSettled).not.toHaveBeenCalled();
+    });
   });
 });

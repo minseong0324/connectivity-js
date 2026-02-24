@@ -42,7 +42,7 @@ function useAction<TInput, TResult>(
 | `onSuccess` | `(result: TResult) => void` | 즉시 실행 성공. `result`는 `request` 반환 타입에서 추론 |
 | `onEnqueued` | `(jobId: string) => void` | 큐에 저장됨 (offline 또는 hasRunningDupe) |
 | `onError` | `(error: unknown) => void` | 실행 실패. 제공하면 에러가 re-throw되지 않음 |
-| `onSettled` | `() => void` | 성공/실패/큐잉 관계없이 항상 호출 |
+| `onSettled` | `() => void` | 즉시 실행 시 성공/실패 후 호출. 큐에 저장된 경우 flush 완료(성공 또는 최종 실패) 후 호출 — enqueue 시점에는 호출되지 않음 |
 
 callback은 내부적으로 매 렌더 동기화되므로, **inline 함수를 넘겨도 stale closure가 발생하지 않습니다**.
 

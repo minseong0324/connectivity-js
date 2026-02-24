@@ -257,4 +257,82 @@ describe('ActionObserver', () => {
     expect(onSuccess1).not.toHaveBeenCalled();
     expect(onSuccess2).toHaveBeenCalledOnce();
   });
+
+  describe('flush 경로 콜백', () => {
+    test('flush 성공 시 onSuccess와 onSettled가 호출된다', async () => {
+      const mock = createMockDetector();
+      const client = getConnectivityClient({ detectors: [mock.detector] });
+      client.start();
+      mock.emit({ status: 'offline', reason: 'test' });
+
+      const onSuccess = vi.fn();
+      const onSettled = vi.fn();
+      const observer = new ActionObserver(client, {
+        actionKey: 'save',
+        request: vi.fn().mockResolvedValue({ saved: true }),
+        whenOffline: 'queue',
+      });
+      observer.setCallbacks({ onSuccess, onSettled });
+
+      await observer.execute({});
+
+      mock.emit({ status: 'online', reason: 'test' });
+      await vi.advanceTimersByTimeAsync(0);
+
+      expect(onSuccess).toHaveBeenCalledWith({ saved: true });
+      expect(onSettled).toHaveBeenCalledOnce();
+    });
+
+    test('flush 최종 실패 시 onError와 onSettled가 호출된다', async () => {
+      const mock = createMockDetector();
+      const client = getConnectivityClient({ detectors: [mock.detector] });
+      client.start();
+      mock.emit({ status: 'offline', reason: 'test' });
+
+      const onError = vi.fn();
+      const onSettled = vi.fn();
+      const observer = new ActionObserver(client, {
+        actionKey: 'save',
+        request: vi.fn().mockRejectedValue(new Error('flush 실패')),
+        whenOffline: 'queue',
+      });
+      observer.setCallbacks({ onError, onSettled });
+
+      await observer.execute({});
+
+      mock.emit({ status: 'online', reason: 'test' });
+      await vi.advanceTimersByTimeAsync(0);
+
+      expect(onError).toHaveBeenCalledWith(
+        expect.objectContaining({ message: 'flush 실패' }),
+      );
+      expect(onSettled).toHaveBeenCalledOnce();
+    });
+
+    test('flush 시 setCallbacks 갱신 후 최신 callback이 호출된다', async () => {
+      const mock = createMockDetector();
+      const client = getConnectivityClient({ detectors: [mock.detector] });
+      client.start();
+      mock.emit({ status: 'offline', reason: 'test' });
+
+      const onSuccess1 = vi.fn();
+      const onSuccess2 = vi.fn();
+      const observer = new ActionObserver(client, {
+        actionKey: 'save',
+        request: vi.fn().mockResolvedValue('ok'),
+        whenOffline: 'queue',
+      });
+
+      observer.setCallbacks({ onSuccess: onSuccess1 });
+      await observer.execute({});
+
+      observer.setCallbacks({ onSuccess: onSuccess2 }); // re-render 시뮬레이션
+
+      mock.emit({ status: 'online', reason: 'test' });
+      await vi.advanceTimersByTimeAsync(0);
+
+      expect(onSuccess1).not.toHaveBeenCalled();
+      expect(onSuccess2).toHaveBeenCalledOnce();
+    });
+  });
 });
