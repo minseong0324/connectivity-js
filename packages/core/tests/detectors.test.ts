@@ -17,7 +17,7 @@ describe('browserOnlineDetector', () => {
     });
   });
 
-  test('start 시 초기 상태를 emit한다', () => {
+  test('emits initial state on start', () => {
     Object.defineProperty(navigator, 'onLine', {
       value: true,
       configurable: true,
@@ -36,7 +36,7 @@ describe('browserOnlineDetector', () => {
     cleanup();
   });
 
-  test('online/offline 이벤트를 전달한다', () => {
+  test('delivers online/offline events', () => {
     Object.defineProperty(navigator, 'onLine', {
       value: true,
       configurable: true,
@@ -46,7 +46,7 @@ describe('browserOnlineDetector', () => {
     const events: DetectorEvent[] = [];
     const cleanup = detector.start((event) => events.push(event));
 
-    // 초기 emit 이후
+    // after initial emit
     window.dispatchEvent(new Event('offline'));
     window.dispatchEvent(new Event('online'));
 
@@ -61,7 +61,7 @@ describe('browserOnlineDetector', () => {
     cleanup();
   });
 
-  test('cleanup 후 이벤트가 전달되지 않는다', () => {
+  test('events are not delivered after cleanup', () => {
     Object.defineProperty(navigator, 'onLine', {
       value: true,
       configurable: true,
@@ -74,7 +74,7 @@ describe('browserOnlineDetector', () => {
     cleanup();
 
     window.dispatchEvent(new Event('offline'));
-    // 초기 emit(1) 이후 추가 이벤트 없음
+    // no additional events after initial emit(1)
     expect(events).toHaveLength(1);
   });
 });

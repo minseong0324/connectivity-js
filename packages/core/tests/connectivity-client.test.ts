@@ -53,34 +53,34 @@ describe('ConnectivityClient', () => {
   });
 
   describe('singleton', () => {
-    test('getInstance()는 같은 인스턴스를 반환한다', () => {
+    test('getInstance() returns the same instance', () => {
       const a = ConnectivityClient.getInstance({ detectors: [] });
       const b = ConnectivityClient.getInstance();
       expect(a).toBe(b);
     });
 
-    test('resetInstance() 후 새로운 인스턴스가 생성된다', () => {
+    test('new instance is created after resetInstance()', () => {
       const a = ConnectivityClient.getInstance({ detectors: [] });
       ConnectivityClient.resetInstance();
       const b = ConnectivityClient.getInstance({ detectors: [] });
       expect(a).not.toBe(b);
     });
 
-    test('getConnectivityClient()는 getInstance()와 같다', () => {
+    test('getConnectivityClient() equals getInstance()', () => {
       const a = getConnectivityClient({ detectors: [] });
       const b = getConnectivityClient();
       expect(a).toBe(b);
     });
   });
 
-  describe('상태 관리', () => {
-    test('초기 상태는 unknown이다', () => {
+  describe('state management', () => {
+    test('initial status is unknown', () => {
       expect(getConnectivityClient({ detectors: [] }).getState().status).toBe(
         'unknown',
       );
     });
 
-    test('initialStatus로 초기 상태를 지정할 수 있다', () => {
+    test('initial status can be set via initialStatus', () => {
       expect(
         getConnectivityClient({
           detectors: [],
@@ -89,7 +89,7 @@ describe('ConnectivityClient', () => {
       ).toBe('offline');
     });
 
-    test('detector 상태 변경 시 listener가 state와 transition을 받는다', () => {
+    test('listener receives state and transition when detector status changes', () => {
       const { client, mock } = createTestClient();
       const listener = vi.fn();
       client.subscribe(listener);
@@ -100,7 +100,7 @@ describe('ConnectivityClient', () => {
       );
     });
 
-    test('같은 상태 변경 시 listener가 호출되지 않는다', () => {
+    test('listener is not called for same status change', () => {
       const { client, mock } = createTestClient();
       mock.emit({ status: 'online', reason: 'test' });
       const listener = vi.fn();
@@ -109,12 +109,12 @@ describe('ConnectivityClient', () => {
       expect(listener).not.toHaveBeenCalled();
     });
 
-    test('getState()는 같은 참조를 반환한다', () => {
+    test('getState() returns same reference', () => {
       const m = getConnectivityClient({ detectors: [] });
       expect(m.getState()).toBe(m.getState());
     });
 
-    test('상태 변경 후 새로운 참조를 반환한다', () => {
+    test('returns new reference after status change', () => {
       const { client, mock } = createTestClient();
       const before = client.getState();
       mock.emit({ status: 'online', reason: 'test' });
@@ -123,7 +123,7 @@ describe('ConnectivityClient', () => {
   });
 
   describe('grace period', () => {
-    test('gracePeriodMs 이내 복구 시 offline 전환 무시', () => {
+    test('offline transition is ignored when recovery within gracePeriodMs', () => {
       const { client, mock } = createTestClient({ gracePeriodMs: 3_000 });
       mock.emit({ status: 'online', reason: 'test' });
       const listener = vi.fn();
@@ -135,7 +135,7 @@ describe('ConnectivityClient', () => {
       expect(client.getState().status).toBe('online');
     });
 
-    test('gracePeriodMs 초과 시 offline 전환 실행', () => {
+    test('offline transition executes when gracePeriodMs exceeds', () => {
       const { client, mock } = createTestClient({ gracePeriodMs: 3_000 });
       mock.emit({ status: 'online', reason: 'test' });
       mock.emit({ status: 'offline', reason: 'test' });
@@ -143,7 +143,7 @@ describe('ConnectivityClient', () => {
       expect(client.getState().status).toBe('offline');
     });
 
-    test('grace period 중 두 번째 offline 이벤트의 reason이 commit에 반영된다', () => {
+    test('second offline event reason during grace period is reflected in commit', () => {
       const { client, mock } = createTestClient({ gracePeriodMs: 3_000 });
       mock.emit({ status: 'online', reason: 'navigator' });
       mock.emit({ status: 'offline', reason: 'first-reason' });
@@ -154,7 +154,7 @@ describe('ConnectivityClient', () => {
       expect(client.getState().reason).toBe('second-reason');
     });
 
-    test('grace period 취소 시 pendingGraceReason이 초기화된다', () => {
+    test('pendingGraceReason is reset when grace period is cancelled', () => {
       const { client, mock } = createTestClient({ gracePeriodMs: 3_000 });
       mock.emit({ status: 'online', reason: 'navigator' });
       mock.emit({ status: 'offline', reason: 'first-reason' });
@@ -168,7 +168,7 @@ describe('ConnectivityClient', () => {
   });
 
   describe('quality', () => {
-    test('quality 정보가 반영된다', () => {
+    test('quality info is reflected', () => {
       const { client, mock } = createTestClient();
       mock.emit({
         status: 'online',
@@ -178,7 +178,7 @@ describe('ConnectivityClient', () => {
       expect(client.getState().quality.rttMs).toBe(50);
     });
 
-    test('초기 quality는 빈 객체이다', () => {
+    test('initial quality is empty object', () => {
       expect(
         getConnectivityClient({ detectors: [] }).getState().quality,
       ).toEqual({});
@@ -186,7 +186,7 @@ describe('ConnectivityClient', () => {
   });
 
   describe('enqueue dedupe', () => {
-    test('같은 dedupeKey + queued → input 교체', async () => {
+    test('same dedupeKey + queued → input replaced', async () => {
       const { client, mock } = createTestClient();
       mock.emit({ status: 'offline', reason: 'test' });
       client.registerAction('save', {
@@ -206,7 +206,7 @@ describe('ConnectivityClient', () => {
       expect(firstJob.input).toEqual({ id: 'a', data: 'v2' });
     });
 
-    test('같은 dedupeKey + running → 새 job', async () => {
+    test('same dedupeKey + running → new job', async () => {
       const { client, mock } = createTestClient();
       mock.emit({ status: 'online', reason: 'test' });
       let resolve: ((v: unknown) => void) | undefined;
@@ -230,7 +230,7 @@ describe('ConnectivityClient', () => {
       await p1;
     });
 
-    test('dedupeKey 없음 → 항상 새 job', async () => {
+    test('no dedupeKey → always new job', async () => {
       const { client, mock } = createTestClient();
       mock.emit({ status: 'offline', reason: 'test' });
       client.registerAction('log', {
@@ -244,7 +244,7 @@ describe('ConnectivityClient', () => {
       }
     });
 
-    test('같은 dedupeKey + queued → attempt/createdAt 초기화', async () => {
+    test('same dedupeKey + queued → attempt/createdAt reset', async () => {
       const { client, mock } = createTestClient();
       mock.emit({ status: 'offline', reason: 'test' });
       client.registerAction('save', {
@@ -266,7 +266,7 @@ describe('ConnectivityClient', () => {
       expect(job.createdAt).toBeGreaterThan(createdAt1);
     });
 
-    test('dedupeKey 없음 + 같은 input → 여전히 새 job', async () => {
+    test('no dedupeKey + same input → still new job', async () => {
       const { client, mock } = createTestClient();
       mock.emit({ status: 'offline', reason: 'test' });
       client.registerAction('log', {
@@ -282,8 +282,8 @@ describe('ConnectivityClient', () => {
     });
   });
 
-  describe('상태 관리 — transition', () => {
-    test('transition.duration이 경과 시간을 반영한다', () => {
+  describe('state management — transition', () => {
+    test('transition.duration reflects elapsed time', () => {
       const { client, mock } = createTestClient();
       const listener = vi.fn();
       mock.emit({ status: 'online', reason: 'test' });
@@ -300,7 +300,7 @@ describe('ConnectivityClient', () => {
   });
 
   describe('always-enqueue — online', () => {
-    test('즉시 실행 + result 반환', async () => {
+    test('immediate execution + result return', async () => {
       const { client, mock } = createTestClient();
       mock.emit({ status: 'online', reason: 'test' });
       const fn = vi.fn().mockResolvedValue({ id: '1' });
@@ -312,7 +312,7 @@ describe('ConnectivityClient', () => {
       }
     });
 
-    test('job이 running → succeeded 순서로 status 변경', async () => {
+    test('job status changes in running → succeeded order', async () => {
       const { client, mock } = createTestClient();
       mock.emit({ status: 'online', reason: 'test' });
       const statusHistory: string[] = [];
@@ -338,7 +338,7 @@ describe('ConnectivityClient', () => {
       expect(statusHistory).toContain('succeeded');
     });
 
-    test('succeeded 후 5초 뒤 job 제거', async () => {
+    test('job is removed 5 seconds after succeeded', async () => {
       const { client, mock } = createTestClient();
       mock.emit({ status: 'online', reason: 'test' });
       client.registerAction('t', {
@@ -354,7 +354,7 @@ describe('ConnectivityClient', () => {
   });
 
   describe('hasRunningDupe', () => {
-    test('같은 dedupeKey running → enqueued', async () => {
+    test('same dedupeKey running → enqueued', async () => {
       const { client, mock } = createTestClient();
       mock.emit({ status: 'online', reason: 'test' });
       let resolve: ((v: unknown) => void) | undefined;
@@ -372,7 +372,7 @@ describe('ConnectivityClient', () => {
       await p1;
     });
 
-    test('다른 action running + 새 요청 → 즉시 실행', async () => {
+    test('different action running + new request → immediate execution', async () => {
       const { client, mock } = createTestClient();
       mock.emit({ status: 'online', reason: 'test' });
       let resolve: ((v: unknown) => void) | undefined;
@@ -394,7 +394,7 @@ describe('ConnectivityClient', () => {
       await p1;
     });
 
-    test('dedupeKey 없는 action + running → 즉시 실행', async () => {
+    test('action without dedupeKey + running → immediate execution', async () => {
       const { client, mock } = createTestClient();
       mock.emit({ status: 'online', reason: 'test' });
       let resolve: ((v: unknown) => void) | undefined;
@@ -419,7 +419,7 @@ describe('ConnectivityClient', () => {
       await p1;
     });
 
-    test('다른 dedupeKey running → 즉시 실행', async () => {
+    test('different dedupeKey running → immediate execution', async () => {
       const { client, mock } = createTestClient();
       mock.emit({ status: 'online', reason: 'test' });
       let resolve: ((v: unknown) => void) | undefined;
@@ -442,8 +442,8 @@ describe('ConnectivityClient', () => {
     });
   });
 
-  describe('offline + 큐잉', () => {
-    test('offline + queue → 큐에 저장', async () => {
+  describe('offline + queueing', () => {
+    test('offline + queue → stored in queue', async () => {
       const { client, mock } = createTestClient();
       mock.emit({ status: 'offline', reason: 'test' });
       const fn = vi.fn();
@@ -468,7 +468,7 @@ describe('ConnectivityClient', () => {
       );
     });
 
-    test('online 복귀 시 자동 flush', async () => {
+    test('auto flush when back online', async () => {
       const { client, mock } = createTestClient();
       mock.emit({ status: 'offline', reason: 'test' });
       const fn = vi.fn().mockResolvedValue('ok');
@@ -483,8 +483,8 @@ describe('ConnectivityClient', () => {
     });
   });
 
-  describe('실패 + retry', () => {
-    test('retry 가능 → queued', async () => {
+  describe('failure + retry', () => {
+    test('retry possible → queued', async () => {
       const { client, mock } = createTestClient();
       mock.emit({ status: 'online', reason: 'test' });
       client.registerAction('t', {
@@ -498,7 +498,7 @@ describe('ConnectivityClient', () => {
       expect(queuedJob.status).toBe('queued');
     });
 
-    test('retry 불가 → failed + throw', async () => {
+    test('retry impossible → failed + throw', async () => {
       const { client, mock } = createTestClient();
       mock.emit({ status: 'online', reason: 'test' });
       client.registerAction('t', {
@@ -536,7 +536,7 @@ describe('ConnectivityClient', () => {
       expect(successful[0]).toEqual({ id: 'a', data: 'v2' });
     });
 
-    test('retry 소진 → onJobError', async () => {
+    test('retry exhausted → onJobError', async () => {
       const onJobError = vi.fn();
       const { client, mock } = createTestClient({ onJobError });
       mock.emit({ status: 'offline', reason: 'test' });
@@ -554,8 +554,8 @@ describe('ConnectivityClient', () => {
     });
   });
 
-  describe('flush 연계', () => {
-    test('즉시 실행 후 flush가 큐 처리', async () => {
+  describe('flush integration', () => {
+    test('queue is processed by flush after immediate execution', async () => {
       const { client, mock } = createTestClient();
       mock.emit({ status: 'online', reason: 'test' });
       const order: string[] = [];
@@ -581,7 +581,7 @@ describe('ConnectivityClient', () => {
       expect(order).toContain('v2');
     });
 
-    test('flush 중 같은 entity → hasRunningDupe → enqueued → while 루프가 처리', async () => {
+    test('flush same entity → hasRunningDupe → enqueued → while loop processes', async () => {
       const { client, mock } = createTestClient();
       mock.emit({ status: 'offline', reason: 'test' });
       let callCount = 0;
@@ -614,7 +614,7 @@ describe('ConnectivityClient', () => {
       expect(inputs[1]).toEqual({ id: 'a', data: 'v2' });
     });
 
-    test('flush 중 다른 entity → 즉시 실행', async () => {
+    test('flush different entity → immediate execution', async () => {
       const { client, mock } = createTestClient();
       mock.emit({ status: 'offline', reason: 'test' });
       let resolve: ((v: unknown) => void) | undefined;
@@ -641,14 +641,14 @@ describe('ConnectivityClient', () => {
       await vi.advanceTimersByTimeAsync(0);
     });
 
-    test('flush 중 새 action key → 외부 while 루프가 처리', async () => {
+    test('flush new action key → outer while loop processes', async () => {
       const { client, mock } = createTestClient();
       mock.emit({ status: 'offline', reason: 'test' });
       const order: string[] = [];
       client.registerAction('a', {
         request: async (input) => {
           order.push(`a:${(input as { name: string }).name}`);
-          // actionA 처리 중 actionB를 큐에 직접 추가 (flush 도중)
+          // add actionB to queue directly during actionA processing (during flush)
         },
         options: { whenOffline: 'queue' },
       });
@@ -660,7 +660,7 @@ describe('ConnectivityClient', () => {
       });
       await client.execute('a', { name: '1' });
       mock.emit({ status: 'online', reason: 'test' });
-      // actionA flush 시작 전에 actionB도 큐에 넣기
+      // add actionB to queue before actionA flush starts
       await client.execute('b', { name: '1' });
       await vi.advanceTimersByTimeAsync(0);
       expect(order).toContain('a:1');
@@ -668,8 +668,8 @@ describe('ConnectivityClient', () => {
     });
   });
 
-  describe('retry 중 input 교체', () => {
-    test('retry 대기 중 같은 entity 저장 → input 교체 후 최신 전송', async () => {
+  describe('input replacement during retry', () => {
+    test('same entity save during retry wait → input replaced then latest sent', async () => {
       const { client, mock } = createTestClient();
       mock.emit({ status: 'online', reason: 'test' });
       let callCount = 0;
@@ -698,7 +698,7 @@ describe('ConnectivityClient', () => {
   });
 
   describe('defaultOptions', () => {
-    test('defaultOptions.actions.whenOffline이 기본값으로 적용된다', async () => {
+    test('defaultOptions.actions.whenOffline is applied as default', async () => {
       const mock = createMockDetector();
       const client = getConnectivityClient({
         detectors: [mock.detector],
@@ -712,7 +712,7 @@ describe('ConnectivityClient', () => {
       );
     });
 
-    test('action 옵션이 defaultOptions를 override한다', async () => {
+    test('action option overrides defaultOptions', async () => {
       const mock = createMockDetector();
       const client = getConnectivityClient({
         detectors: [mock.detector],
@@ -729,8 +729,8 @@ describe('ConnectivityClient', () => {
     });
   });
 
-  describe('FIFO 정렬', () => {
-    test('createdAt이 빠른 job이 먼저 실행된다', async () => {
+  describe('FIFO ordering', () => {
+    test('job with earlier createdAt runs first', async () => {
       const { client, mock } = createTestClient();
       mock.emit({ status: 'offline', reason: 'test' });
       const order: string[] = [];
@@ -752,7 +752,7 @@ describe('ConnectivityClient', () => {
   });
 
   describe('concurrency', () => {
-    test('concurrency=2 일 때 동시 실행이 2개로 제한된다', async () => {
+    test('concurrent execution limited to 2 when concurrency=2', async () => {
       const { client, mock } = createTestClient();
       mock.emit({ status: 'offline', reason: 'test' });
       let running = 0;
@@ -777,7 +777,7 @@ describe('ConnectivityClient', () => {
   });
 
   describe('dedupeOnFlush', () => {
-    test('keep-last일 때 마지막 job만 실행된다', async () => {
+    test('only last job runs when keep-last', async () => {
       const { client, mock } = createTestClient();
       mock.emit({ status: 'offline', reason: 'test' });
       const fn = vi.fn().mockResolvedValue('ok');
@@ -789,9 +789,9 @@ describe('ConnectivityClient', () => {
           dedupeOnFlush: 'keep-last',
         },
       });
-      // enqueue dedupe로 같은 dedupeKey는 1개만 남으므로, dedupeOnFlush는 running→fail→queued로 2개가 된 경우에 의미
+      // same dedupeKey leaves only 1 via enqueue dedupe; dedupeOnFlush matters when running→fail→queued yields 2
       await client.execute('t', { id: 'a', data: 'v1' });
-      await client.execute('t', { id: 'a', data: 'v2' }); // dedupe: v1 → v2 교체
+      await client.execute('t', { id: 'a', data: 'v2' }); // dedupe: v1 → v2 replaced
       expect(client.getQueue()).toHaveLength(1);
       mock.emit({ status: 'online', reason: 'test' });
       await vi.advanceTimersByTimeAsync(0);
@@ -799,7 +799,7 @@ describe('ConnectivityClient', () => {
       expect(fn).toHaveBeenCalledWith({ id: 'a', data: 'v2' });
     });
 
-    test('keep-first일 때 첫 번째 job만 실행된다', async () => {
+    test('only first job runs when keep-first', async () => {
       const { client, mock } = createTestClient();
       mock.emit({ status: 'offline', reason: 'test' });
       const fn = vi.fn().mockResolvedValue('ok');
@@ -811,10 +811,10 @@ describe('ConnectivityClient', () => {
           dedupeOnFlush: 'keep-first',
         },
       });
-      // 같은 dedupeKey + queued이므로 enqueue dedupe가 먼저 동작 → 1개만 남음
-      // dedupeOnFlush는 enqueue dedupe를 통과한 경우에만 의미 있음
+      // same dedupeKey + queued → enqueue dedupe runs first → only 1 remains
+      // dedupeOnFlush only matters when passing enqueue dedupe
       await client.execute('t', { id: 'a', data: 'v1' });
-      await client.execute('t', { id: 'a', data: 'v2' }); // input 교체됨
+      await client.execute('t', { id: 'a', data: 'v2' }); // input replaced
       expect(client.getQueue()).toHaveLength(1);
       mock.emit({ status: 'online', reason: 'test' });
       await vi.advanceTimersByTimeAsync(0);
@@ -823,7 +823,7 @@ describe('ConnectivityClient', () => {
   });
 
   describe('cancel / destroy', () => {
-    test('cancel로 job 취소', async () => {
+    test('cancel job via cancel', async () => {
       const { client, mock } = createTestClient();
       mock.emit({ status: 'offline', reason: 'test' });
       client.registerAction('t', {
@@ -840,14 +840,14 @@ describe('ConnectivityClient', () => {
       );
     });
 
-    test('미등록 action → throw', async () => {
+    test('unregistered action → throw', async () => {
       getConnectivityClient({ detectors: [] });
       await expect(getConnectivityClient().execute('x', {})).rejects.toThrow(
         'is not registered',
       );
     });
 
-    test('destroy 후 listener 미호출', () => {
+    test('listener not called after destroy', () => {
       const { client, mock } = createTestClient();
       const listener = vi.fn();
       client.subscribe(listener);
@@ -858,7 +858,7 @@ describe('ConnectivityClient', () => {
   });
 
   describe('per-action queue', () => {
-    test('getActionQueue가 해당 action만 반환', async () => {
+    test('getActionQueue returns only that action', async () => {
       const { client, mock } = createTestClient();
       mock.emit({ status: 'offline', reason: 'test' });
       client.registerAction('a', {
@@ -876,7 +876,7 @@ describe('ConnectivityClient', () => {
       expect(client.getActionQueue('b')).toHaveLength(1);
     });
 
-    test('다른 action 변경 시 참조 유지', async () => {
+    test('reference preserved when other action changes', async () => {
       const { client, mock } = createTestClient();
       mock.emit({ status: 'offline', reason: 'test' });
       client.registerAction('a', {
@@ -895,7 +895,7 @@ describe('ConnectivityClient', () => {
   });
 
   describe('end-to-end', () => {
-    test('오프라인 → 온라인 flush 중 같은 entity 실행 → 순서 보장', async () => {
+    test('offline → online flush same entity execution → order preserved', async () => {
       const { client, mock } = createTestClient();
       mock.emit({ status: 'offline', reason: 'test' });
       const order: string[] = [];
@@ -926,7 +926,7 @@ describe('ConnectivityClient', () => {
       expect(order).toEqual(['v1', 'v2']);
     });
 
-    test('오프라인 다른 action 큐잉 → 온라인 flush → 이후 즉시 실행', async () => {
+    test('offline different action queueing → online flush → then immediate execution', async () => {
       const { client, mock } = createTestClient();
       mock.emit({ status: 'offline', reason: 'test' });
       const saveFn = vi.fn().mockResolvedValue('saved');
@@ -954,7 +954,7 @@ describe('ConnectivityClient', () => {
       expect(likeFn).toHaveBeenCalledTimes(2);
     });
 
-    test('오프라인 dedupe → 온라인 → 최신만 전송', async () => {
+    test('offline dedupe → online → only latest sent', async () => {
       const { client, mock } = createTestClient();
       mock.emit({ status: 'offline', reason: 'test' });
       const fn = vi.fn().mockResolvedValue('ok');
@@ -974,7 +974,7 @@ describe('ConnectivityClient', () => {
       expect(fn).toHaveBeenCalledWith({ id: '1', data: 'v3' });
     });
 
-    test('온라인 연속 실행 → dedupe → 최종만 도달', async () => {
+    test('online consecutive execution → dedupe → only final reaches', async () => {
       const { client, mock } = createTestClient();
       mock.emit({ status: 'online', reason: 'test' });
       const received: unknown[] = [];
@@ -1002,23 +1002,23 @@ describe('ConnectivityClient', () => {
   });
 
   // ═══════════════════════════════════════════
-  // 엣지케이스
+  // Edge cases
   // ═══════════════════════════════════════════
 
-  describe('엣지케이스', () => {
-    test('start() 두 번 호출 → detector가 이중 등록되지 않는다', () => {
+  describe('edge cases', () => {
+    test('calling start() twice → detector is not double-registered', () => {
       const { client, mock } = createTestClient();
       const listener = vi.fn();
       client.subscribe(listener);
 
-      // start()는 createTestClient에서 이미 1번 호출됨 — 두 번째는 무시
+      // start() already called once in createTestClient — second is ignored
       client.start();
 
       mock.emit({ status: 'online', reason: 'test' });
       expect(listener).toHaveBeenCalledOnce();
     });
 
-    test('subscribe 후 즉시 unsubscribe → listener가 호출되지 않는다', () => {
+    test('immediate unsubscribe after subscribe → listener is not called', () => {
       const { client, mock } = createTestClient();
       const listener = vi.fn();
       const unsub = client.subscribe(listener);
@@ -1028,7 +1028,7 @@ describe('ConnectivityClient', () => {
       expect(listener).not.toHaveBeenCalled();
     });
 
-    test('subscribeQueue 후 즉시 unsubscribe → listener가 호출되지 않는다', async () => {
+    test('immediate unsubscribe after subscribeQueue → listener is not called', async () => {
       const { client, mock } = createTestClient();
       mock.emit({ status: 'offline', reason: 'test' });
       client.registerAction('t', {
@@ -1044,22 +1044,22 @@ describe('ConnectivityClient', () => {
       expect(listener).not.toHaveBeenCalled();
     });
 
-    test('존재하지 않는 jobId로 cancel → 에러 없이 무시', () => {
+    test('cancel with nonexistent jobId → ignored without error', () => {
       getConnectivityClient({ detectors: [] });
       expect(() => getConnectivityClient().cancel('nonexistent')).not.toThrow();
     });
 
-    test('존재하지 않는 jobId로 retry → 에러 없이 무시', async () => {
+    test('retry with nonexistent jobId → ignored without error', async () => {
       getConnectivityClient({ detectors: [] });
       await expect(
         getConnectivityClient().retry('nonexistent'),
       ).resolves.toBeUndefined();
     });
 
-    test('unknown + whenOffline=fail → throw하지 않고 queue', async () => {
-      // unknown은 confirmed offline이 아니므로 throw 대신 보수적으로 큐잉
+    test('unknown + whenOffline=fail → queue instead of throw', async () => {
+      // unknown is not confirmed offline, so conservatively queue instead of throw
       const { client } = createTestClient();
-      // initialStatus가 'unknown'이고 detector emit 없음 → unknown 유지
+      // initialStatus is 'unknown' and no detector emit → unknown maintained
       client.registerAction('t', {
         request: vi.fn(),
         options: { whenOffline: 'fail' },
@@ -1078,7 +1078,7 @@ describe('ConnectivityClient', () => {
       expect(r.enqueued).toBe(true);
     });
 
-    test('이미 canceled된 job에 retry → 무시', async () => {
+    test('retry on already canceled job → ignored', async () => {
       const { client, mock } = createTestClient();
       mock.emit({ status: 'offline', reason: 'test' });
       client.registerAction('t', {
@@ -1098,7 +1098,7 @@ describe('ConnectivityClient', () => {
   });
 
   describe('flushOption per-action override', () => {
-    test('per-action concurrency가 default를 override한다', async () => {
+    test('per-action concurrency overrides default', async () => {
       const callOrder: number[] = [];
       const requestFn = vi.fn().mockImplementation(
         (input: { n: number }) =>
@@ -1124,17 +1124,17 @@ describe('ConnectivityClient', () => {
       await client.execute('wide', { n: 2 });
       await client.execute('wide', { n: 3 });
 
-      // online 전환 → flush
+      // online transition → flush
       mock.emit({ status: 'online', reason: 'test' });
       await vi.advanceTimersByTimeAsync(10);
 
-      // per-action concurrency=10이므로 3개 동시 시작
+      // per-action concurrency=10 so 3 start concurrently
       expect(callOrder).toEqual([1, 2, 3]);
     });
   });
 
   describe('dedupeOnFlush', () => {
-    test('keep-last: 실패한 job과 새 queued job 중 마지막만 실행', async () => {
+    test('keep-last: only last runs among failed job and new queued job', async () => {
       let callCount = 0;
       const requestFn = vi.fn().mockImplementation(() => {
         callCount++;
@@ -1160,28 +1160,28 @@ describe('ConnectivityClient', () => {
         },
       });
 
-      // 첫 실행 실패 → job status: failed
+      // first execution failed → job status: failed
       await client.execute('save', { v: 1 }).catch(() => {});
 
-      // 오프라인 전환 → 새 요청 큐잉
+      // offline transition → new request queued
       mock.emit({ status: 'offline', reason: 'test' });
       await client.execute('save', { v: 2 });
 
-      // 큐에: failed(v:1) + queued(v:2) 동일 dedupeKey
+      // queue: failed(v:1) + queued(v:2) same dedupeKey
       const queue = client.getQueue();
       const saveJobs = queue.filter((j) => j.actionKey === 'save');
       expect(saveJobs.length).toBe(2);
 
-      // online → flush → dedupeOnFlush 적용
+      // online → flush → dedupeOnFlush applied
       mock.emit({ status: 'online', reason: 'test' });
       await vi.advanceTimersByTimeAsync(200);
 
-      // v:2가 실행되어야 함
+      // v:2 should be executed
       const lastCall = requestFn.mock.calls[requestFn.mock.calls.length - 1];
       expect(lastCall?.[0]).toEqual({ v: 2 });
     });
 
-    test('enqueue-time dedupe: 같은 dedupeKey의 queued job은 input만 교체', async () => {
+    test('enqueue-time dedupe: same dedupeKey queued job only replaces input', async () => {
       const requestFn = vi.fn().mockResolvedValue('ok');
       const mock = createMockDetector();
       const client = getConnectivityClient({
@@ -1202,7 +1202,7 @@ describe('ConnectivityClient', () => {
       await client.execute('save', { v: 2 });
       await client.execute('save', { v: 3 });
 
-      // enqueue-time dedupe로 1개만 존재, input은 마지막 값
+      // enqueue-time dedupe leaves only 1, input is latest value
       const queue = client.getQueue();
       expect(queue.filter((j) => j.actionKey === 'save')).toHaveLength(1);
       expect(queue[0]?.input).toEqual({ v: 3 });
@@ -1216,7 +1216,7 @@ describe('ConnectivityClient', () => {
   });
 
   describe('destroy race condition', () => {
-    test('flush 중 destroy 호출 시 에러 없이 중단', async () => {
+    test('destroy during flush → stops without error', async () => {
       const requestFn = vi
         .fn()
         .mockImplementation(
@@ -1237,22 +1237,22 @@ describe('ConnectivityClient', () => {
       await client.execute('slow', {});
       await client.execute('slow', {});
 
-      // online 전환으로 flush 시작
+      // flush starts with online transition
       mock.emit({ status: 'online', reason: 'test' });
 
-      // flush가 진행 중인 상태에서 destroy
+      // destroy while flush is in progress
       client.destroy();
 
-      // 타이머를 진행해도 에러가 발생하지 않아야 함
+      // no error should occur even when advancing timers
       await vi.advanceTimersByTimeAsync(5000);
 
-      // destroy 후 추가 요청이 처리되지 않아야 함
+      // additional requests after destroy should not be processed
       expect(requestFn.mock.calls.length).toBeLessThanOrEqual(2);
     });
   });
 
   describe('onJobError', () => {
-    test('최신 attempt가 전달된다', async () => {
+    test('latest attempt is passed', async () => {
       const onJobError = vi.fn();
       const mock = createMockDetector();
       const client = getConnectivityClient({
@@ -1279,8 +1279,8 @@ describe('ConnectivityClient', () => {
     });
   });
 
-  describe('flush 콜백', () => {
-    test('flush 성공 시 onFlushSuccess와 onFlushSettled가 호출된다', async () => {
+  describe('flush callbacks', () => {
+    test('onFlushSuccess and onFlushSettled are called when flush succeeds', async () => {
       const { client, mock } = createTestClient();
       mock.emit({ status: 'offline', reason: 'test' });
 
@@ -1302,7 +1302,7 @@ describe('ConnectivityClient', () => {
       expect(onFlushSettled).toHaveBeenCalledOnce();
     });
 
-    test('flush 최종 실패 시 onFlushError와 onFlushSettled가 호출된다', async () => {
+    test('onFlushError and onFlushSettled are called when flush finally fails', async () => {
       const { client, mock } = createTestClient();
       mock.emit({ status: 'offline', reason: 'test' });
 
@@ -1310,7 +1310,7 @@ describe('ConnectivityClient', () => {
       const onFlushSettled = vi.fn();
 
       client.registerAction('save', {
-        request: vi.fn().mockRejectedValue(new Error('서버 오류')),
+        request: vi.fn().mockRejectedValue(new Error('server error')),
         options: { whenOffline: 'queue' },
         onFlushError,
         onFlushSettled,
@@ -1321,12 +1321,12 @@ describe('ConnectivityClient', () => {
       await vi.advanceTimersByTimeAsync(0);
 
       expect(onFlushError).toHaveBeenCalledWith(
-        expect.objectContaining({ message: '서버 오류' }),
+        expect.objectContaining({ message: 'server error' }),
       );
       expect(onFlushSettled).toHaveBeenCalledOnce();
     });
 
-    test('retry 중간 시도에서는 flush 콜백이 호출되지 않는다', async () => {
+    test('flush callbacks are not called on intermediate retry attempts', async () => {
       const { client, mock } = createTestClient();
       mock.emit({ status: 'offline', reason: 'test' });
 
