@@ -142,6 +142,29 @@ describe('ConnectivityClient', () => {
       vi.advanceTimersByTime(3_000);
       expect(client.getState().status).toBe('offline');
     });
+
+    test('grace period 중 두 번째 offline 이벤트의 reason이 commit에 반영된다', () => {
+      const { client, mock } = createTestClient({ gracePeriodMs: 3_000 });
+      mock.emit({ status: 'online', reason: 'navigator' });
+      mock.emit({ status: 'offline', reason: 'first-reason' });
+      vi.advanceTimersByTime(1_000);
+      mock.emit({ status: 'offline', reason: 'second-reason' });
+      vi.advanceTimersByTime(2_000);
+      expect(client.getState().status).toBe('offline');
+      expect(client.getState().reason).toBe('second-reason');
+    });
+
+    test('grace period 취소 시 pendingGraceReason이 초기화된다', () => {
+      const { client, mock } = createTestClient({ gracePeriodMs: 3_000 });
+      mock.emit({ status: 'online', reason: 'navigator' });
+      mock.emit({ status: 'offline', reason: 'first-reason' });
+      vi.advanceTimersByTime(1_000);
+      mock.emit({ status: 'online', reason: 'recovery' });
+      mock.emit({ status: 'offline', reason: 'new-reason' });
+      vi.advanceTimersByTime(3_000);
+      expect(client.getState().status).toBe('offline');
+      expect(client.getState().reason).toBe('new-reason');
+    });
   });
 
   describe('quality', () => {
@@ -1253,6 +1276,93 @@ describe('ConnectivityClient', () => {
       expect(onJobError).toHaveBeenCalledTimes(1);
       const call = onJobError.mock.calls[0];
       expect(call?.[1].attempt).toBe(2);
+    });
+  });
+
+  describe('flush 콜백', () => {
+    test('flush 성공 시 onFlushSuccess와 onFlushSettled가 호출된다', async () => {
+      const { client, mock } = createTestClient();
+      mock.emit({ status: 'offline', reason: 'test' });
+
+      const onFlushSuccess = vi.fn();
+      const onFlushSettled = vi.fn();
+
+      client.registerAction('save', {
+        request: vi.fn().mockResolvedValue({ saved: true }),
+        options: { whenOffline: 'queue' },
+        onFlushSuccess,
+        onFlushSettled,
+      });
+
+      await client.execute('save', {});
+      mock.emit({ status: 'online', reason: 'test' });
+      await vi.advanceTimersByTimeAsync(0);
+
+      expect(onFlushSuccess).toHaveBeenCalledWith({ saved: true });
+      expect(onFlushSettled).toHaveBeenCalledOnce();
+    });
+
+    test('flush 최종 실패 시 onFlushError와 onFlushSettled가 호출된다', async () => {
+      const { client, mock } = createTestClient();
+      mock.emit({ status: 'offline', reason: 'test' });
+
+      const onFlushError = vi.fn();
+      const onFlushSettled = vi.fn();
+
+      client.registerAction('save', {
+        request: vi.fn().mockRejectedValue(new Error('서버 오류')),
+        options: { whenOffline: 'queue' },
+        onFlushError,
+        onFlushSettled,
+      });
+
+      await client.execute('save', {});
+      mock.emit({ status: 'online', reason: 'test' });
+      await vi.advanceTimersByTimeAsync(0);
+
+      expect(onFlushError).toHaveBeenCalledWith(
+        expect.objectContaining({ message: '서버 오류' }),
+      );
+      expect(onFlushSettled).toHaveBeenCalledOnce();
+    });
+
+    test('retry 중간 시도에서는 flush 콜백이 호출되지 않는다', async () => {
+      const { client, mock } = createTestClient();
+      mock.emit({ status: 'offline', reason: 'test' });
+
+      const onFlushSuccess = vi.fn();
+      const onFlushError = vi.fn();
+      const onFlushSettled = vi.fn();
+      let callCount = 0;
+
+      client.registerAction('save', {
+        request: () => {
+          callCount++;
+          if (callCount < 3) { return Promise.reject(new Error('retry')); }
+          return Promise.resolve('ok');
+        },
+        options: {
+          whenOffline: 'queue',
+          retry: { maxAttempts: 3, backoffMs: () => 100 },
+        },
+        onFlushSuccess,
+        onFlushError,
+        onFlushSettled,
+      });
+
+      await client.execute('save', {});
+      mock.emit({ status: 'online', reason: 'test' });
+      await vi.advanceTimersByTimeAsync(0);
+
+      expect(onFlushSuccess).not.toHaveBeenCalled();
+      expect(onFlushError).not.toHaveBeenCalled();
+      expect(onFlushSettled).not.toHaveBeenCalled();
+
+      await vi.advanceTimersByTimeAsync(300);
+
+      expect(onFlushSuccess).toHaveBeenCalledOnce();
+      expect(onFlushError).not.toHaveBeenCalled();
+      expect(onFlushSettled).toHaveBeenCalledOnce();
     });
   });
 });
