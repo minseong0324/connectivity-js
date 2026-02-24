@@ -2,7 +2,6 @@ import {
   DEFAULT_BACKOFF_MS,
   delay,
   SUCCEEDED_JOB_CLEANUP_DELAY_MS,
-  toErrorMessage,
 } from './engine-utils';
 import type {
   ActionOptions,
@@ -582,7 +581,7 @@ export class ConnectivityClient {
     if (maxAttempts <= 1) {
       this.#queuePatch(jobId, {
         status: 'failed',
-        lastError: toErrorMessage(error),
+        lastError: error,
       });
       this.#notifyQueue();
       void this.#flushQueue();
@@ -603,7 +602,7 @@ export class ConnectivityClient {
     if (hasNewerQueuedJob) {
       this.#queuePatch(jobId, {
         status: 'canceled',
-        lastError: toErrorMessage(error),
+        lastError: error,
       });
       this.#notifyQueue();
       void this.#flushQueue();
@@ -615,7 +614,7 @@ export class ConnectivityClient {
       mergedOptions.retry?.backoffMs(currentAttempt) ?? DEFAULT_BACKOFF_MS;
     this.#queuePatch(jobId, {
       status: 'queued',
-      lastError: toErrorMessage(error),
+      lastError: error,
       nextRunAt: Date.now() + backoffMs,
     });
     this.#notifyQueue();
@@ -714,7 +713,7 @@ export class ConnectivityClient {
       if (currentAttempt >= maxAttempts) {
         this.#queuePatch(job.id, {
           status: 'failed',
-          lastError: toErrorMessage(error),
+          lastError: error,
         });
         this.#notifyQueue();
         const latestJob = this.#queueGet(job.id);
@@ -728,7 +727,7 @@ export class ConnectivityClient {
         action.options.retry?.backoffMs(currentAttempt) ?? DEFAULT_BACKOFF_MS;
       this.#queuePatch(job.id, {
         status: 'queued',
-        lastError: toErrorMessage(error),
+        lastError: error,
         nextRunAt: Date.now() + backoffMs,
       });
       this.#notifyQueue();
