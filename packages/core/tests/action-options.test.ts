@@ -2,7 +2,7 @@ import { describe, expect, test } from 'vitest';
 import { actionOptions } from '../src/action-options';
 
 describe('actionOptions', () => {
-  test('입력 config를 그대로 반환한다 (identity function)', () => {
+  test('returns input config as-is (identity function)', () => {
     const config = {
       actionKey: 'save',
       request: async (input: { id: string }) => ({ saved: true, id: input.id }),
@@ -11,7 +11,7 @@ describe('actionOptions', () => {
     expect(actionOptions(config)).toBe(config);
   });
 
-  test('dedupeKey에서 input 타입이 request의 input과 동일하게 추론된다', () => {
+  test('dedupeKey input type is inferred same as request input', () => {
     const opts = actionOptions({
       actionKey: 'save',
       request: async (_input: { designId: string; data: string }) => ({
@@ -22,7 +22,7 @@ describe('actionOptions', () => {
     expect(opts.dedupeKey?.({ designId: 'd1', data: 'v1' })).toBe('d1');
   });
 
-  test('모든 옵션 필드가 보존된다', () => {
+  test('all option fields are preserved', () => {
     const opts = actionOptions({
       actionKey: 'upload',
       request: async (_input: { file: string }) => ({ url: 'https://...' }),
