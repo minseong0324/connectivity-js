@@ -97,6 +97,19 @@ export class ActionObserver<TInput = unknown, TResult = unknown> {
 
   /**
    * Executes the action and handles callbacks.
+   *
+   * Uses the string overload of `client.execute()` to ensure the Map's
+   * registered request is always used — consistent with the flush queue path.
+   * `engineResult.result` is `unknown` from the string overload, so a
+   * cast to `TResult` is applied.
+   *
+   * **Safety condition:** The cast is safe as long as the Map entry for
+   * `this.#options.actionKey` returns a value compatible with `TResult`.
+   * In normal `useAction` usage this is always true because `setOptions()`
+   * re-runs `#register()` on every render, keeping the Map in sync with the
+   * declared `TResult`. A manual `registerAction()` override with a different
+   * return type between renders would make the cast technically incorrect until
+   * the next `setOptions()` call restores the correct registration.
    */
   async execute(input: TInput) {
     let wasEnqueued = false;

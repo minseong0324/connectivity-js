@@ -236,6 +236,36 @@ describe('ActionObserver', () => {
     expect(result1).toBe(result2);
   });
 
+  test('registerAction after observer creation overrides the request for execute', async () => {
+    const mock = createMockDetector();
+    const client = getConnectivityClient({ detectors: [mock.detector] });
+    client.start();
+    mock.emit({ status: 'online', reason: 'test' });
+
+    const original = vi.fn().mockResolvedValue('original');
+    const override = vi.fn().mockResolvedValue('override');
+
+    const observer = new ActionObserver(client, {
+      actionKey: 'save',
+      request: original,
+    });
+
+    // Override the registration via client.registerAction after the observer was created.
+    // NOTE: this override also replaces the onFlushSuccess/onFlushError/onFlushSettled
+    // callbacks that ActionObserver had registered. As a result, when a queued offline
+    // job is later flushed, those callbacks will NOT be invoked.
+    // In a useAction context this is transient — the next render calls setOptions() →
+    // #register(), which re-registers the observer's own callbacks.
+    client.registerAction('save', { request: override, options: {} });
+
+    const r = await observer.execute({});
+
+    // The Map override is used — original is never called
+    expect(original).not.toHaveBeenCalled();
+    expect(override).toHaveBeenCalledOnce();
+    expect(r).toMatchObject({ enqueued: false, result: 'override' });
+  });
+
   test('updating callback via setCallbacks invokes the latest callback', async () => {
     const mock = createMockDetector();
     const client = getConnectivityClient({ detectors: [mock.detector] });

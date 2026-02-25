@@ -7,6 +7,7 @@ import {
   test,
   vi,
 } from 'vitest';
+import { actionOptions } from '../src/action-options';
 import {
   ConnectivityClient,
   getConnectivityClient,
@@ -1365,6 +1366,128 @@ describe('ConnectivityClient', () => {
       expect(onFlushSuccess).toHaveBeenCalledOnce();
       expect(onFlushError).not.toHaveBeenCalled();
       expect(onFlushSettled).toHaveBeenCalledOnce();
+    });
+  });
+
+  describe('execute with config overload', () => {
+    test('online → immediate result (same behavior as string key)', async () => {
+      const { client, mock } = createTestClient();
+      mock.emit({ status: 'online', reason: 'test' });
+
+      const saveAction = actionOptions({
+        actionKey: 'save-cfg',
+        request: async (input: { id: string; data: string }) => ({
+          saved: true,
+          id: input.id,
+        }),
+      });
+
+      const r = await client.execute(saveAction, {
+        id: '1',
+        data: 'hello',
+      });
+      expect(r.enqueued).toBe(false);
+      if (!r.enqueued) {
+        expect(r.result).toEqual({ saved: true, id: '1' });
+      }
+    });
+
+    test('auto-registers when action is not registered', async () => {
+      const { client, mock } = createTestClient();
+      mock.emit({ status: 'online', reason: 'test' });
+
+      const action = actionOptions({
+        actionKey: 'auto-reg',
+        request: async () => 'ok',
+      });
+
+      // No registerAction call — should not throw "not registered"
+      const r = await client.execute(action, undefined);
+      expect(r.enqueued).toBe(false);
+      if (!r.enqueued) {
+        expect(r.result).toBe('ok');
+      }
+    });
+
+    test('offline → enqueued', async () => {
+      const { client, mock } = createTestClient();
+      mock.emit({ status: 'offline', reason: 'test' });
+
+      const action = actionOptions({
+        actionKey: 'save-cfg-off',
+        request: async (_input: { id: string }) => ({ saved: true }),
+        whenOffline: 'queue',
+      });
+
+      const r = await client.execute(action, { id: '1' });
+      expect(r.enqueued).toBe(true);
+    });
+
+    test('dedupeKey works with config overload', async () => {
+      const { client, mock } = createTestClient();
+      mock.emit({ status: 'offline', reason: 'test' });
+
+      const action = actionOptions({
+        actionKey: 'save-dedup',
+        request: async (_input: { id: string; data: string }) => ({
+          saved: true,
+        }),
+        whenOffline: 'queue',
+        dedupeKey: (input) => input.id,
+      });
+
+      const r1 = await client.execute(action, { id: 'a', data: 'v1' });
+      const r2 = await client.execute(action, { id: 'a', data: 'v2' });
+      if (r1.enqueued && r2.enqueued) {
+        expect(r1.jobId).toBe(r2.jobId);
+      }
+      const job = client.getQueue()[0];
+      assert(job !== undefined);
+      expect(job.input).toEqual({ id: 'a', data: 'v2' });
+    });
+
+    test('preserves existing registration with flush callbacks', async () => {
+      const { client, mock } = createTestClient();
+      mock.emit({ status: 'offline', reason: 'test' });
+
+      const onFlushSuccess = vi.fn();
+
+      // Register manually with flush callbacks first
+      client.registerAction('save-preserve', {
+        request: vi.fn().mockResolvedValue({ saved: true }),
+        options: { whenOffline: 'queue' },
+        onFlushSuccess,
+      });
+
+      // Config overload with same actionKey — should NOT overwrite registration
+      const action = actionOptions({
+        actionKey: 'save-preserve',
+        request: async () => ({ saved: true }),
+        whenOffline: 'queue',
+      });
+
+      await client.execute(action, {});
+
+      mock.emit({ status: 'online', reason: 'test' });
+      await vi.advanceTimersByTimeAsync(0);
+
+      // Flush callback from registerAction should still be called
+      expect(onFlushSuccess).toHaveBeenCalledWith({ saved: true });
+    });
+
+    test('whenOffline: fail with config overload', async () => {
+      const { client, mock } = createTestClient();
+      mock.emit({ status: 'offline', reason: 'test' });
+
+      const action = actionOptions({
+        actionKey: 'fail-cfg',
+        request: async () => 'ok',
+        whenOffline: 'fail',
+      });
+
+      await expect(client.execute(action, undefined)).rejects.toThrow(
+        "whenOffline='fail'",
+      );
     });
   });
 });

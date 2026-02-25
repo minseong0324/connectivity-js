@@ -1,4 +1,5 @@
 import { describe, expectTypeOf, it } from 'vitest';
+import { actionOptions } from '../src/action-options';
 import { getConnectivityClient } from '../src/connectivity-client';
 import type {
   ActionRunResult,
@@ -49,6 +50,49 @@ describe('ConnectivityClient.execute', () => {
     if (!result.enqueued) {
       expectTypeOf(result.result).toBeUnknown();
     }
+  });
+});
+
+describe('ConnectivityClient.execute with config overload — type inference', () => {
+  const client = getConnectivityClient();
+
+  const saveAction = actionOptions({
+    actionKey: 'save',
+    request: async (_input: { id: string; data: string }) => ({
+      saved: true as const,
+      timestamp: 123,
+    }),
+  });
+
+  it('result is narrowed to TResult in enqueued === false branch', async () => {
+    const result = await client.execute(saveAction, {
+      id: '1',
+      data: 'hello',
+    });
+    if (!result.enqueued) {
+      expectTypeOf(result.result).toExtend<{
+        saved: true;
+        timestamp: number;
+      }>();
+    }
+  });
+
+  it('input type is enforced as TInput', () => {
+    // @ts-expect-error — must pass { id: string; data: string } but passing number
+    client.execute(saveAction, 42);
+  });
+
+  it('string key overload result stays unknown (backward compatible)', async () => {
+    const result = await client.execute('save', {});
+    if (!result.enqueued) {
+      expectTypeOf(result.result).toBeUnknown();
+    }
+  });
+
+  it('ActionRunResult generic narrows result correctly', () => {
+    type Typed = ActionRunResult<{ id: string }>;
+    type Extracted = Extract<Typed, { enqueued: false }>['result'];
+    expectTypeOf<Extracted>().toExtend<{ id: string }>();
   });
 });
 

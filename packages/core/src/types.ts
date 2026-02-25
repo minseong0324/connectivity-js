@@ -156,6 +156,8 @@ export interface QueuedJob {
 /**
  * Discriminated union returned by `execute()`
  *
+ * @typeParam TResult - Result type returned by the action (default: `unknown`)
+ *
  * @example
  * const result = await client.execute('save', input);
  * if (result.enqueued) {
@@ -164,9 +166,9 @@ export interface QueuedJob {
  *   console.log('executed immediately:', result.result);
  * }
  */
-export type ActionRunResult =
+export type ActionRunResult<TResult = unknown> =
   | { enqueued: true; jobId: string }
-  | { enqueued: false; result: unknown };
+  | { enqueued: false; result: TResult };
 
 /**
  * Options passed when creating a {@link ConnectivityClient} instance
