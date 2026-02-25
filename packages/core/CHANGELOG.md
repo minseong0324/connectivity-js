@@ -1,5 +1,11 @@
 # @connectivity-js/core
 
+## 0.3.0
+
+### Minor Changes
+
+- `client.execute()` previously accepted only a string `actionKey`, causing the ([#16](https://github.com/minseong0324/connectivity-js/pull/16))
+
 ## 0.2.0
 
 ### Minor Changes
