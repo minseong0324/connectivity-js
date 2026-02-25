@@ -1,3 +1,4 @@
+import type { ActionOptionsConfig } from './action-options';
 import {
   DEFAULT_BACKOFF_MS,
   delay,
@@ -437,24 +438,53 @@ export class ConnectivityClient {
   /**
    * Executes a registered action.
    *
+   * **Overload 1 — Type-safe with `ActionOptionsConfig`:**
+   * Pass an `actionOptions()` config to get fully inferred `TInput` and `TResult`.
+   * Auto-registers the action if it has not been registered yet.
+   *
+   * **Overload 2 — String key (backward compatible):**
+   * Pass a previously registered action key. Result type is `unknown`.
+   *
    * - **online**: Executes immediately and returns the result (`{ enqueued: false, result }`)
    * - **offline + `whenOffline: 'queue'`**: Queues the request (`{ enqueued: true, jobId }`)
    * - **offline + `whenOffline: 'fail'`**: Throws an error immediately
    *
-   * @param actionKey - Unique key of the action to execute
-   * @param input - Input value to pass to the action
-   * @returns Discriminated union result
    * @throws When action is not registered or when executing offline with `whenOffline: 'fail'`
    *
    * @example
-   * const result = await client.execute('save', { id: '1', data: 'hello' });
-   * if (result.enqueued) {
-   *   console.log('Queued:', result.jobId);
-   * } else {
-   *   console.log('Executed immediately:', result.result);
+   * // Type-safe with actionOptions
+   * const saveAction = actionOptions({
+   *   actionKey: 'save',
+   *   request: (input: { id: string; data: string }) => api.save(input),
+   * });
+   * const result = await client.execute(saveAction, { id: '1', data: 'hello' });
+   * if (!result.enqueued) {
+   *   result.result; // fully typed as the return of api.save()
    * }
+   *
+   * @example
+   * // String key (backward compatible)
+   * const result = await client.execute('save', { id: '1', data: 'hello' });
    */
-  async execute(actionKey: string, input: unknown) {
+  async execute<TInput, TResult>(
+    config: ActionOptionsConfig<TInput, TResult>,
+    input: TInput,
+  ): Promise<ActionRunResult<TResult>>;
+  async execute(actionKey: string, input: unknown): Promise<ActionRunResult>;
+  async execute<TInput = unknown, TResult = unknown>(
+    configOrKey: string | ActionOptionsConfig<TInput, TResult>,
+    input: TInput,
+  ): Promise<ActionRunResult<TResult>> {
+    const actionKey =
+      typeof configOrKey === 'string' ? configOrKey : configOrKey.actionKey;
+
+    // Auto-register when called with config and the action is not yet registered.
+    // If already registered (e.g. by ActionObserver with flush callbacks), the
+    // existing registration is preserved so that flush callbacks are not lost.
+    if (typeof configOrKey !== 'string' && !this.#actions.has(actionKey)) {
+      this.#registerFromConfig(configOrKey);
+    }
+
     const action = this.#actions.get(actionKey);
     if (action === undefined) {
       throw new Error(
@@ -487,7 +517,7 @@ export class ConnectivityClient {
 
     // Immediate execution only when confirmed online — if unknown, queue and flush after detector emits
     if (!isConfirmedOnline) {
-      return { enqueued: true as const, jobId } satisfies ActionRunResult;
+      return { enqueued: true as const, jobId };
     }
 
     const hasRunningDupe =
@@ -500,7 +530,7 @@ export class ConnectivityClient {
           j.status === 'running',
       );
     if (hasRunningDupe) {
-      return { enqueued: true as const, jobId } satisfies ActionRunResult;
+      return { enqueued: true as const, jobId };
     }
 
     this.#queuePatch(jobId, {
@@ -510,15 +540,22 @@ export class ConnectivityClient {
     this.#notifyQueue();
 
     try {
+      // Config path: call config.request directly — TResult is fully inferred,
+      // no type assertion needed. The Map is not involved in the request call or
+      // result typing; however, mergedOptions (whenOffline, retry) still comes from
+      // the Map's registered action.options (set above via auto-register or prior
+      // registerAction call).
+      // String path: call action.request from Map — result is unknown,
+      // TResult defaults to unknown so ActionRunResult<unknown> is returned.
+      if (typeof configOrKey !== 'string') {
+        const result = await configOrKey.request(input);
+        this.#onImmediateSuccess(jobId);
+        return { enqueued: false as const, result };
+      }
+
       const result = await action.request(input);
-      this.#queuePatch(jobId, { status: 'succeeded' });
-      this.#notifyQueue();
-      this.#scheduleTimer(() => {
-        this.#queueRemove(jobId);
-        this.#notifyQueue();
-      }, SUCCEEDED_JOB_CLEANUP_DELAY_MS);
-      void this.#flushQueue();
-      return { enqueued: false as const, result } satisfies ActionRunResult;
+      this.#onImmediateSuccess(jobId);
+      return { enqueued: false as const, result: result as TResult };
     } catch (error: unknown) {
       return this.#resolveExecuteFailure({
         error,
@@ -528,6 +565,35 @@ export class ConnectivityClient {
         mergedOptions,
       });
     }
+  }
+
+  #onImmediateSuccess(jobId: string) {
+    this.#queuePatch(jobId, { status: 'succeeded' });
+    this.#notifyQueue();
+    this.#scheduleTimer(() => {
+      this.#queueRemove(jobId);
+      this.#notifyQueue();
+    }, SUCCEEDED_JOB_CLEANUP_DELAY_MS);
+    void this.#flushQueue();
+  }
+
+  #registerFromConfig<TInput, TResult>(
+    config: ActionOptionsConfig<TInput, TResult>,
+  ) {
+    const { dedupeKey } = config;
+    this.registerAction(config.actionKey, {
+      request: (input) => config.request(input as TInput),
+      options: {
+        whenOffline: config.whenOffline,
+        retry: config.retry,
+        flushOption: config.flushOption,
+        dedupeKey:
+          dedupeKey !== undefined
+            ? (input) => dedupeKey(input as TInput)
+            : undefined,
+        dedupeOnFlush: config.dedupeOnFlush,
+      },
+    });
   }
 
   #enqueueJob(actionKey: string, input: unknown) {
@@ -610,7 +676,7 @@ export class ConnectivityClient {
       });
       this.#notifyQueue();
       void this.#flushQueue();
-      return { enqueued: true as const, jobId } satisfies ActionRunResult;
+      return { enqueued: true as const, jobId };
     }
 
     const currentAttempt = (job?.attempt ?? 0) + 1;
@@ -624,7 +690,7 @@ export class ConnectivityClient {
     this.#notifyQueue();
     this.#scheduleRetry(jobId, backoffMs);
     void this.#flushQueue();
-    return { enqueued: true as const, jobId } satisfies ActionRunResult;
+    return { enqueued: true as const, jobId };
   }
 
   // ─── Queue Control ───────────────────────────
