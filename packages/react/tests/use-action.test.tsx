@@ -144,6 +144,7 @@ describe('useAction', () => {
       wrapper: Wrapper,
     });
 
+    // Override with registerAction after useAction — the override is respected, causing a throw
     getConnectivityClient().registerAction('purchase', {
       request: async () => {
         throw new Error('failed');
