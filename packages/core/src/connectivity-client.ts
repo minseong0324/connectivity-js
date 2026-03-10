@@ -478,11 +478,8 @@ export class ConnectivityClient {
     const actionKey =
       typeof configOrKey === 'string' ? configOrKey : configOrKey.actionKey;
 
-    // Auto-register when called with config and the action is not yet registered.
-    // If already registered (e.g. by ActionObserver with flush callbacks), the
-    // existing registration is preserved so that flush callbacks are not lost.
-    if (typeof configOrKey !== 'string' && !this.#actions.has(actionKey)) {
-      this.#registerFromConfig(configOrKey);
+    if (typeof configOrKey !== 'string') {
+      this.#syncRegistrationFromConfig(configOrKey);
     }
 
     const action = this.#actions.get(actionKey);
@@ -540,19 +537,6 @@ export class ConnectivityClient {
     this.#notifyQueue();
 
     try {
-      // Config path: call config.request directly — TResult is fully inferred,
-      // no type assertion needed. The Map is not involved in the request call or
-      // result typing; however, mergedOptions (whenOffline, retry) still comes from
-      // the Map's registered action.options (set above via auto-register or prior
-      // registerAction call).
-      // String path: call action.request from Map — result is unknown,
-      // TResult defaults to unknown so ActionRunResult<unknown> is returned.
-      if (typeof configOrKey !== 'string') {
-        const result = await configOrKey.request(input);
-        this.#onImmediateSuccess(jobId);
-        return { enqueued: false as const, result };
-      }
-
       const result = await action.request(input);
       this.#onImmediateSuccess(jobId);
       return { enqueued: false as const, result: result as TResult };
@@ -577,11 +561,12 @@ export class ConnectivityClient {
     void this.#flushQueue();
   }
 
-  #registerFromConfig<TInput, TResult>(
+  #syncRegistrationFromConfig<TInput, TResult>(
     config: ActionOptionsConfig<TInput, TResult>,
   ) {
+    const existing = this.#actions.get(config.actionKey);
     const { dedupeKey } = config;
-    this.registerAction(config.actionKey, {
+    this.#actions.set(config.actionKey, {
       request: (input) => config.request(input as TInput),
       options: {
         whenOffline: config.whenOffline,
@@ -593,6 +578,9 @@ export class ConnectivityClient {
             : undefined,
         dedupeOnFlush: config.dedupeOnFlush,
       },
+      onFlushSuccess: existing?.onFlushSuccess,
+      onFlushError: existing?.onFlushError,
+      onFlushSettled: existing?.onFlushSettled,
     });
   }
 
@@ -758,6 +746,10 @@ export class ConnectivityClient {
 
   async #processJob(job: QueuedJob) {
     if (this.#destroyed) {
+      return;
+    }
+    const current = this.#queueGet(job.id);
+    if (current === undefined || current.status !== 'queued') {
       return;
     }
     const action = this.#actions.get(job.actionKey);
