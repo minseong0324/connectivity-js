@@ -1,5 +1,13 @@
 # @connectivity-js/react-devtools
 
+## 0.3.1
+
+### Patch Changes
+
+- Updated dependencies [[`19d2a19`](https://github.com/minseong0324/connectivity-js/commit/19d2a1921e131d4a79d7e7e8dded7a255813a41c), [`a130873`](https://github.com/minseong0324/connectivity-js/commit/a130873dbb90a42960ba87a4580b9217bce9f1c9), [`6f66724`](https://github.com/minseong0324/connectivity-js/commit/6f667240196aa66ce35ef83716a32b9a6c83f103)]:
+  - @connectivity-js/core@0.4.0
+  - @connectivity-js/devtools@0.3.1
+
 ## 0.3.0
 
 ### Minor Changes

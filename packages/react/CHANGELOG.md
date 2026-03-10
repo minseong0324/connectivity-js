@@ -1,5 +1,20 @@
 # @connectivity-js/react
 
+## 0.4.0
+
+### Minor Changes
+
+- fix: resolve 3 critical bugs — sync config/flush request path, split execute/executeAsync (React Query mutate/mutateAsync pattern), prevent retry+flush double execution ([#18](https://github.com/minseong0324/connectivity-js/pull/18))
+
+- refactor: extract `toRegisteredAction` utility, add `setOnJobError` setter for dynamic error handler updates ([#20](https://github.com/minseong0324/connectivity-js/pull/20))
+
+### Patch Changes
+
+- chore: improve caching in getCurrentResult, fix heartbeat cleanup race, fix DevTools panel positioning ([#21](https://github.com/minseong0324/connectivity-js/pull/21))
+
+- Updated dependencies [[`19d2a19`](https://github.com/minseong0324/connectivity-js/commit/19d2a1921e131d4a79d7e7e8dded7a255813a41c), [`a130873`](https://github.com/minseong0324/connectivity-js/commit/a130873dbb90a42960ba87a4580b9217bce9f1c9), [`6f66724`](https://github.com/minseong0324/connectivity-js/commit/6f667240196aa66ce35ef83716a32b9a6c83f103)]:
+  - @connectivity-js/core@0.4.0
+
 ## 0.3.0
 
 ### Minor Changes
