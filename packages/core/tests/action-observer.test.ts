@@ -371,9 +371,9 @@ describe('ActionObserver', () => {
     await observer.executeAsync({}).catch(() => {});
     const result1 = observer.getCurrentResult();
 
-    const failedJob = client.getQueue().find(
-      (j) => j.actionKey === 'save' && j.status === 'failed',
-    );
+    const failedJob = client
+      .getQueue()
+      .find((j) => j.actionKey === 'save' && j.status === 'failed');
     if (failedJob) {
       client.cancel(failedJob.id);
     }
