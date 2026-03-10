@@ -377,6 +377,26 @@ describe('ActionObserver', () => {
     expect(onSuccess2).toHaveBeenCalledOnce();
   });
 
+  test('#register merges defaultActionOptions', async () => {
+    const mock = createMockDetector();
+    const client = getConnectivityClient({ detectors: [mock.detector] });
+    client.start();
+    mock.emit({ status: 'offline', reason: 'test' });
+
+    const observer = new ActionObserver(
+      client,
+      {
+        actionKey: 'save',
+        request: vi.fn().mockResolvedValue('ok'),
+      },
+      { whenOffline: 'queue' },
+    );
+
+    await observer.executeAsync({});
+
+    expect(client.getQueue().length).toBe(1);
+  });
+
   describe('flush path callbacks', () => {
     test('onSuccess and onSettled are called when flush succeeds', async () => {
       const mock = createMockDetector();

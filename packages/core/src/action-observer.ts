@@ -1,4 +1,4 @@
-import type { ActionOptionsConfig } from './action-options';
+import { type ActionOptionsConfig, toRegisteredAction } from './action-options';
 import type { ConnectivityClient } from './connectivity-client';
 import type { ActionOptions } from './types';
 
@@ -140,28 +140,15 @@ export class ActionObserver<TInput = unknown, TResult = unknown> {
   }
 
   #register() {
-    const { dedupeKey } = this.#options;
-
-    this.#client.registerAction(this.#options.actionKey, {
-      request: (input) => this.#options.request(input as TInput),
-      options: {
-        whenOffline:
-          this.#options.whenOffline ?? this.#defaultActionOptions?.whenOffline,
-        retry: this.#options.retry ?? this.#defaultActionOptions?.retry,
-        flushOption:
-          this.#options.flushOption ?? this.#defaultActionOptions?.flushOption,
-        dedupeKey:
-          dedupeKey !== undefined
-            ? (input) => dedupeKey(input as TInput)
-            : undefined,
-        dedupeOnFlush:
-          this.#options.dedupeOnFlush ??
-          this.#defaultActionOptions?.dedupeOnFlush,
-      },
-      onFlushSuccess: (result) =>
-        this.#callbacks?.onSuccess?.(result as TResult),
-      onFlushError: (error) => this.#callbacks?.onError?.(error),
-      onFlushSettled: () => this.#callbacks?.onSettled?.(),
-    });
+    this.#client.registerAction(
+      this.#options.actionKey,
+      toRegisteredAction(this.#options, {
+        defaultActionOptions: this.#defaultActionOptions,
+        onFlushSuccess: (result) =>
+          this.#callbacks?.onSuccess?.(result as TResult),
+        onFlushError: (error) => this.#callbacks?.onError?.(error),
+        onFlushSettled: () => this.#callbacks?.onSettled?.(),
+      }),
+    );
   }
 }

@@ -48,8 +48,12 @@ export function ConnectivityProvider({
     configuredRef.current = true;
   }
 
+  const onJobErrorRef = useRef(onJobError);
+  onJobErrorRef.current = onJobError;
+
   useEffect(() => {
     const client = getConnectivityClient();
+    client.setOnJobError((error, job) => onJobErrorRef.current?.(error, job));
     client.start();
     return () => client.destroy();
   }, []);
