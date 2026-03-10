@@ -1489,5 +1489,110 @@ describe('ConnectivityClient', () => {
         "whenOffline='fail'",
       );
     });
+
+    test('offline → flush invokes config.request, not a stale Map wrapper', async () => {
+      const { client, mock } = createTestClient();
+      mock.emit({ status: 'offline', reason: 'test' });
+
+      const request = vi.fn().mockResolvedValue({ saved: true });
+      const action = actionOptions({
+        actionKey: 'flush-sync',
+        request,
+        whenOffline: 'queue',
+      });
+
+      await client.execute(action, { id: '1' });
+      expect(request).not.toHaveBeenCalled();
+
+      mock.emit({ status: 'online', reason: 'test' });
+      await vi.advanceTimersByTimeAsync(0);
+
+      expect(request).toHaveBeenCalledOnce();
+      expect(request).toHaveBeenCalledWith({ id: '1' });
+    });
+
+    test('config overload syncs Map even when action was previously registered', async () => {
+      const { client, mock } = createTestClient();
+      mock.emit({ status: 'online', reason: 'test' });
+
+      const staleRequest = vi.fn().mockResolvedValue('stale');
+      client.registerAction('sync-override', {
+        request: staleRequest,
+        options: {},
+      });
+
+      const freshRequest = vi.fn().mockResolvedValue('fresh');
+      const action = actionOptions({
+        actionKey: 'sync-override',
+        request: freshRequest,
+      });
+
+      const r = await client.execute(action, {});
+
+      expect(staleRequest).not.toHaveBeenCalled();
+      expect(freshRequest).toHaveBeenCalledOnce();
+      if (!r.enqueued) {
+        expect(r.result).toBe('fresh');
+      }
+    });
+  });
+
+  describe('retry + flush race condition', () => {
+    test('concurrent retry and flush do not double-execute the same job', async () => {
+      const { client, mock } = createTestClient();
+      const request = vi
+        .fn()
+        .mockImplementation(
+          () => new Promise((resolve) => setTimeout(() => resolve('ok'), 100)),
+        );
+      client.registerAction('dup', {
+        request,
+        options: { whenOffline: 'queue' },
+      });
+
+      mock.emit({ status: 'offline', reason: 'test' });
+      await client.execute('dup', {});
+
+      mock.emit({ status: 'online', reason: 'test' });
+
+      const job = client.getQueue()[0];
+      assert(job !== undefined);
+
+      await Promise.all([client.retry(job.id), client.flush()]);
+      await vi.advanceTimersByTimeAsync(200);
+
+      expect(request).toHaveBeenCalledOnce();
+    });
+
+    test('retry is no-op when job is already running', async () => {
+      const { client, mock } = createTestClient();
+      let resolveRequest!: (v: string) => void;
+      const request = vi.fn().mockImplementation(
+        () =>
+          new Promise<string>((resolve) => {
+            resolveRequest = resolve;
+          }),
+      );
+      client.registerAction('slow', {
+        request,
+        options: { whenOffline: 'queue' },
+      });
+
+      mock.emit({ status: 'offline', reason: 'test' });
+      await client.execute('slow', {});
+
+      mock.emit({ status: 'online', reason: 'test' });
+      await vi.advanceTimersByTimeAsync(0);
+
+      const job = client.getQueue()[0];
+      assert(job !== undefined);
+      expect(job.status).toBe('running');
+
+      await client.retry(job.id);
+      expect(request).toHaveBeenCalledOnce();
+
+      resolveRequest('done');
+      await vi.advanceTimersByTimeAsync(0);
+    });
   });
 });
