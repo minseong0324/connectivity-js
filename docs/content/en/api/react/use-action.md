@@ -9,10 +9,10 @@ function useAction<TInput, TResult>(
   options: ActionOptionsConfig<TInput, TResult>,
   callbacks?: UseActionCallbacks<TResult>,
 ): {
-  execute: (input: TInput) => Promise<
+  execute: (input: TInput) => void;
+  executeAsync: (input: TInput) => Promise<
     | { enqueued: true; jobId: string }
     | { enqueued: false; result: TResult }
-    | undefined
   >;
   pendingCount: number;
   lastError: unknown;
@@ -41,7 +41,7 @@ Can be extracted with `actionOptions()` or passed inline. Type inference works e
 |---|---|---|
 | `onSuccess` | `(result: TResult) => void` | Immediate execution succeeded. `result` inferred from `request` return type |
 | `onEnqueued` | `(jobId: string) => void` | Queued (offline or hasRunningDupe) |
-| `onError` | `(error: unknown) => void` | Execution failed. When provided, error is not re-thrown |
+| `onError` | `(error: unknown) => void` | Execution failed. Called as a side-effect before the error propagates |
 | `onSettled` | `() => void` | Called after direct execution (success or error). When queued, called after the job flushes (success or final failure) — not at enqueue time |
 
 Callbacks are synced on every render internally — **inline functions are safe, no stale closures**.
@@ -50,32 +50,30 @@ Callbacks are synced on every render internally — **inline functions are safe,
 
 | Field | Type | Description |
 |---|---|---|
-| `execute` | `(input: TInput) => Promise<...>` | Execute the action. Stable reference across renders |
+| `execute` | `(input: TInput) => void` | Fire-and-forget execution. Errors go to `onError`. Stable reference |
+| `executeAsync` | `(input: TInput) => Promise<...>` | Awaitable execution. Always throws on error (after calling `onError`). Stable reference |
 | `pendingCount` | `number` | `queued` + `running` job count for this action |
 | `lastError` | `unknown` | Error from the most recent `failed` job |
 
-### `execute` return value
+### `execute` vs `executeAsync`
 
-Discriminated union:
+Follows the same pattern as React Query's `mutate` / `mutateAsync`:
 
 ```ts
-const result = await execute(input);
+// Fire-and-forget — errors handled by onError callback
+execute(input);
 
-// 1. Queued
+// Awaitable — returns discriminated union, always throws on error
+const result = await executeAsync(input);
+
 if (result.enqueued) {
   result.jobId;  // string ✅
   result.result; // compile error ❌
 }
 
-// 2. Immediate success
 if (!result.enqueued) {
   result.result; // TResult ✅
   result.jobId;  // compile error ❌
-}
-
-// 3. onError swallowed the error
-if (result === undefined) {
-  // Handled by onError callback
 }
 ```
 
@@ -89,7 +87,7 @@ const { execute } = useAction({
   request: (input: { id: string; data: string }) => api.save(input),
 });
 
-await execute({ id: '1', data: 'hello' }); // input type inferred
+execute({ id: '1', data: 'hello' }); // fire-and-forget, input type inferred
 ```
 
 ### Reusable action
@@ -148,7 +146,7 @@ function SaveIndicator() {
 2. `useEffect(() => observer.setOptions(options, defaults.actions))` — in-place update on options or global defaults change
 3. `observer.setCallbacks(callbacks)` — synced every render (stale closure prevention)
 4. `useSyncExternalStore(observer.subscribe, observer.getCurrentResult)` — queue subscription
-5. `observer.execute(input)` — delegates to `ConnectivityClient` + invokes callbacks
+5. `observer.execute(input)` (void) / `observer.executeAsync(input)` (Promise) — delegates to `ConnectivityClient` + invokes callbacks
 
 `getCurrentResult()` memoizes the return value. Only creates a new reference when `pendingCount` or `lastError` actually changes.
 

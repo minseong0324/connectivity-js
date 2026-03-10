@@ -9,10 +9,10 @@ function useAction<TInput, TResult>(
   options: ActionOptionsConfig<TInput, TResult>,
   callbacks?: UseActionCallbacks<TResult>,
 ): {
-  execute: (input: TInput) => Promise<
+  execute: (input: TInput) => void;
+  executeAsync: (input: TInput) => Promise<
     | { enqueued: true; jobId: string }
     | { enqueued: false; result: TResult }
-    | undefined
   >;
   pendingCount: number;
   lastError: unknown;
@@ -41,7 +41,7 @@ function useAction<TInput, TResult>(
 |---|---|---|
 | `onSuccess` | `(result: TResult) => void` | 즉시 실행 성공. `result`는 `request` 반환 타입에서 추론 |
 | `onEnqueued` | `(jobId: string) => void` | 큐에 저장됨 (offline 또는 hasRunningDupe) |
-| `onError` | `(error: unknown) => void` | 실행 실패. 제공하면 에러가 re-throw되지 않음 |
+| `onError` | `(error: unknown) => void` | 실행 실패. 에러 전파 전에 side-effect로 호출됨 |
 | `onSettled` | `() => void` | 즉시 실행 시 성공/실패 후 호출. 큐에 저장된 경우 flush 완료(성공 또는 최종 실패) 후 호출 — enqueue 시점에는 호출되지 않음 |
 
 callback은 내부적으로 매 렌더 동기화되므로, **inline 함수를 넘겨도 stale closure가 발생하지 않습니다**.
@@ -50,32 +50,30 @@ callback은 내부적으로 매 렌더 동기화되므로, **inline 함수를 �
 
 | 필드 | 타입 | 설명 |
 |---|---|---|
-| `execute` | `(input: TInput) => Promise<...>` | action 실행. stable 참조 (렌더 간 동일) |
+| `execute` | `(input: TInput) => void` | fire-and-forget 실행. 에러는 `onError`로 전달. stable 참조 |
+| `executeAsync` | `(input: TInput) => Promise<...>` | awaitable 실행. 에러 시 항상 throw (`onError` 호출 후). stable 참조 |
 | `pendingCount` | `number` | 이 action의 `queued` + `running` job 수 |
 | `lastError` | `unknown` | 이 action의 가장 최근 `failed` job의 에러 |
 
-### `execute` 반환값
+### `execute` vs `executeAsync`
 
-discriminated union입니다:
+React Query의 `mutate` / `mutateAsync` 패턴과 동일합니다:
 
 ```ts
-const result = await execute(input);
+// fire-and-forget — 에러는 onError 콜백이 처리
+execute(input);
 
-// 1. 큐에 저장됨
+// awaitable — discriminated union 반환, 에러 시 항상 throw
+const result = await executeAsync(input);
+
 if (result.enqueued) {
   result.jobId;  // string ✅
   result.result; // 컴파일 에러 ❌
 }
 
-// 2. 즉시 실행 완료
 if (!result.enqueued) {
   result.result; // TResult ✅
   result.jobId;  // 컴파일 에러 ❌
-}
-
-// 3. onError가 에러를 삼킨 경우
-if (result === undefined) {
-  // onError callback에서 처리됨
 }
 ```
 
@@ -89,8 +87,8 @@ const { execute } = useAction({
   request: (input: { id: string; data: string }) => api.save(input),
 });
 
-// input 타입이 자동 추론됨
-await execute({ id: '1', data: 'hello' });
+// fire-and-forget, input 타입이 자동 추론됨
+execute({ id: '1', data: 'hello' });
 ```
 
 ### 재사용 가능한 action
@@ -129,7 +127,6 @@ const { execute, pendingCount, lastError } = useAction(
       showQueuedNotice(jobId);
     },
     onError: (error) => {
-      // 에러를 삼킴 (re-throw 안 함)
       reportError(error);
     },
     onSettled: () => {
@@ -163,7 +160,7 @@ function SaveIndicator() {
 2. `useEffect(() => observer.setOptions(options, defaults.actions))` — options와 전역 기본값 변경 시 in-place 갱신
 3. `observer.setCallbacks(callbacks)` — 매 렌더 동기화 (stale closure 방지)
 4. `useSyncExternalStore(observer.subscribe, observer.getCurrentResult)` — 큐 상태 구독
-5. `observer.execute(input)` — `ConnectivityClient`에 위임 + callback 호출
+5. `observer.execute(input)` (void) / `observer.executeAsync(input)` (Promise) — `ConnectivityClient`에 위임 + callback 호출
 
 `getCurrentResult()`는 반환값을 memoize합니다. `pendingCount`와 `lastError`가 실제로 변경될 때만 새 참조를 반환하여 불필요한 re-render를 방지합니다.
 

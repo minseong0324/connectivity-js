@@ -7,7 +7,7 @@
 - hook당 1개 인스턴스 (`useState`로 생성, stable 참조)
 - `setOptions()`로 options를 in-place 갱신 (re-mount 없이 action 재등록)
 - `subscribe`, `getCurrentResult`를 `useSyncExternalStore`에 직접 연결
-- `execute()`로 `ConnectivityClient`에 위임 + callback 호출
+- `execute()` (void) / `executeAsync()` (Promise) — `ConnectivityClient`에 위임 + callback 호출
 
 ## 시그니처
 
@@ -23,10 +23,10 @@ class ActionObserver<TInput = unknown, TResult = unknown> {
   setCallbacks(callbacks?: UseActionCallbacks<TResult>): void;
   subscribe(callback: () => void): () => void;
   getCurrentResult(): { pendingCount: number; lastError: unknown };
-  execute(input: TInput): Promise<
+  execute(input: TInput): void;
+  executeAsync(input: TInput): Promise<
     | { enqueued: true; jobId: string }
     | { enqueued: false; result: TResult }
-    | undefined
   >;
 }
 ```
