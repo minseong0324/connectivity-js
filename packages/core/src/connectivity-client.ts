@@ -1,4 +1,4 @@
-import type { ActionOptionsConfig } from './action-options';
+import { type ActionOptionsConfig, toRegisteredAction } from './action-options';
 import {
   DEFAULT_BACKOFF_MS,
   delay,
@@ -140,6 +140,16 @@ export class ConnectivityClient {
       clearTimeout(id);
     }
     this.#timerIds.clear();
+  }
+
+  /**
+   * Updates the error handler called when a job fails during flush.
+   * Used by `ConnectivityProvider` to track the latest `onJobError` callback via ref.
+   */
+  setOnJobError(
+    handler: ((error: unknown, job: QueuedJob) => void) | undefined,
+  ) {
+    this.#onJobError = handler;
   }
 
   // ─── Lifecycle ────────────────────────────
@@ -511,14 +521,18 @@ export class ConnectivityClient {
 
     const jobId = this.#enqueueJob(actionKey, input);
     const job = this.#queueGet(jobId);
+    if (job === undefined) {
+      throw new Error(
+        `[ConnectivityClient] Job "${jobId}" unexpectedly missing after enqueue.`,
+      );
+    }
 
-    // Immediate execution only when confirmed online — if unknown, queue and flush after detector emits
     if (!isConfirmedOnline) {
       return { enqueued: true as const, jobId };
     }
 
     const hasRunningDupe =
-      job?.dedupeKey !== undefined &&
+      job.dedupeKey !== undefined &&
       this.#queueList().some(
         (j) =>
           j.id !== jobId &&
@@ -532,7 +546,7 @@ export class ConnectivityClient {
 
     this.#queuePatch(jobId, {
       status: 'running',
-      attempt: (job?.attempt ?? 0) + 1,
+      attempt: job.attempt + 1,
     });
     this.#notifyQueue();
 
@@ -565,23 +579,14 @@ export class ConnectivityClient {
     config: ActionOptionsConfig<TInput, TResult>,
   ) {
     const existing = this.#actions.get(config.actionKey);
-    const { dedupeKey } = config;
-    this.#actions.set(config.actionKey, {
-      request: (input) => config.request(input as TInput),
-      options: {
-        whenOffline: config.whenOffline,
-        retry: config.retry,
-        flushOption: config.flushOption,
-        dedupeKey:
-          dedupeKey !== undefined
-            ? (input) => dedupeKey(input as TInput)
-            : undefined,
-        dedupeOnFlush: config.dedupeOnFlush,
-      },
-      onFlushSuccess: existing?.onFlushSuccess,
-      onFlushError: existing?.onFlushError,
-      onFlushSettled: existing?.onFlushSettled,
-    });
+    this.#actions.set(
+      config.actionKey,
+      toRegisteredAction(config, {
+        onFlushSuccess: existing?.onFlushSuccess,
+        onFlushError: existing?.onFlushError,
+        onFlushSettled: existing?.onFlushSettled,
+      }),
+    );
   }
 
   #enqueueJob(actionKey: string, input: unknown) {
