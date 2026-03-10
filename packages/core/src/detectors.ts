@@ -89,8 +89,12 @@ export function heartbeatDetector(options: HeartbeatDetectorOptions) {
 
       let currentStatus: DetectorEvent['status'] = 'unknown';
       let activeController: AbortController | null = null;
+      let stopped = false;
 
       const probe = async () => {
+        if (stopped) {
+          return;
+        }
         const controller = new AbortController();
         activeController = controller;
         const start = performance.now();
@@ -106,12 +110,17 @@ export function heartbeatDetector(options: HeartbeatDetectorOptions) {
             cache: 'no-store',
             signal: controller.signal,
           });
+          if (stopped) {
+            return;
+          }
           const rttMs = Math.round(performance.now() - start);
           const quality = getConnectionQuality(rttMs);
           listener({ status: 'online', reason: 'heartbeat', quality });
           currentStatus = 'online';
         } catch {
-          // Ignore cleanup abort (detector stopped); treat timeout abort as offline
+          if (stopped) {
+            return;
+          }
           if (controller.signal.aborted && !timedOut) {
             return;
           }
@@ -129,6 +138,7 @@ export function heartbeatDetector(options: HeartbeatDetectorOptions) {
       const intervalId = setInterval(() => void probe(), intervalMs);
 
       return () => {
+        stopped = true;
         clearInterval(intervalId);
         activeController?.abort();
       };

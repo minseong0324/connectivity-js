@@ -32,6 +32,7 @@ export class ActionObserver<TInput = unknown, TResult = unknown> {
   #callbacks?: UseActionCallbacks<TResult>;
   #defaultActionOptions?: Partial<ActionOptions>;
   #cachedResult = { pendingCount: 0, lastError: undefined as unknown };
+  #cachedFailedJobId: string | undefined = undefined;
 
   constructor(
     client: ConnectivityClient,
@@ -82,16 +83,18 @@ export class ActionObserver<TInput = unknown, TResult = unknown> {
     const pendingCount = jobs.filter(
       (j) => j.status === 'queued' || j.status === 'running',
     ).length;
-    const lastError = jobs.find((j) => j.status === 'failed')?.lastError;
+    const failedJob = jobs.find((j) => j.status === 'failed');
+    const failedJobId = failedJob?.id;
 
     if (
       this.#cachedResult.pendingCount === pendingCount &&
-      this.#cachedResult.lastError === lastError
+      this.#cachedFailedJobId === failedJobId
     ) {
       return this.#cachedResult;
     }
 
-    this.#cachedResult = { pendingCount, lastError };
+    this.#cachedFailedJobId = failedJobId;
+    this.#cachedResult = { pendingCount, lastError: failedJob?.lastError };
     return this.#cachedResult;
   }
 

@@ -44,7 +44,9 @@ export function Connectivity({
   const resolvedFallback = fallback ?? defaults.connectivity?.fallback ?? null;
   const resolvedDelayMs = delayMs ?? defaults.connectivity?.delayMs ?? 0;
 
-  const [committed, setCommitted] = useState(!isOnline && resolvedDelayMs <= 0);
+  const [committed, setCommitted] = useState(
+    () => !isOnline && resolvedDelayMs <= 0,
+  );
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {

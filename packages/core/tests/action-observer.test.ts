@@ -325,6 +325,72 @@ describe('ActionObserver', () => {
     expect(result1).toBe(result2);
   });
 
+  test('getCurrentResult keeps same reference when job object is recreated but error is unchanged', async () => {
+    const mock = createMockDetector();
+    const client = getConnectivityClient({ detectors: [mock.detector] });
+    client.start();
+    mock.emit({ status: 'online', reason: 'test' });
+
+    const observer = new ActionObserver(client, {
+      actionKey: 'save',
+      request: async () => {
+        throw new Error('fail');
+      },
+    });
+
+    await observer.executeAsync({}).catch(() => {});
+
+    const result1 = observer.getCurrentResult();
+    expect(result1.lastError).toBeInstanceOf(Error);
+
+    client.registerAction('other', {
+      request: vi.fn(),
+      options: { whenOffline: 'queue' },
+    });
+    mock.emit({ status: 'offline', reason: 'test' });
+    await client.execute('other', {});
+
+    const result2 = observer.getCurrentResult();
+
+    expect(result2).toBe(result1);
+  });
+
+  test('getCurrentResult returns new reference when failed job changes', async () => {
+    const mock = createMockDetector();
+    const client = getConnectivityClient({ detectors: [mock.detector] });
+    client.start();
+    mock.emit({ status: 'online', reason: 'test' });
+
+    const observer = new ActionObserver(client, {
+      actionKey: 'save',
+      request: async () => {
+        throw new Error('first');
+      },
+    });
+
+    await observer.executeAsync({}).catch(() => {});
+    const result1 = observer.getCurrentResult();
+
+    const failedJob = client
+      .getQueue()
+      .find((j) => j.actionKey === 'save' && j.status === 'failed');
+    if (failedJob) {
+      client.cancel(failedJob.id);
+    }
+
+    client.registerAction('save', {
+      request: async () => {
+        throw new Error('second');
+      },
+      options: {},
+    });
+    await observer.executeAsync({}).catch(() => {});
+
+    const result2 = observer.getCurrentResult();
+
+    expect(result2).not.toBe(result1);
+  });
+
   test('registerAction after observer creation overrides the request for execute', async () => {
     const mock = createMockDetector();
     const client = getConnectivityClient({ detectors: [mock.detector] });
