@@ -7,7 +7,7 @@ Mediator class between the `useAction` hook and `ConnectivityClient`. Not typica
 - One instance per hook (`useState`, stable reference)
 - `setOptions()` for in-place option updates (re-registers action without remount)
 - `subscribe` and `getCurrentResult` connect directly to `useSyncExternalStore`
-- `execute()` delegates to `ConnectivityClient` and invokes callbacks
+- `execute()` (void) / `executeAsync()` (Promise) — delegates to `ConnectivityClient` + invokes callbacks
 
 ## Signature
 
@@ -23,10 +23,10 @@ class ActionObserver<TInput = unknown, TResult = unknown> {
   setCallbacks(callbacks?: UseActionCallbacks<TResult>): void;
   subscribe(callback: () => void): () => void;
   getCurrentResult(): { pendingCount: number; lastError: unknown };
-  execute(input: TInput): Promise<
+  execute(input: TInput): void;
+  executeAsync(input: TInput): Promise<
     | { enqueued: true; jobId: string }
     | { enqueued: false; result: TResult }
-    | undefined
   >;
 }
 ```

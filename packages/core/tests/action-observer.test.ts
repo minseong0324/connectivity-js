@@ -79,8 +79,8 @@ describe('ActionObserver', () => {
       whenOffline: 'queue',
     });
 
-    await observer.execute({});
-    await observer.execute({});
+    await observer.executeAsync({});
+    await observer.executeAsync({});
 
     const result = observer.getCurrentResult();
     expect(result.pendingCount).toBe(2);
@@ -100,7 +100,7 @@ describe('ActionObserver', () => {
     });
     observer.setCallbacks({ onSuccess });
 
-    await observer.execute({});
+    await observer.executeAsync({});
 
     expect(onSuccess).toHaveBeenCalledWith({ id: '42' });
   });
@@ -119,12 +119,27 @@ describe('ActionObserver', () => {
     });
     observer.setCallbacks({ onEnqueued });
 
-    await observer.execute({});
+    await observer.executeAsync({});
 
     expect(onEnqueued).toHaveBeenCalledWith(expect.stringContaining('job_'));
   });
 
-  test('execute failure + onError callback swallows error', async () => {
+  test('executeAsync returns ActionRunResult on success', async () => {
+    const mock = createMockDetector();
+    const client = getConnectivityClient({ detectors: [mock.detector] });
+    client.start();
+    mock.emit({ status: 'online', reason: 'test' });
+
+    const observer = new ActionObserver(client, {
+      actionKey: 'save',
+      request: async () => ({ id: '42' }),
+    });
+
+    const r = await observer.executeAsync({});
+    expect(r).toEqual({ enqueued: false, result: { id: '42' } });
+  });
+
+  test('executeAsync always throws even when onError is provided', async () => {
     const mock = createMockDetector();
     const client = getConnectivityClient({ detectors: [mock.detector] });
     client.start();
@@ -134,17 +149,91 @@ describe('ActionObserver', () => {
     const observer = new ActionObserver(client, {
       actionKey: 'save',
       request: async () => {
-        throw new Error('failed');
+        throw new Error('boom');
       },
     });
     observer.setCallbacks({ onError });
 
-    const result = await observer.execute({});
+    await expect(observer.executeAsync({})).rejects.toThrow('boom');
+  });
+
+  test('executeAsync calls onError callback before throwing', async () => {
+    const mock = createMockDetector();
+    const client = getConnectivityClient({ detectors: [mock.detector] });
+    client.start();
+    mock.emit({ status: 'online', reason: 'test' });
+
+    const onError = vi.fn();
+    const observer = new ActionObserver(client, {
+      actionKey: 'save',
+      request: async () => {
+        throw new Error('boom');
+      },
+    });
+    observer.setCallbacks({ onError });
+
+    await observer.executeAsync({}).catch(() => {});
+    expect(onError).toHaveBeenCalledWith(
+      expect.objectContaining({ message: 'boom' }),
+    );
+  });
+
+  test('executeAsync calls onSettled after error (via finally)', async () => {
+    const mock = createMockDetector();
+    const client = getConnectivityClient({ detectors: [mock.detector] });
+    client.start();
+    mock.emit({ status: 'online', reason: 'test' });
+
+    const onSettled = vi.fn();
+    const observer = new ActionObserver(client, {
+      actionKey: 'save',
+      request: async () => {
+        throw new Error('boom');
+      },
+    });
+    observer.setCallbacks({ onSettled });
+
+    await observer.executeAsync({}).catch(() => {});
+    expect(onSettled).toHaveBeenCalledOnce();
+  });
+
+  test('execute (void) does not throw when onError is provided', async () => {
+    const mock = createMockDetector();
+    const client = getConnectivityClient({ detectors: [mock.detector] });
+    client.start();
+    mock.emit({ status: 'online', reason: 'test' });
+
+    const onError = vi.fn();
+    const observer = new ActionObserver(client, {
+      actionKey: 'save',
+      request: async () => {
+        throw new Error('boom');
+      },
+    });
+    observer.setCallbacks({ onError });
+
+    observer.execute({});
+    await vi.advanceTimersByTimeAsync(0);
 
     expect(onError).toHaveBeenCalledWith(
-      expect.objectContaining({ message: 'failed' }),
+      expect.objectContaining({ message: 'boom' }),
     );
-    expect(result).toBeUndefined();
+  });
+
+  test('execute (void) does not throw synchronously without onError', () => {
+    const mock = createMockDetector();
+    const client = getConnectivityClient({ detectors: [mock.detector] });
+    client.start();
+    mock.emit({ status: 'online', reason: 'test' });
+
+    const observer = new ActionObserver(client, {
+      actionKey: 'save',
+      request: async () => {
+        throw new Error('boom');
+      },
+    });
+
+    expect(() => observer.execute({})).not.toThrow();
   });
 
   test('onSettled is called on both success and failure', async () => {
@@ -160,7 +249,7 @@ describe('ActionObserver', () => {
     });
     observer.setCallbacks({ onSettled });
 
-    await observer.execute({});
+    await observer.executeAsync({});
     expect(onSettled).toHaveBeenCalledOnce();
   });
 
@@ -176,7 +265,7 @@ describe('ActionObserver', () => {
       whenOffline: 'queue',
     });
 
-    await observer.execute({});
+    await observer.executeAsync({});
 
     const result1 = observer.getCurrentResult();
     const result2 = observer.getCurrentResult();
@@ -200,7 +289,7 @@ describe('ActionObserver', () => {
     const result1 = observer.getCurrentResult();
     expect(result1.pendingCount).toBe(0);
 
-    await observer.execute({});
+    await observer.executeAsync({});
 
     const result2 = observer.getCurrentResult();
     expect(result2.pendingCount).toBe(1);
@@ -224,7 +313,7 @@ describe('ActionObserver', () => {
       whenOffline: 'queue',
     });
 
-    await observer.execute({});
+    await observer.executeAsync({});
     const result1 = observer.getCurrentResult();
 
     // add job to other action
@@ -258,7 +347,7 @@ describe('ActionObserver', () => {
     // #register(), which re-registers the observer's own callbacks.
     client.registerAction('save', { request: override, options: {} });
 
-    const r = await observer.execute({});
+    const r = await observer.executeAsync({});
 
     // The Map override is used — original is never called
     expect(original).not.toHaveBeenCalled();
@@ -282,7 +371,7 @@ describe('ActionObserver', () => {
     observer.setCallbacks({ onSuccess: onSuccess1 });
     observer.setCallbacks({ onSuccess: onSuccess2 }); // update
 
-    await observer.execute({});
+    await observer.executeAsync({});
 
     expect(onSuccess1).not.toHaveBeenCalled();
     expect(onSuccess2).toHaveBeenCalledOnce();
@@ -304,7 +393,7 @@ describe('ActionObserver', () => {
       });
       observer.setCallbacks({ onSuccess, onSettled });
 
-      await observer.execute({});
+      await observer.executeAsync({});
 
       mock.emit({ status: 'online', reason: 'test' });
       await vi.advanceTimersByTimeAsync(0);
@@ -328,7 +417,7 @@ describe('ActionObserver', () => {
       });
       observer.setCallbacks({ onError, onSettled });
 
-      await observer.execute({});
+      await observer.executeAsync({});
 
       mock.emit({ status: 'online', reason: 'test' });
       await vi.advanceTimersByTimeAsync(0);
@@ -354,7 +443,7 @@ describe('ActionObserver', () => {
       });
 
       observer.setCallbacks({ onSuccess: onSuccess1 });
-      await observer.execute({});
+      await observer.executeAsync({});
 
       observer.setCallbacks({ onSuccess: onSuccess2 }); // simulate re-render
 

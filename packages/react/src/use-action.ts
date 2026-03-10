@@ -55,5 +55,10 @@ export function useAction<TInput, TResult>(
     [observer],
   );
 
-  return { execute, ...result };
+  const executeAsync = useCallback(
+    (input: TInput) => observer.executeAsync(input),
+    [observer],
+  );
+
+  return { execute, executeAsync, ...result };
 }
