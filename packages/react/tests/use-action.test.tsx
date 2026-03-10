@@ -48,7 +48,7 @@ describe('useAction', () => {
     ConnectivityClient.resetInstance();
   });
 
-  test('execute return value is a discriminated union', async () => {
+  test('executeAsync return value is a discriminated union', async () => {
     const { Wrapper, mock } = createTestWrapper();
     getConnectivityClient().registerAction('purchase', {
       request: async () => ({ id: '42' }),
@@ -65,7 +65,7 @@ describe('useAction', () => {
 
     let returned: unknown;
     await act(async () => {
-      returned = await result.current.execute({ orderId: '1' });
+      returned = await result.current.executeAsync({ orderId: '1' });
     });
     expect(returned).toEqual({ enqueued: false, result: { id: '42' } });
   });
@@ -109,7 +109,7 @@ describe('useAction', () => {
     });
 
     await act(async () => {
-      await result.current.execute({ orderId: '1' });
+      await result.current.executeAsync({ orderId: '1' });
     });
     expect(onSuccess).toHaveBeenCalledWith({ id: '42' });
   });
@@ -131,12 +131,12 @@ describe('useAction', () => {
     });
 
     await act(async () => {
-      await result.current.execute({ orderId: '1' });
+      await result.current.executeAsync({ orderId: '1' });
     });
     expect(onEnqueued).toHaveBeenCalledWith(expect.stringContaining('job_'));
   });
 
-  test('swallows error when onError is provided', async () => {
+  test('execute (void) does not throw when onError is provided', async () => {
     const { Wrapper, mock } = createTestWrapper();
 
     const onError = vi.fn();
@@ -144,7 +144,6 @@ describe('useAction', () => {
       wrapper: Wrapper,
     });
 
-    // Override with registerAction after useAction — the override is respected, causing a throw
     getConnectivityClient().registerAction('purchase', {
       request: async () => {
         throw new Error('failed');
@@ -157,12 +156,64 @@ describe('useAction', () => {
     });
 
     await act(async () => {
-      const r = await result.current.execute({ orderId: '1' });
-      expect(r).toBeUndefined();
+      result.current.execute({ orderId: '1' });
     });
+
     expect(onError).toHaveBeenCalledWith(
       expect.objectContaining({ message: 'failed' }),
     );
+  });
+
+  test('executeAsync throws even when onError is provided', async () => {
+    const { Wrapper, mock } = createTestWrapper();
+
+    const onError = vi.fn();
+    const { result } = renderHook(() => useAction(testAction, { onError }), {
+      wrapper: Wrapper,
+    });
+
+    getConnectivityClient().registerAction('purchase', {
+      request: async () => {
+        throw new Error('failed');
+      },
+      options: {},
+    });
+
+    await act(async () => {
+      mock.emit({ status: 'online', reason: 'test' });
+    });
+
+    await act(async () => {
+      await expect(
+        result.current.executeAsync({ orderId: '1' }),
+      ).rejects.toThrow('failed');
+    });
+
+    expect(onError).toHaveBeenCalledWith(
+      expect.objectContaining({ message: 'failed' }),
+    );
+  });
+
+  test('executeAsync returns discriminated union on success', async () => {
+    const { Wrapper, mock } = createTestWrapper();
+    getConnectivityClient().registerAction('purchase', {
+      request: async () => ({ id: '42' }),
+      options: {},
+    });
+
+    const { result } = renderHook(() => useAction(testAction), {
+      wrapper: Wrapper,
+    });
+
+    await act(async () => {
+      mock.emit({ status: 'online', reason: 'test' });
+    });
+
+    let returned: unknown;
+    await act(async () => {
+      returned = await result.current.executeAsync({ orderId: '1' });
+    });
+    expect(returned).toEqual({ enqueued: false, result: { id: '42' } });
   });
 
   test('calls onSettled on success', async () => {
@@ -182,7 +233,7 @@ describe('useAction', () => {
     });
 
     await act(async () => {
-      await result.current.execute({ orderId: '1' });
+      await result.current.executeAsync({ orderId: '1' });
     });
     expect(onSettled).toHaveBeenCalledOnce();
   });
