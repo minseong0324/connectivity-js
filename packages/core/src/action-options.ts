@@ -1,4 +1,9 @@
-import type { FlushOption, RetryPolicy } from './types';
+import type {
+  ActionOptions,
+  FlushOption,
+  RegisteredAction,
+  RetryPolicy,
+} from './types';
 
 /**
  * Action configuration type passed to `actionOptions()` and `useAction()`
@@ -60,4 +65,39 @@ export function actionOptions<TInput, TResult>(
   config: ActionOptionsConfig<TInput, TResult>,
 ) {
   return config;
+}
+
+/**
+ * Converts an `ActionOptionsConfig` into a `RegisteredAction` for the client's internal Map.
+ *
+ * All `as TInput` / `as TResult` casts are consolidated here — this is the single
+ * type boundary between the generic config and the `unknown`-based `RegisteredAction`.
+ */
+export function toRegisteredAction<TInput, TResult>(
+  config: ActionOptionsConfig<TInput, TResult>,
+  overrides?: {
+    defaultActionOptions?: Partial<ActionOptions>;
+    onFlushSuccess?: (result: unknown) => void;
+    onFlushError?: (error: unknown) => void;
+    onFlushSettled?: () => void;
+  },
+): RegisteredAction {
+  const { dedupeKey } = config;
+  const defaults = overrides?.defaultActionOptions;
+  return {
+    request: (input) => config.request(input as TInput),
+    options: {
+      whenOffline: config.whenOffline ?? defaults?.whenOffline,
+      retry: config.retry ?? defaults?.retry,
+      flushOption: config.flushOption ?? defaults?.flushOption,
+      dedupeKey:
+        dedupeKey !== undefined
+          ? (input) => dedupeKey(input as TInput)
+          : undefined,
+      dedupeOnFlush: config.dedupeOnFlush ?? defaults?.dedupeOnFlush,
+    },
+    onFlushSuccess: overrides?.onFlushSuccess,
+    onFlushError: overrides?.onFlushError,
+    onFlushSettled: overrides?.onFlushSettled,
+  };
 }
