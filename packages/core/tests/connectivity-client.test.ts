@@ -1537,6 +1537,54 @@ describe('ConnectivityClient', () => {
     });
   });
 
+  describe('setOnJobError', () => {
+    test('setOnJobError updates the error handler dynamically', async () => {
+      const firstHandler = vi.fn();
+      const secondHandler = vi.fn();
+
+      const { client, mock } = createTestClient({ onJobError: firstHandler });
+      mock.emit({ status: 'offline', reason: 'test' });
+
+      client.registerAction('fail-action', {
+        request: vi.fn().mockRejectedValue(new Error('boom')),
+        options: { whenOffline: 'queue' },
+      });
+
+      await client.execute('fail-action', {});
+
+      client.setOnJobError(secondHandler);
+
+      mock.emit({ status: 'online', reason: 'test' });
+      await vi.advanceTimersByTimeAsync(0);
+
+      expect(firstHandler).not.toHaveBeenCalled();
+      expect(secondHandler).toHaveBeenCalledWith(
+        expect.objectContaining({ message: 'boom' }),
+        expect.objectContaining({ actionKey: 'fail-action' }),
+      );
+    });
+
+    test('setOnJobError with undefined disables the handler', async () => {
+      const handler = vi.fn();
+      const { client, mock } = createTestClient({ onJobError: handler });
+      mock.emit({ status: 'offline', reason: 'test' });
+
+      client.registerAction('fail-action', {
+        request: vi.fn().mockRejectedValue(new Error('boom')),
+        options: { whenOffline: 'queue' },
+      });
+
+      await client.execute('fail-action', {});
+
+      client.setOnJobError(undefined);
+
+      mock.emit({ status: 'online', reason: 'test' });
+      await vi.advanceTimersByTimeAsync(0);
+
+      expect(handler).not.toHaveBeenCalled();
+    });
+  });
+
   describe('retry + flush race condition', () => {
     test('concurrent retry and flush do not double-execute the same job', async () => {
       const { client, mock } = createTestClient();
