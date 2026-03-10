@@ -10,7 +10,6 @@ function escapeHtml(s: string): string {
 const PANEL_STYLES: Record<string, string> = {
   position: 'fixed',
   bottom: '16px',
-  right: '16px',
   width: '360px',
   maxHeight: '400px',
   fontFamily: 'ui-sans-serif, system-ui, sans-serif',
@@ -114,7 +113,9 @@ export function renderConnectivityDevTools(
   panel.setAttribute('data-connectivity-devtools', 'true');
   applyStyles(panel, {
     ...PANEL_STYLES,
-    [position === 'bottom-right' ? 'right' : 'left']: '16px',
+    ...(position === 'bottom-right'
+      ? { right: '16px', left: 'auto' }
+      : { left: '16px', right: 'auto' }),
   });
 
   const header = document.createElement('div');
@@ -154,11 +155,12 @@ export function renderConnectivityDevTools(
     statusSection.appendChild(statusDot);
     statusSection.appendChild(statusText);
 
-    if (
-      snap.state.quality.rttMs ??
-      snap.state.quality.effectiveType ??
-      snap.state.quality.downlink
-    ) {
+    const hasQualityInfo =
+      snap.state.quality.rttMs !== undefined ||
+      snap.state.quality.effectiveType !== undefined ||
+      snap.state.quality.downlink !== undefined;
+
+    if (hasQualityInfo) {
       const qualityParts: string[] = [];
       if (snap.state.quality.rttMs !== undefined) {
         qualityParts.push(`rtt ${snap.state.quality.rttMs}ms`);
