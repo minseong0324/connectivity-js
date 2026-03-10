@@ -96,22 +96,23 @@ export class ActionObserver<TInput = unknown, TResult = unknown> {
   }
 
   /**
-   * Executes the action and handles callbacks.
-   *
-   * Uses the string overload of `client.execute()` to ensure the Map's
-   * registered request is always used — consistent with the flush queue path.
-   * `engineResult.result` is `unknown` from the string overload, so a
-   * cast to `TResult` is applied.
-   *
-   * **Safety condition:** The cast is safe as long as the Map entry for
-   * `this.#options.actionKey` returns a value compatible with `TResult`.
-   * In normal `useAction` usage this is always true because `setOptions()`
-   * re-runs `#register()` on every render, keeping the Map in sync with the
-   * declared `TResult`. A manual `registerAction()` override with a different
-   * return type between renders would make the cast technically incorrect until
-   * the next `setOptions()` call restores the correct registration.
+   * Fire-and-forget execution. Errors are forwarded to `onError` if set;
+   * otherwise silently caught. Use `executeAsync` when you need the result.
    */
-  async execute(input: TInput) {
+  execute(input: TInput): void {
+    void this.executeAsync(input).catch(() => {});
+  }
+
+  /**
+   * Executes the action, invokes callbacks, and returns the result.
+   * Always throws on error (after calling `onError` if provided).
+   * Follows the same contract as React Query's `mutateAsync`.
+   */
+  async executeAsync(
+    input: TInput,
+  ): Promise<
+    { enqueued: true; jobId: string } | { enqueued: false; result: TResult }
+  > {
     let wasEnqueued = false;
     try {
       const engineResult = await this.#client.execute(
@@ -129,11 +130,8 @@ export class ActionObserver<TInput = unknown, TResult = unknown> {
       this.#callbacks?.onSuccess?.(typedResult);
       return { enqueued: false as const, result: typedResult };
     } catch (error: unknown) {
-      if (this.#callbacks?.onError === undefined) {
-        throw error;
-      }
-      this.#callbacks.onError(error);
-      return undefined;
+      this.#callbacks?.onError?.(error);
+      throw error;
     } finally {
       if (!wasEnqueued) {
         this.#callbacks?.onSettled?.();
