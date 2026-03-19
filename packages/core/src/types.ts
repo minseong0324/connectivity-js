@@ -41,7 +41,16 @@ export interface ConnectivityTransition {
   duration: number;
 }
 
-/** Event emitted by a detector */
+/**
+ * Event emitted by a detector to report a connectivity change.
+ *
+ * Pass this to the `listener` function inside {@link Detector.start}.
+ *
+ * @example
+ * listener({ status: 'online', reason: 'websocket' });
+ * listener({ status: 'offline', reason: 'poll' });
+ * listener({ status: 'online', reason: 'heartbeat', quality: { rttMs: 42 } });
+ */
 export interface DetectorEvent {
   status: ConnectivityStatus;
   /** Reason for the event (e.g. `'navigator'`, `'heartbeat'`) */
@@ -50,15 +59,63 @@ export interface DetectorEvent {
 }
 
 /**
- * Interface for a detector that senses connectivity status
+ * Interface for a detector that senses connectivity status.
  *
  * Calling `start()` begins detection; the returned cleanup function stops it.
+ * The cleanup is called automatically when the client is destroyed.
  *
  * @example
- * const detector: Detector = {
+ * // Polling (periodic HTTP check)
+ * const pollDetector: Detector = {
  *   start: (listener) => {
- *     const id = setInterval(() => listener({ status: 'online', reason: 'poll' }), 5000);
+ *     const id = setInterval(async () => {
+ *       try {
+ *         await fetch('/api/health', { method: 'HEAD', cache: 'no-store' });
+ *         listener({ status: 'online', reason: 'poll' });
+ *       } catch {
+ *         listener({ status: 'offline', reason: 'poll' });
+ *       }
+ *     }, 10_000);
  *     return () => clearInterval(id);
+ *   },
+ * };
+ *
+ * @example
+ * // WebSocket
+ * const wsDetector: Detector = {
+ *   start: (listener) => {
+ *     const ws = new WebSocket('wss://example.com/health');
+ *     ws.onopen = () => listener({ status: 'online', reason: 'websocket' });
+ *     ws.onclose = () => listener({ status: 'offline', reason: 'websocket' });
+ *     return () => ws.close();
+ *   },
+ * };
+ *
+ * @example
+ * // Server-Sent Events (SSE)
+ * const sseDetector: Detector = {
+ *   start: (listener) => {
+ *     const es = new EventSource('/api/connectivity');
+ *     es.onmessage = (e) => {
+ *       const data = JSON.parse(e.data) as { status: ConnectivityStatus };
+ *       listener({ status: data.status, reason: 'sse' });
+ *     };
+ *     es.onerror = () => listener({ status: 'offline', reason: 'sse' });
+ *     return () => es.close();
+ *   },
+ * };
+ *
+ * @example
+ * // Service Worker messages
+ * const swDetector: Detector = {
+ *   start: (listener) => {
+ *     const handler = (e: MessageEvent) => {
+ *       if (e.data?.type === 'CONNECTIVITY_UPDATE') {
+ *         listener({ status: e.data.status, reason: 'service-worker' });
+ *       }
+ *     };
+ *     navigator.serviceWorker.addEventListener('message', handler);
+ *     return () => navigator.serviceWorker.removeEventListener('message', handler);
  *   },
  * };
  */
