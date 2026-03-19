@@ -8,19 +8,73 @@ Declarative, type-safe, offline-first solution for connectivity management for w
 
 | Package | Version | Description |
 |---------|---------|-------------|
-| [`@connectivity-js/core`](./packages/core) | [![NPM Version](https://img.shields.io/npm/v/%40connectivity-js%2Fcore)](https://www.npmjs.com/package/@connectivity-js/core) | Framework-agnostic core |
+| [`@connectivity-js/core`](./packages/core) | [![NPM Version](https://img.shields.io/npm/v/%40connectivity-js%2Fcore)](https://www.npmjs.com/package/@connectivity-js/core) | Framework-agnostic core — use with any framework or vanilla JS |
 | [`@connectivity-js/react`](./packages/react) | [![NPM Version](https://img.shields.io/npm/v/%40connectivity-js%2Freact)](https://www.npmjs.com/package/@connectivity-js/react) | React adapter |
 | [`@connectivity-js/devtools`](./packages/devtools) | [![NPM Version](https://img.shields.io/npm/v/%40connectivity-js%2Fdevtools)](https://www.npmjs.com/package/@connectivity-js/devtools) | Framework-agnostic DevTools panel |
 | [`@connectivity-js/react-devtools`](./packages/react-devtools) | [![NPM Version](https://img.shields.io/npm/v/%40connectivity-js%2Freact-devtools)](https://www.npmjs.com/package/@connectivity-js/react-devtools) | React DevTools panel |
 
-- **Declarative**: `<Connectivity fallback={...}>` for online/offline UI switching
+- **Framework-agnostic**: core has no framework dependency — works with vanilla JS, Vue, Svelte, and more
 - **Type-safe**: `TInput` and `TResult` fully inferred — no manual annotation
-- **Framework-agnostic**: core has no framework dependency. React adapter included, more planned
 - **Auto-queue**: offline actions are queued and flushed on reconnect
 - **Deduplication**: rapid saves collapsed — only the latest reaches the server
 - **Retry**: failed requests retried with configurable backoff
+- **Declarative**: React adapter provides `<Connectivity fallback={...}>` for online/offline UI switching
 
 ## Quick Start
+
+### Core (framework-agnostic)
+
+Works with vanilla JS/TS, Vue, Svelte, or any other environment.
+
+```ts
+import {
+  getConnectivityClient,
+  browserOnlineDetector,
+  heartbeatDetector,
+  actionOptions,
+} from '@connectivity-js/core';
+
+// 1. Create client and start detection
+const client = getConnectivityClient({
+  detectors: [
+    browserOnlineDetector(),
+    heartbeatDetector({ url: '/api/health' }),
+  ],
+  gracePeriodMs: 3_000,
+});
+client.start();
+
+// 2. Subscribe to connectivity state
+client.subscribe((state, transition) => {
+  if (transition?.to === 'offline') {
+    document.getElementById('banner')?.classList.add('visible');
+  }
+  if (transition?.to === 'online') {
+    document.getElementById('banner')?.classList.remove('visible');
+  }
+});
+
+// 3. Define and execute actions
+// request accepts any HTTP client — fetch, ky, axios, etc.
+const save = actionOptions({
+  actionKey: 'save',
+  request: (input: { id: string; data: string }) => api.save(input),
+  dedupeKey: (input) => input.id,
+  whenOffline: 'queue',
+});
+
+const result = await client.execute(save, { id: '1', data: 'hello' });
+if (result.enqueued) {
+  console.log('Offline — queued:', result.jobId);
+} else {
+  console.log('Succeeded:', result.result);
+}
+
+// 4. Clean up
+client.destroy();
+```
+
+### React Adapter
 
 ```tsx
 import {
@@ -31,7 +85,7 @@ import {
   useAction,
 } from '@connectivity-js/react';
 
-// 1. Provider
+// 1. Wrap your app
 function App() {
   return (
     <ConnectivityProvider
