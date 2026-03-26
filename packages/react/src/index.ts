@@ -3,6 +3,7 @@ export * from '@connectivity-js/core';
 export { Connectivity } from './connectivity';
 export {
   type ConnectivityProviderOptions,
+  useConnectivityClient,
   useDefaultConnectivityOptions,
 } from './connectivity-context';
 export { ConnectivityProvider } from './connectivity-provider';

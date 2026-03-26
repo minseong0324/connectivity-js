@@ -6,8 +6,11 @@ import {
 } from '@connectivity-js/core';
 import { renderHook } from '@testing-library/react';
 import type { ReactNode } from 'react';
-import { afterEach, describe, expect, test } from 'vitest';
-import { useDefaultConnectivityOptions } from '../src/connectivity-context';
+import { afterEach, describe, expect, test, vi } from 'vitest';
+import {
+  useConnectivityClient,
+  useDefaultConnectivityOptions,
+} from '../src/connectivity-context';
 import { ConnectivityProvider } from '../src/connectivity-provider';
 
 const createMockDetector = () => {
@@ -90,5 +93,70 @@ describe('ConnectivityProvider', () => {
 
     const { result } = renderHook(() => useDefaultConnectivityOptions());
     expect(result.current).toEqual({});
+  });
+
+  test('accepts a client prop', () => {
+    const mock = createMockDetector();
+    const client = new ConnectivityClient({
+      detectors: [mock.detector],
+    });
+
+    const Wrapper = ({ children }: { children: ReactNode }) => (
+      <ConnectivityProvider client={client}>{children}</ConnectivityProvider>
+    );
+
+    const { result } = renderHook(() => useConnectivityClient(), {
+      wrapper: Wrapper,
+    });
+    expect(result.current).toBe(client);
+  });
+
+  test('calls stop() on unmount instead of destroy()', () => {
+    const mock = createMockDetector();
+    const client = new ConnectivityClient({
+      detectors: [mock.detector],
+    });
+    const stopSpy = vi.spyOn(client, 'stop');
+
+    const Wrapper = ({ children }: { children: ReactNode }) => (
+      <ConnectivityProvider client={client}>{children}</ConnectivityProvider>
+    );
+
+    const { unmount } = renderHook(() => null, { wrapper: Wrapper });
+
+    unmount();
+    expect(stopSpy).toHaveBeenCalled();
+  });
+
+  test('useConnectivityClient falls back to singleton outside Provider', () => {
+    const mock = createMockDetector();
+    const singleton = getConnectivityClient({
+      detectors: [mock.detector],
+    });
+
+    const { result } = renderHook(() => useConnectivityClient());
+    expect(result.current).toBe(singleton);
+  });
+
+  test('client prop takes precedence over singleton', () => {
+    const mock1 = createMockDetector();
+    const mock2 = createMockDetector();
+
+    // Create singleton first
+    getConnectivityClient({ detectors: [mock1.detector] });
+
+    // Create separate instance
+    const client = new ConnectivityClient({
+      detectors: [mock2.detector],
+    });
+
+    const Wrapper = ({ children }: { children: ReactNode }) => (
+      <ConnectivityProvider client={client}>{children}</ConnectivityProvider>
+    );
+
+    const { result } = renderHook(() => useConnectivityClient(), {
+      wrapper: Wrapper,
+    });
+    expect(result.current).toBe(client);
   });
 });

@@ -1,9 +1,9 @@
-import {
-  type ConnectivityStatus,
-  type ConnectivityTransition,
-  getConnectivityClient,
+import type {
+  ConnectivityStatus,
+  ConnectivityTransition,
 } from '@connectivity-js/core';
 import { useEffect, useRef } from 'react';
+import { useConnectivityClient } from './connectivity-context';
 
 export type ConnectivityChangeHandlers = Partial<
   Record<ConnectivityStatus, (transition: ConnectivityTransition) => void>
@@ -24,7 +24,7 @@ export type ConnectivityChangeHandlers = Partial<
  * });
  */
 export function useOnConnectivityChange(handlers: ConnectivityChangeHandlers) {
-  const client = getConnectivityClient();
+  const client = useConnectivityClient();
   const handlersRef = useRef(handlers);
   handlersRef.current = handlers;
 

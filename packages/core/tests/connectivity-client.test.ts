@@ -856,6 +856,60 @@ describe('ConnectivityClient', () => {
       mock.emit({ status: 'online', reason: 'test' });
       expect(listener).not.toHaveBeenCalled();
     });
+
+    test('start() after destroy() throws', () => {
+      const { client } = createTestClient();
+      client.destroy();
+      expect(() => client.start()).toThrow('Cannot start');
+    });
+
+    test('execute() after destroy() throws', async () => {
+      const { client } = createTestClient();
+      client.registerAction('t', {
+        request: vi.fn(),
+        options: {},
+      });
+      client.destroy();
+      await expect(client.execute('t', {})).rejects.toThrow('Cannot execute');
+    });
+
+    test('registerAction() after destroy() throws', () => {
+      const { client } = createTestClient();
+      client.destroy();
+      expect(() =>
+        client.registerAction('t', { request: vi.fn(), options: {} }),
+      ).toThrow('Cannot registerAction');
+    });
+
+    test('subscribe() after destroy() throws', () => {
+      const { client } = createTestClient();
+      client.destroy();
+      expect(() => client.subscribe(vi.fn())).toThrow('Cannot subscribe');
+    });
+
+    test('subscribeQueue() after destroy() throws', () => {
+      const { client } = createTestClient();
+      client.destroy();
+      expect(() => client.subscribeQueue(vi.fn())).toThrow(
+        'Cannot subscribeQueue',
+      );
+    });
+
+    test('error message includes resetInstance guidance', () => {
+      const { client } = createTestClient();
+      client.destroy();
+      expect(() => client.start()).toThrow('resetInstance()');
+    });
+
+    test('stop() then start() works (not destroyed)', () => {
+      const { client, mock } = createTestClient();
+      const listener = vi.fn();
+      client.subscribe(listener);
+      client.stop();
+      client.start();
+      mock.emit({ status: 'offline', reason: 'test' });
+      expect(listener).toHaveBeenCalled();
+    });
   });
 
   describe('per-action queue', () => {

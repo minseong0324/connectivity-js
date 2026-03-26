@@ -34,7 +34,7 @@ interface ConnectivityProviderOptions {
 
 1. 최초 렌더 시 `getConnectivityClient(options)`로 singleton 초기화
 2. `useEffect`에서 `client.start()` 호출
-3. unmount 시 `client.destroy()` 호출
+3. unmount 시 `client.stop()` 호출 (detector만 정지, action/job/listener는 유지)
 4. `defaultOptions`를 React Context로 하위 트리에 전달
 
 ## Example

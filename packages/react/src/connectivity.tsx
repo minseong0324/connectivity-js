@@ -1,4 +1,3 @@
-import { getConnectivityClient } from '@connectivity-js/core';
 import {
   useCallback,
   useEffect,
@@ -6,7 +5,10 @@ import {
   useState,
   useSyncExternalStore,
 } from 'react';
-import { useDefaultConnectivityOptions } from './connectivity-context';
+import {
+  useConnectivityClient,
+  useDefaultConnectivityOptions,
+} from './connectivity-context';
 
 type ConnectivityProps = {
   fallback?: React.ReactNode;
@@ -30,7 +32,7 @@ export function Connectivity({
   delayMs,
   children,
 }: ConnectivityProps) {
-  const client = getConnectivityClient();
+  const client = useConnectivityClient();
   const defaults = useDefaultConnectivityOptions();
 
   const status = useSyncExternalStore(

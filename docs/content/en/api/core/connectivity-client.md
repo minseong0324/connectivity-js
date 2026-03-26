@@ -30,15 +30,25 @@ const client = getConnectivityClient(options);
 
 ### `start()`
 
-Activates registered detectors. Auto-called by `ConnectivityProvider`. Duplicate calls are no-ops.
+Activates registered detectors. Auto-called by `ConnectivityProvider`. Duplicate calls are no-ops. Throws if the client has been destroyed.
 
 ```ts
 client.start();
 ```
 
+### `stop()`
+
+Stops all detectors without clearing actions, jobs, or listeners. Auto-called on `ConnectivityProvider` unmount. Call `start()` to resume.
+
+```ts
+client.stop();
+// later…
+client.start(); // detectors resume, actions/jobs preserved
+```
+
 ### `destroy()`
 
-Cleans up all timers, detectors, and listeners. Auto-called on `ConnectivityProvider` unmount.
+**Terminal.** Stops detectors and clears all actions, jobs, and listeners. After `destroy()`, `start()` and `execute()` will throw. Use `resetInstance()` for singletons or create a new instance.
 
 ```ts
 client.destroy();

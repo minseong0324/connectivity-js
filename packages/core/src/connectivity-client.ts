@@ -76,7 +76,16 @@ export class ConnectivityClient {
   #started = false;
   #destroyed = false;
 
-  private constructor(options?: ConnectivityClientOptions) {
+  #assertNotDestroyed(method: string) {
+    if (this.#destroyed) {
+      throw new Error(
+        `[connectivity-js] Cannot ${method} on a destroyed client. ` +
+          'Use ConnectivityClient.resetInstance() to reset the singleton, then call getInstance() again.',
+      );
+    }
+  }
+
+  constructor(options?: ConnectivityClientOptions) {
     const initialStatus = options?.initialStatus ?? 'unknown';
     this.#state = {
       status: initialStatus,
@@ -163,10 +172,10 @@ export class ConnectivityClient {
    * client.start();
    */
   start() {
+    this.#assertNotDestroyed('start');
     if (this.#started) {
       return;
     }
-    this.#destroyed = false;
     this.#started = true;
     for (const detector of this.#detectors) {
       const cleanup = detector.start((event) => {
@@ -177,21 +186,35 @@ export class ConnectivityClient {
   }
 
   /**
-   * Cleans up all timers, detectors, and listeners, and deactivates the instance.
+   * Stops all detectors without clearing actions, jobs, or listeners.
+   * Use this when the UI unmounts but the client should remain usable.
    * Called automatically when `ConnectivityProvider` unmounts.
+   *
+   * @example
+   * client.stop();
+   * // later…
+   * client.start(); // detectors resume, actions/jobs preserved
+   */
+  stop() {
+    this.#started = false;
+    this.#cancelGracePeriod();
+    for (const cleanup of this.#detectorCleanups) {
+      cleanup();
+    }
+    this.#detectorCleanups.length = 0;
+  }
+
+  /**
+   * Fully destroys the instance — stops detectors and clears all actions, jobs, and listeners.
+   * Use `stop()` instead when you only need to pause detection.
    *
    * @example
    * client.destroy();
    */
   destroy() {
+    this.stop();
     this.#destroyed = true;
-    this.#started = false;
-    this.#cancelGracePeriod();
     this.#clearAllTimers();
-    for (const cleanup of this.#detectorCleanups) {
-      cleanup();
-    }
-    this.#detectorCleanups.length = 0;
     this.#stateListeners.clear();
     this.#queueListeners.clear();
     this.#jobs.clear();
@@ -231,6 +254,7 @@ export class ConnectivityClient {
   subscribe(
     listener: (s: ConnectivityState, t?: ConnectivityTransition) => void,
   ): Unsubscribe {
+    this.#assertNotDestroyed('subscribe');
     this.#stateListeners.add(listener);
     return () => {
       this.#stateListeners.delete(listener);
@@ -356,6 +380,7 @@ export class ConnectivityClient {
    * });
    */
   subscribeQueue(listener: () => void) {
+    this.#assertNotDestroyed('subscribeQueue');
     this.#queueListeners.add(listener);
     return () => {
       this.#queueListeners.delete(listener);
@@ -442,6 +467,7 @@ export class ConnectivityClient {
    * });
    */
   registerAction(actionKey: string, action: RegisteredAction) {
+    this.#assertNotDestroyed('registerAction');
     this.#actions.set(actionKey, action);
   }
 
@@ -485,6 +511,7 @@ export class ConnectivityClient {
     configOrKey: string | ActionOptionsConfig<TInput, TResult>,
     input: TInput,
   ): Promise<ActionRunResult<TResult>> {
+    this.#assertNotDestroyed('execute');
     const actionKey =
       typeof configOrKey === 'string' ? configOrKey : configOrKey.actionKey;
 

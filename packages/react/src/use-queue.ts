@@ -1,5 +1,6 @@
-import { getConnectivityClient, type QueuedJob } from '@connectivity-js/core';
+import type { QueuedJob } from '@connectivity-js/core';
 import { useCallback, useSyncExternalStore } from 'react';
+import { useConnectivityClient } from './connectivity-context';
 
 const EMPTY_JOBS: QueuedJob[] = [];
 const getServerSnapshot = () => EMPTY_JOBS;
@@ -14,7 +15,7 @@ const getServerSnapshot = () => EMPTY_JOBS;
  * const { jobs, pendingCount, retry, cancel } = useQueue({ actionKey: 'save' });
  */
 export function useQueue(filter?: { actionKey?: string }) {
-  const client = getConnectivityClient();
+  const client = useConnectivityClient();
 
   const subscribe = useCallback(
     (cb: () => void) => client.subscribeQueue(cb),

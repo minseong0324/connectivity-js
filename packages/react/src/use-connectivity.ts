@@ -1,8 +1,6 @@
-import {
-  type ConnectivityState,
-  getConnectivityClient,
-} from '@connectivity-js/core';
+import type { ConnectivityState } from '@connectivity-js/core';
 import { useCallback, useSyncExternalStore } from 'react';
+import { useConnectivityClient } from './connectivity-context';
 
 const SERVER_SNAPSHOT: ConnectivityState = {
   status: 'unknown',
@@ -21,7 +19,7 @@ const getServerSnapshot = () => SERVER_SNAPSHOT;
  * if (status === 'offline') return <OfflineBanner />;
  */
 export function useConnectivity() {
-  const client = getConnectivityClient();
+  const client = useConnectivityClient();
   return useSyncExternalStore(
     useCallback((cb) => client.subscribe(cb), [client]),
     useCallback(() => client.getState(), [client]),

@@ -1,4 +1,5 @@
 import {
+  type ConnectivityClient,
   type Detector,
   getConnectivityClient,
   type QueuedJob,
@@ -11,19 +12,31 @@ import {
 
 type ConnectivityProviderProps = {
   children: ReactNode;
-  detectors: Detector[];
-  gracePeriodMs?: number;
-  onJobError?: (error: unknown, job: QueuedJob) => void;
   defaultOptions?: ConnectivityProviderOptions;
-};
+  onJobError?: (error: unknown, job: QueuedJob) => void;
+} & (
+  | { client: ConnectivityClient; detectors?: never; gracePeriodMs?: never }
+  | { client?: never; detectors: Detector[]; gracePeriodMs?: number }
+);
 
 /**
  * Provider that configures {@link ConnectivityClient} and supplies default options to the React tree.
  *
- * Calls `client.start()` on mount and `client.destroy()` on unmount.
+ * Calls `client.start()` on mount and `client.stop()` on unmount.
  * Hooks work without the Provider by referencing the singleton directly.
  *
  * @example
+ * // Recommended: instance-first
+ * const client = new ConnectivityClient({
+ *   detectors: [browserOnlineDetector()],
+ *   gracePeriodMs: 3_000,
+ * });
+ * <ConnectivityProvider client={client}>
+ *   <App />
+ * </ConnectivityProvider>
+ *
+ * @example
+ * // Legacy: detectors prop (still supported)
  * <ConnectivityProvider
  *   detectors={[browserOnlineDetector()]}
  *   gracePeriodMs={3_000}
@@ -37,30 +50,43 @@ type ConnectivityProviderProps = {
  */
 export function ConnectivityProvider({
   children,
-  detectors,
-  gracePeriodMs,
-  onJobError,
   defaultOptions,
+  onJobError,
+  ...rest
 }: ConnectivityProviderProps) {
-  const configuredRef = useRef(false);
-  if (!configuredRef.current) {
-    getConnectivityClient({ detectors, gracePeriodMs, onJobError });
-    configuredRef.current = true;
+  const clientRef = useRef<ConnectivityClient | null>(null);
+
+  if (clientRef.current === null) {
+    if ('client' in rest && rest.client !== undefined) {
+      clientRef.current = rest.client;
+    } else if ('detectors' in rest && rest.detectors !== undefined) {
+      clientRef.current = getConnectivityClient({
+        detectors: rest.detectors,
+        gracePeriodMs: rest.gracePeriodMs,
+        onJobError,
+      });
+    } else {
+      clientRef.current = getConnectivityClient();
+    }
   }
+
+  const client = clientRef.current;
 
   const onJobErrorRef = useRef(onJobError);
   onJobErrorRef.current = onJobError;
 
   useEffect(() => {
-    const client = getConnectivityClient();
     client.setOnJobError((error, job) => onJobErrorRef.current?.(error, job));
     client.start();
-    return () => client.destroy();
-  }, []);
+    return () => client.stop();
+  }, [client]);
 
   const contextValue = useMemo(
-    () => ({ defaultOptions: defaultOptions ?? {} }),
-    [defaultOptions],
+    () => ({
+      client,
+      defaultOptions: defaultOptions ?? {},
+    }),
+    [client, defaultOptions],
   );
 
   return (
