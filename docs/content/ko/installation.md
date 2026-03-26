@@ -34,9 +34,40 @@ yarn add @connectivity-js/react
 
 - `react` ^18 || ^19
 
-## Provider 설정
+## Provider 설정 (권장: 인스턴스 우선)
 
-애플리케이션 최상위를 `ConnectivityProvider`로 감쌉니다:
+`ConnectivityClient` 인스턴스를 생성하고 `ConnectivityProvider`에 전달합니다:
+
+```tsx
+import {
+  ConnectivityClient,
+  ConnectivityProvider,
+  browserOnlineDetector,
+  heartbeatDetector,
+} from "@connectivity-js/react";
+
+const client = new ConnectivityClient({
+  detectors: [
+    browserOnlineDetector(),
+    heartbeatDetector({ url: "/api/health" }),
+  ],
+  gracePeriodMs: 3_000,
+});
+
+function App() {
+  return (
+    <ConnectivityProvider client={client}>
+      <YourApp />
+    </ConnectivityProvider>
+  );
+}
+```
+
+> **테스트/스토리북에서는** 항상 인스턴스 우선 패턴을 사용하여 각 테스트/스토리가 격리된 클라이언트를 갖도록 하세요.
+
+### 빠른 시작 (싱글턴)
+
+단일 앱 설정에서는 detectors prop을 직접 사용할 수 있습니다. 내부적으로 `getConnectivityClient()`를 사용하며, 첫 호출의 옵션만 적용되고 이후 호출에서는 무시됩니다.
 
 ```tsx
 import {

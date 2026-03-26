@@ -17,17 +17,19 @@ npm install @connectivity-js/devtools
 ## Usage
 
 ```ts
-import { createConnectivityDevTools } from '@connectivity-js/devtools';
+import { renderConnectivityDevTools } from '@connectivity-js/devtools';
 import { getConnectivityClient } from '@connectivity-js/core';
 
 const client = getConnectivityClient();
-const container = document.getElementById('devtools');
+const container = document.getElementById('devtools')!;
 
-const devtools = createConnectivityDevTools({ client, enabled: true });
-devtools.mount(container);
+const cleanup = renderConnectivityDevTools(container, client, {
+  position: 'bottom-right', // 'bottom-left' | 'bottom-right' (default: 'bottom-right')
+  initialOpen: true,        // default: true
+});
 
 // Cleanup
-devtools.unmount();
+cleanup();
 ```
 
 ## Documentation

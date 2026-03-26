@@ -20,6 +20,8 @@
 - **Retry**: 실패한 요청을 backoff와 함께 자동 재시도
 - **선언적**: React adapter는 `<Connectivity fallback={...}>` 한 줄로 online/offline UI 전환 제공
 
+> **중요**: 큐는 메모리 기반입니다. 대기 중인 액션은 페이지 새로고침이나 탭 닫기 시 유실됩니다. 영구적인 전달을 위해서는 서버 측 멱등성 키를 구현하세요.
+
 ## 빠른 시작
 
 ### Core (framework-agnostic)

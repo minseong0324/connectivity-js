@@ -14,8 +14,8 @@ export async function generateMetadata(props: {
   if (!params.mdxPath?.length) {
     const indexTitle =
       params.lang === 'ko'
-        ? 'connectivity-js | 선언적이고 타입 안전한 React용 오프라인 우선 연결 관리'
-        : 'connectivity-js | Declarative, type-safe, offline-first connectivity management for React';
+        ? 'connectivity-js | 선언적이고 타입 안전한 웹 앱용 오프라인 우선 연결 관리'
+        : 'connectivity-js | Declarative, type-safe, offline-first connectivity management for web apps';
     return { ...metadata, title: { absolute: indexTitle } };
   }
   return metadata;

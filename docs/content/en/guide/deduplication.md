@@ -123,6 +123,20 @@ const saveAction = actionOptions({
 });
 ```
 
+## When to Use (and When Not To)
+
+**Best for:** draft saves, form submissions, data sync, auto-save — any idempotent mutation where only the latest state matters.
+
+**Not suitable for:** payments, reservations, or any non-idempotent action without server-side idempotency keys. For these cases, use `whenOffline: 'fail'` to prevent queuing:
+
+```ts
+const paymentAction = actionOptions({
+  actionKey: 'payment',
+  request: (input: PaymentInput) => api.processPayment(input),
+  whenOffline: 'fail', // throw immediately when offline
+});
+```
+
 ## Related
 
 - [Offline Behavior](./offline-behavior.md) — execution flow, hasRunningDupe
