@@ -79,6 +79,7 @@ export class ConnectivityClient {
   #destroyed = false;
   #flushing = false;
   #flushCompleteResolvers: Array<() => void> = [];
+  #maxQueueSize?: number;
 
   #assertNotDestroyed(method: string) {
     if (this.#destroyed) {
@@ -101,6 +102,7 @@ export class ConnectivityClient {
     this.#gracePeriodMs = options?.gracePeriodMs ?? 0;
     this.#onJobError = options?.onJobError;
     this.#defaultActionOptions = options?.defaultOptions?.actions;
+    this.#maxQueueSize = options?.maxQueueSize;
   }
 
   /**
@@ -218,6 +220,8 @@ export class ConnectivityClient {
    * Fully destroys the instance — stops detectors and clears all actions, jobs, and listeners.
    * Use `stop()` instead when you only need to pause detection.
    *
+   * Pending flush resolvers are immediately resolved on destroy.
+   *
    * @example
    * client.destroy();
    */
@@ -225,6 +229,9 @@ export class ConnectivityClient {
     this.stop();
     this.#destroyed = true;
     this.#flushing = false;
+    for (const resolve of this.#flushCompleteResolvers) {
+      resolve();
+    }
     this.#flushCompleteResolvers = [];
     this.#clearAllTimers();
     this.#stateListeners.clear();
@@ -621,7 +628,9 @@ export class ConnectivityClient {
       this.#queueRemove(jobId);
       this.#notifyQueue();
     }, SUCCEEDED_JOB_CLEANUP_DELAY_MS);
-    void this.#flushQueue();
+    if (this.#getPendingJobs().length > 0) {
+      void this.#flushQueue();
+    }
   }
 
   #syncRegistrationFromConfig<TInput, TResult>(
@@ -661,6 +670,15 @@ export class ConnectivityClient {
       }
     }
 
+    if (
+      this.#maxQueueSize !== undefined &&
+      this.#jobs.size >= this.#maxQueueSize
+    ) {
+      throw new Error(
+        `[connectivity-js] Queue is full (max ${this.#maxQueueSize})`,
+      );
+    }
+
     const job: QueuedJob = {
       id: this.#generateJobId(),
       actionKey,
@@ -694,7 +712,6 @@ export class ConnectivityClient {
         lastError: error,
       });
       this.#notifyQueue();
-      void this.#flushQueue();
       throw error;
     }
 
@@ -731,7 +748,6 @@ export class ConnectivityClient {
     });
     this.#notifyQueue();
     this.#scheduleRetry(jobId, backoffMs);
-    void this.#flushQueue();
     return { enqueued: true as const, jobId };
   }
 
@@ -983,25 +999,18 @@ export class ConnectivityClient {
     }
     this.#flushing = true;
     try {
-      const processedActionKeys = new Set<string>();
       while (true) {
         if (this.#destroyed) {
           return;
         }
         this.#dedupeBeforeFlush(onlyActionKey);
         const pendingJobs = this.#getPendingJobs(onlyActionKey);
-        const actionKeys = new Set(pendingJobs.map((j) => j.actionKey));
-        const newActionKeys = Array.from(actionKeys).filter(
-          (k) => !processedActionKeys.has(k),
-        );
-        if (newActionKeys.length === 0) {
+        if (pendingJobs.length === 0) {
           break;
         }
-        for (const key of newActionKeys) {
-          processedActionKeys.add(key);
-        }
+        const actionKeys = [...new Set(pendingJobs.map((j) => j.actionKey))];
         await Promise.allSettled(
-          newActionKeys.map((ak) => this.#executeActionGroup(ak)),
+          actionKeys.map((ak) => this.#executeActionGroup(ak)),
         );
       }
     } finally {
