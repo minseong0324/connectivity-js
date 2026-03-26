@@ -20,6 +20,8 @@ Declarative, type-safe, offline-first solution for connectivity management for w
 - **Retry**: failed requests retried with configurable backoff
 - **Declarative**: React adapter provides `<Connectivity fallback={...}>` for online/offline UI switching
 
+> **Important**: The queue is memory-backed. Pending actions are lost on page refresh or tab close. For durable delivery, implement server-side idempotency keys.
+
 ## Quick Start
 
 ### Core (framework-agnostic)

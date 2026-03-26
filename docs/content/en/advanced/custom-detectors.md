@@ -1,5 +1,7 @@
 # Custom Detectors
 
+> **Important**: The status reported by detectors reflects their policy results, not absolute connectivity truth. Keep in mind: **Internet connected ≠ Backend reachable ≠ Specific API available.** Design your detector strategy accordingly.
+
 Implement the `Detector` interface to add any detection strategy.
 
 ## Detector interface

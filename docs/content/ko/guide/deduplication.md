@@ -123,6 +123,20 @@ const saveAction = actionOptions({
 });
 ```
 
+## 사용 시기 (적합/부적합)
+
+**적합:** 임시 저장, 폼 제출, 데이터 동기화, 자동 저장 — 최신 상태만 중요한 멱등 뮤테이션.
+
+**부적합:** 결제, 예약 등 서버 측 멱등성 키 없이는 안전하지 않은 비멱등 작업. 이런 경우 `whenOffline: 'fail'`을 사용하세요:
+
+```ts
+const paymentAction = actionOptions({
+  actionKey: 'payment',
+  request: (input: PaymentInput) => api.processPayment(input),
+  whenOffline: 'fail', // 오프라인 시 즉시 에러
+});
+```
+
 ## 관련 문서
 
 - [오프라인 동작](./offline-behavior.md) — 실행 흐름, hasRunningDupe

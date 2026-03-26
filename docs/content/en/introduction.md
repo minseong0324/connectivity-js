@@ -1,11 +1,24 @@
 ---
 title: Introduction
-description: Declarative, type-safe, offline-first connectivity management for React
+description: Declarative, type-safe, offline-first connectivity management for web apps
 ---
 
 # Introduction
 
 **Connectivity** is a declarative, type-safe, offline-first connectivity management library for JavaScript and React applications.
+
+## Important Limitations
+
+> **The queue is memory-backed.** Pending actions are lost on page refresh or tab close. For durable delivery, implement server-side idempotency keys. This library is not recommended for non-idempotent critical actions (e.g. payments, reservations) without server-side idempotency guarantees.
+
+## Design Philosophy
+
+Connectivity follows a **UI Optimistic / Data Conservative** approach:
+
+| Layer | Behavior with `unknown` status | Rationale |
+| ----- | ------------------------------ | --------- |
+| UI (`<Connectivity>`) | Treats `unknown` as **online** — renders children immediately | Avoids flash of fallback on initial load |
+| Data (`execute()`) | Treats `unknown` as **offline** — queues actions until confirmed online | Prevents data loss from premature requests |
 
 ## Core Philosophy
 

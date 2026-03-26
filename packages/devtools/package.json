@@ -19,10 +19,17 @@
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.cts",
+  "homepage": "https://connectivity-js-docs.vercel.app/en",
   "exports": {
     ".": {
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
     },
     "./package.json": "./package.json"
   },
@@ -37,12 +44,16 @@
   "scripts": {
     "build": "tsdown",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "lint": "biome lint ."
+    "lint": "biome lint .",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@connectivity-js/core": "workspace:*"
   },
   "devDependencies": {
-    "tsdown": "^0.20.3"
+    "jsdom": "^25.0.0",
+    "tsdown": "^0.20.3",
+    "vitest": "^4.0.18"
   }
 }

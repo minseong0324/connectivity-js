@@ -1,3 +1,4 @@
+import { Head } from 'nextra/components';
 import { getPageMap } from 'nextra/page-map';
 import { Footer, Layout, LocaleSwitch, Navbar } from 'nextra-theme-docs';
 
@@ -11,19 +12,19 @@ export const metadata: Metadata = {
   title: {
     template: '%s | connectivity-js',
     default:
-      'connectivity-js | Declarative, type-safe, offline-first connectivity management for React',
+      'connectivity-js | Declarative, type-safe, offline-first connectivity management for web apps',
   },
   description:
-    'Declarative, type-safe, offline-first connectivity management for React. Auto-queue, deduplication, retry.',
+    'Declarative, type-safe, offline-first connectivity management for web apps. Auto-queue, deduplication, retry.',
   metadataBase: new URL('https://connectivity-js-docs.vercel.app'),
   openGraph: {
     title: {
       template: '%s | connectivity-js',
       default:
-        'connectivity-js | Declarative, type-safe, offline-first connectivity management for React',
+        'connectivity-js | Declarative, type-safe, offline-first connectivity management for web apps',
     },
     description:
-      'Declarative, type-safe, offline-first connectivity management for React.',
+      'Declarative, type-safe, offline-first connectivity management for web apps.',
     images: ['img/og-webp.webp'],
   },
   icons: { icon: 'img/logo.png' },
@@ -67,16 +68,21 @@ export default async function LangLayout({
   const pageMap = await getPageMap(lang);
 
   return (
-    <ConnectivityDemoProvider>
-      <Layout
-        i18n={I18N}
-        navbar={navbar}
-        pageMap={pageMap}
-        docsRepositoryBase="https://github.com/minseong0324/connectivity-js/tree/main/docs"
-        footer={footer}
-      >
-        {children}
-      </Layout>
-    </ConnectivityDemoProvider>
+    <html lang={lang} dir="ltr" suppressHydrationWarning>
+      <Head />
+      <body>
+        <ConnectivityDemoProvider>
+          <Layout
+            i18n={I18N}
+            navbar={navbar}
+            pageMap={pageMap}
+            docsRepositoryBase="https://github.com/minseong0324/connectivity-js/tree/main/docs"
+            footer={footer}
+          >
+            {children}
+          </Layout>
+        </ConnectivityDemoProvider>
+      </body>
+    </html>
   );
 }

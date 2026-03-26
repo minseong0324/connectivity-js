@@ -39,6 +39,8 @@ function App() {
 |------|------|---------|-------------|
 | `client` | `ConnectivityClient` | required | The client instance to observe |
 | `enabled` | `boolean` | `true` | Show or hide the panel |
+| `position` | `'bottom-left' \| 'bottom-right'` | `'bottom-right'` | Position of the panel |
+| `initialOpen` | `boolean` | `true` | Whether the panel starts expanded |
 
 ## Documentation
 

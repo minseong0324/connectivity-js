@@ -34,9 +34,40 @@ yarn add @connectivity-js/react
 
 - `react` ^18 || ^19
 
-## Provider Setup
+## Provider Setup (Recommended: instance-first)
 
-Wrap your application root with `ConnectivityProvider`:
+Create a `ConnectivityClient` instance and pass it to `ConnectivityProvider`:
+
+```tsx
+import {
+  ConnectivityClient,
+  ConnectivityProvider,
+  browserOnlineDetector,
+  heartbeatDetector,
+} from "@connectivity-js/react";
+
+const client = new ConnectivityClient({
+  detectors: [
+    browserOnlineDetector(),
+    heartbeatDetector({ url: "/api/health" }),
+  ],
+  gracePeriodMs: 3_000,
+});
+
+function App() {
+  return (
+    <ConnectivityProvider client={client}>
+      <YourApp />
+    </ConnectivityProvider>
+  );
+}
+```
+
+> **For testing and Storybook**, always use the instance-first pattern so each test/story gets an isolated client.
+
+### Quick Start (singleton)
+
+For single-app setups, you can use the detectors prop directly. This uses `getConnectivityClient()` internally — a convenience singleton that applies only the first caller's options (subsequent calls ignore options).
 
 ```tsx
 import {
