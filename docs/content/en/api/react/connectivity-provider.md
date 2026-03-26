@@ -34,7 +34,7 @@ interface ConnectivityProviderOptions {
 
 1. First render: `getConnectivityClient(options)` initializes singleton
 2. `useEffect`: calls `client.start()`
-3. Unmount: calls `client.destroy()`
+3. Unmount: calls `client.stop()` (detectors pause, actions/jobs/listeners preserved)
 4. `defaultOptions` provided to subtree via React Context
 
 ## Example

@@ -30,15 +30,25 @@ const client = getConnectivityClient(options);
 
 ### `start()`
 
-등록된 detector를 활성화합니다. `ConnectivityProvider` 사용 시 자동 호출됩니다. 중복 호출은 무시됩니다.
+등록된 detector를 활성화합니다. `ConnectivityProvider` 사용 시 자동 호출됩니다. 중복 호출은 무시됩니다. `destroy()` 이후에는 에러가 발생합니다.
 
 ```ts
 client.start();
 ```
 
+### `stop()`
+
+모든 detector를 정지하지만 action, job, listener는 유지합니다. `ConnectivityProvider` unmount 시 자동 호출됩니다. `start()`로 다시 시작할 수 있습니다.
+
+```ts
+client.stop();
+// 이후…
+client.start(); // detector 재개, action/job 유지
+```
+
 ### `destroy()`
 
-모든 타이머, detector, listener를 정리합니다. `ConnectivityProvider` unmount 시 자동 호출됩니다.
+**종료(terminal).** detector를 정지하고 모든 action, job, listener를 정리합니다. `destroy()` 이후 `start()`와 `execute()`를 호출하면 에러가 발생합니다. singleton은 `resetInstance()`를, 직접 생성한 인스턴스는 새 인스턴스를 만들어야 합니다.
 
 ```ts
 client.destroy();
