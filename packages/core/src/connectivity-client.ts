@@ -75,6 +75,8 @@ export class ConnectivityClient {
   #jobIdCounter = 0;
   #started = false;
   #destroyed = false;
+  #flushing = false;
+  #flushCompleteResolvers: Array<() => void> = [];
 
   #assertNotDestroyed(method: string) {
     if (this.#destroyed) {
@@ -214,6 +216,8 @@ export class ConnectivityClient {
   destroy() {
     this.stop();
     this.#destroyed = true;
+    this.#flushing = false;
+    this.#flushCompleteResolvers = [];
     this.#clearAllTimers();
     this.#stateListeners.clear();
     this.#queueListeners.clear();
@@ -394,7 +398,12 @@ export class ConnectivityClient {
   }
 
   #notifyQueue() {
-    this.#queueSnapshot = Array.from(this.#jobs.values());
+    const newSnapshot = Array.from(this.#jobs.values());
+    if (this.#shallowEqual(this.#queueSnapshot, newSnapshot)) {
+      return;
+    }
+    this.#queueSnapshot = newSnapshot;
+
     const seen = new Set<string>();
     for (const job of this.#queueSnapshot) {
       seen.add(job.actionKey);
@@ -592,7 +601,6 @@ export class ConnectivityClient {
         error,
         jobId,
         actionKey,
-        job,
         mergedOptions,
       });
     }
@@ -663,13 +671,11 @@ export class ConnectivityClient {
     error,
     jobId,
     actionKey,
-    job,
     mergedOptions,
   }: {
     error: unknown;
     jobId: string;
     actionKey: string;
-    job: QueuedJob | undefined;
     mergedOptions: { retry?: ActionOptions['retry'] };
   }) {
     const maxAttempts = mergedOptions.retry?.maxAttempts ?? 1;
@@ -684,7 +690,8 @@ export class ConnectivityClient {
       throw error;
     }
 
-    const dedupeKey = job?.dedupeKey;
+    const freshJob = this.#queueGet(jobId);
+    const dedupeKey = freshJob?.dedupeKey;
     const hasNewerQueuedJob =
       dedupeKey !== undefined &&
       this.#queueList().some(
@@ -705,9 +712,10 @@ export class ConnectivityClient {
       return { enqueued: true as const, jobId };
     }
 
-    const currentAttempt = (job?.attempt ?? 0) + 1;
-    const backoffMs =
+    const currentAttempt = (freshJob?.attempt ?? 0) + 1;
+    const rawBackoff =
       mergedOptions.retry?.backoffMs(currentAttempt) ?? DEFAULT_BACKOFF_MS;
+    const backoffMs = Math.max(1, rawBackoff);
     this.#queuePatch(jobId, {
       status: 'queued',
       lastError: error,
@@ -777,6 +785,9 @@ export class ConnectivityClient {
    * await client.flush({ onlyActionKey: 'save' });
    */
   async flush(options?: { onlyActionKey?: string }) {
+    if (this.#flushing) {
+      await this.#waitForFlush();
+    }
     await this.#flushQueue(options?.onlyActionKey);
   }
 
@@ -795,11 +806,18 @@ export class ConnectivityClient {
       return;
     }
 
-    this.#queuePatch(job.id, { status: 'running', attempt: job.attempt + 1 });
+    this.#queuePatch(job.id, {
+      status: 'running',
+      attempt: current.attempt + 1,
+    });
     this.#notifyQueue();
 
     try {
-      const result = await action.request(job.input);
+      const result = await action.request(current.input);
+      const afterAwait = this.#queueGet(job.id);
+      if (afterAwait === undefined || afterAwait.status === 'canceled') {
+        return;
+      }
       this.#queuePatch(job.id, { status: 'succeeded' });
       this.#notifyQueue();
       this.#scheduleTimer(() => {
@@ -809,8 +827,12 @@ export class ConnectivityClient {
       action.onFlushSuccess?.(result);
       action.onFlushSettled?.();
     } catch (error: unknown) {
+      const afterAwait = this.#queueGet(job.id);
+      if (afterAwait === undefined || afterAwait.status === 'canceled') {
+        return;
+      }
       const maxAttempts = action.options.retry?.maxAttempts ?? 1;
-      const currentAttempt = job.attempt + 1;
+      const currentAttempt = afterAwait.attempt;
 
       if (currentAttempt >= maxAttempts) {
         this.#queuePatch(job.id, {
@@ -819,7 +841,7 @@ export class ConnectivityClient {
         });
         this.#notifyQueue();
         const latestJob = this.#queueGet(job.id);
-        if (latestJob) {
+        if (latestJob !== undefined) {
           this.#onJobError?.(error, latestJob);
         }
         action.onFlushError?.(error);
@@ -827,8 +849,9 @@ export class ConnectivityClient {
         return;
       }
 
-      const backoffMs =
+      const rawBackoff =
         action.options.retry?.backoffMs(currentAttempt) ?? DEFAULT_BACKOFF_MS;
+      const backoffMs = Math.max(1, rawBackoff);
       this.#queuePatch(job.id, {
         status: 'queued',
         lastError: error,
@@ -947,27 +970,46 @@ export class ConnectivityClient {
   }
 
   async #flushQueue(onlyActionKey?: string) {
-    const processedActionKeys = new Set<string>();
-    while (true) {
-      if (this.#destroyed) {
-        return;
-      }
-      this.#dedupeBeforeFlush(onlyActionKey);
-      const pendingJobs = this.#getPendingJobs(onlyActionKey);
-      const actionKeys = new Set(pendingJobs.map((j) => j.actionKey));
-      const newActionKeys = Array.from(actionKeys).filter(
-        (k) => !processedActionKeys.has(k),
-      );
-      if (newActionKeys.length === 0) {
-        break;
-      }
-      for (const key of newActionKeys) {
-        processedActionKeys.add(key);
-      }
-      await Promise.allSettled(
-        newActionKeys.map((ak) => this.#executeActionGroup(ak)),
-      );
+    if (this.#flushing) {
+      return;
     }
+    this.#flushing = true;
+    try {
+      const processedActionKeys = new Set<string>();
+      while (true) {
+        if (this.#destroyed) {
+          return;
+        }
+        this.#dedupeBeforeFlush(onlyActionKey);
+        const pendingJobs = this.#getPendingJobs(onlyActionKey);
+        const actionKeys = new Set(pendingJobs.map((j) => j.actionKey));
+        const newActionKeys = Array.from(actionKeys).filter(
+          (k) => !processedActionKeys.has(k),
+        );
+        if (newActionKeys.length === 0) {
+          break;
+        }
+        for (const key of newActionKeys) {
+          processedActionKeys.add(key);
+        }
+        await Promise.allSettled(
+          newActionKeys.map((ak) => this.#executeActionGroup(ak)),
+        );
+      }
+    } finally {
+      this.#flushing = false;
+      const resolvers = this.#flushCompleteResolvers;
+      this.#flushCompleteResolvers = [];
+      for (const resolve of resolvers) {
+        resolve();
+      }
+    }
+  }
+
+  #waitForFlush() {
+    return new Promise<void>((resolve) => {
+      this.#flushCompleteResolvers.push(resolve);
+    });
   }
 }
 
