@@ -1,5 +1,21 @@
 # @connectivity-js/core
 
+## 0.5.1
+
+### Patch Changes
+
+- Fix quality change notifications being silently dropped during grace period. ([#34](https://github.com/minseong0324/connectivity-js/pull/34))
+
+  - Notify subscribers of quality changes even when grace period timer is active
+  - Add destroyed guard to grace period timer callback
+
+- Fix race condition where concurrent flushQueue calls could process the same job twice. ([#36](https://github.com/minseong0324/connectivity-js/pull/36))
+
+  - Single-flight guard prevents duplicate flush execution
+  - Fresh-read job state after async boundaries in processJob
+  - Enforce minimum 1ms backoff to prevent infinite retry loops
+  - Skip queue notification when snapshot is unchanged
+
 ## 0.5.0
 
 ### Minor Changes
