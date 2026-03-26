@@ -126,10 +126,7 @@ export class ActionObserver<TInput = unknown, TResult = unknown> {
   > {
     let wasEnqueued = false;
     try {
-      const engineResult = await this.#client.execute(
-        this.#options.actionKey,
-        input,
-      );
+      const engineResult = await this.#client.execute(this.#options, input);
 
       if (engineResult.enqueued) {
         wasEnqueued = true;
@@ -137,9 +134,8 @@ export class ActionObserver<TInput = unknown, TResult = unknown> {
         return { enqueued: true as const, jobId: engineResult.jobId };
       }
 
-      const typedResult = engineResult.result as TResult;
-      this.#callbacks?.onSuccess?.(typedResult);
-      return { enqueued: false as const, result: typedResult };
+      this.#callbacks?.onSuccess?.(engineResult.result);
+      return { enqueued: false as const, result: engineResult.result };
     } catch (error: unknown) {
       this.#callbacks?.onError?.(error);
       throw error;

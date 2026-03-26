@@ -17,8 +17,10 @@ import type {
   Unsubscribe,
 } from './types';
 
-const DEFAULT_QUALITY: ConnectionQuality = {};
-const EMPTY_JOBS: QueuedJob[] = [];
+const DEFAULT_QUALITY: ConnectionQuality = Object.freeze(
+  {},
+) as ConnectionQuality;
+const EMPTY_JOBS = Object.freeze([] as QueuedJob[]) as QueuedJob[];
 
 /**
  * Singleton client that detects network connectivity status and manages offline action queuing, retry, and deduplication.
@@ -115,6 +117,12 @@ export class ConnectivityClient {
   static getInstance(options?: ConnectivityClientOptions) {
     if (ConnectivityClient.#instance === null) {
       ConnectivityClient.#instance = new ConnectivityClient(options);
+    } else if (options !== undefined) {
+      if (process.env.NODE_ENV === 'development') {
+        console.warn(
+          '[connectivity-js] getInstance() options ignored — instance already exists. Use resetInstance() first to reconfigure.',
+        );
+      }
     }
     return ConnectivityClient.#instance;
   }

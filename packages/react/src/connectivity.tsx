@@ -41,6 +41,10 @@ export function Connectivity({
     getServerStatus,
   );
 
+  /**
+   * Treats `unknown` status as online so children always render
+   * until connectivity is confirmed offline.
+   */
   const isOnline = status !== 'offline';
 
   const resolvedFallback = fallback ?? defaults.connectivity?.fallback ?? null;
