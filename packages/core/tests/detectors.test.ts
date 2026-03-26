@@ -1,5 +1,13 @@
 // @vitest-environment jsdom
-import { afterEach, assert, beforeEach, describe, expect, test, vi } from 'vitest';
+import {
+  afterEach,
+  assert,
+  beforeEach,
+  describe,
+  expect,
+  test,
+  vi,
+} from 'vitest';
 import { browserOnlineDetector, heartbeatDetector } from '../src/detectors';
 import type { DetectorEvent } from '../src/types';
 
@@ -90,7 +98,10 @@ describe('heartbeatDetector', () => {
   });
 
   test('reports offline when response is not ok (HTTP 500)', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false, status: 500 }));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({ ok: false, status: 500 }),
+    );
     vi.stubGlobal('performance', { now: vi.fn().mockReturnValue(0) });
 
     const events: DetectorEvent[] = [];
@@ -106,7 +117,10 @@ describe('heartbeatDetector', () => {
   });
 
   test('reports online when response is ok (HTTP 200)', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, status: 200 }));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({ ok: true, status: 200 }),
+    );
     vi.stubGlobal('performance', { now: vi.fn().mockReturnValue(0) });
 
     const events: DetectorEvent[] = [];
@@ -123,7 +137,9 @@ describe('heartbeatDetector', () => {
   test('uses custom validateResponse when provided', async () => {
     vi.stubGlobal(
       'fetch',
-      vi.fn().mockResolvedValue({ ok: true, status: 200, headers: new Headers() }),
+      vi
+        .fn()
+        .mockResolvedValue({ ok: true, status: 200, headers: new Headers() }),
     );
     vi.stubGlobal('performance', { now: vi.fn().mockReturnValue(0) });
 
@@ -147,7 +163,11 @@ describe('heartbeatDetector', () => {
     vi.stubGlobal('fetch', fetchMock);
     vi.stubGlobal('performance', { now: vi.fn().mockReturnValue(0) });
 
-    const detector = heartbeatDetector({ url: '/health', intervalMs: 1000, method: 'GET' });
+    const detector = heartbeatDetector({
+      url: '/health',
+      intervalMs: 1000,
+      method: 'GET',
+    });
     const cleanup = detector.start(() => {});
 
     await vi.advanceTimersByTimeAsync(0);
@@ -161,7 +181,10 @@ describe('heartbeatDetector', () => {
   });
 
   test('reports offline on fetch error', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('network error')));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockRejectedValue(new Error('network error')),
+    );
     vi.stubGlobal('performance', { now: vi.fn().mockReturnValue(0) });
 
     const events: DetectorEvent[] = [];

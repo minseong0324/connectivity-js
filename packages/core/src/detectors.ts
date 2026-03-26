@@ -119,9 +119,10 @@ export function heartbeatDetector(options: HeartbeatDetectorOptions) {
           if (stopped) {
             return;
           }
-          const isHealthy = validateResponse !== undefined
-            ? validateResponse(response)
-            : response.ok;
+          const isHealthy =
+            validateResponse !== undefined
+              ? validateResponse(response)
+              : response.ok;
           if (!isHealthy) {
             if (currentStatus !== 'offline') {
               currentStatus = 'offline';
