@@ -151,4 +151,29 @@ describe('Connectivity', () => {
 
     expect(screen.getByText('default offline')).toBeInTheDocument();
   });
+
+  test('renders children (not fallback) when status is unknown (initial state)', () => {
+    const mock = createMockDetector();
+    getConnectivityClient({ detectors: [mock.detector] });
+
+    const Wrapper = ({ children }: { children: ReactNode }) => (
+      <ConnectivityProvider detectors={[mock.detector]}>
+        {children}
+      </ConnectivityProvider>
+    );
+
+    render(
+      <Wrapper>
+        <Connectivity fallback={<div>Offline</div>}>
+          <div>Online</div>
+        </Connectivity>
+      </Wrapper>,
+    );
+
+    // No detector emit -> status stays 'unknown'
+    // isOnline = status !== 'offline' -> true for 'unknown'
+    // So children should render, not fallback
+    expect(screen.getByText('Online')).toBeInTheDocument();
+    expect(screen.queryByText('Offline')).not.toBeInTheDocument();
+  });
 });

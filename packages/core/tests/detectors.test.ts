@@ -197,4 +197,186 @@ describe('heartbeatDetector', () => {
 
     cleanup();
   });
+
+  test('successful probe emits online with quality.rttMs', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({ ok: true, status: 200 }),
+    );
+    let callCount = 0;
+    vi.stubGlobal('performance', {
+      now: vi.fn().mockImplementation(() => {
+        callCount++;
+        // First call returns 100, second returns 150 (rttMs = 50)
+        if (callCount <= 1) {
+          return 100;
+        }
+        return 150;
+      }),
+    });
+
+    const events: DetectorEvent[] = [];
+    const detector = heartbeatDetector({ url: '/health', intervalMs: 5000 });
+    const cleanup = detector.start((e) => events.push(e));
+
+    await vi.advanceTimersByTimeAsync(0);
+
+    const onlineEvent = events.find((e) => e.status === 'online');
+    expect(onlineEvent).toBeDefined();
+    expect(onlineEvent?.quality).toBeDefined();
+    expect(onlineEvent?.quality?.rttMs).toBe(50);
+
+    cleanup();
+  });
+
+  test('timeout via AbortController emits offline', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockImplementation((_url: string, init: RequestInit) => {
+        return new Promise((_resolve, reject) => {
+          const signal = init.signal;
+          if (signal !== undefined && signal !== null) {
+            signal.addEventListener('abort', () => {
+              reject(
+                new DOMException('The operation was aborted.', 'AbortError'),
+              );
+            });
+          }
+        });
+      }),
+    );
+    vi.stubGlobal('performance', { now: vi.fn().mockReturnValue(0) });
+
+    const events: DetectorEvent[] = [];
+    const detector = heartbeatDetector({
+      url: '/health',
+      intervalMs: 30000,
+      timeoutMs: 1000,
+    });
+    const cleanup = detector.start((e) => events.push(e));
+
+    // Advance past the timeout
+    await vi.advanceTimersByTimeAsync(1500);
+
+    expect(events.some((e) => e.status === 'offline')).toBe(true);
+
+    cleanup();
+  });
+
+  test('cleanup aborts in-flight request', async () => {
+    let abortSignal: AbortSignal | null | undefined;
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockImplementation((_url: string, init: RequestInit) => {
+        abortSignal = init.signal;
+        return new Promise(() => {
+          // Never resolves
+        });
+      }),
+    );
+    vi.stubGlobal('performance', { now: vi.fn().mockReturnValue(0) });
+
+    const events: DetectorEvent[] = [];
+    const detector = heartbeatDetector({ url: '/health', intervalMs: 30000 });
+    const cleanup = detector.start((e) => events.push(e));
+
+    // Wait for probe to start
+    await vi.advanceTimersByTimeAsync(0);
+
+    expect(abortSignal).toBeDefined();
+    expect(abortSignal?.aborted).toBe(false);
+
+    cleanup();
+
+    expect(abortSignal?.aborted).toBe(true);
+  });
+
+  test('after cleanup, no more emits', async () => {
+    let fetchCallCount = 0;
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockImplementation(() => {
+        fetchCallCount++;
+        return Promise.resolve({ ok: true, status: 200 });
+      }),
+    );
+    vi.stubGlobal('performance', { now: vi.fn().mockReturnValue(0) });
+
+    const events: DetectorEvent[] = [];
+    const detector = heartbeatDetector({ url: '/health', intervalMs: 1000 });
+    const cleanup = detector.start((e) => events.push(e));
+
+    await vi.advanceTimersByTimeAsync(0);
+    const eventsAfterFirstProbe = events.length;
+
+    cleanup();
+
+    // Advance past several intervals
+    await vi.advanceTimersByTimeAsync(5000);
+
+    expect(events).toHaveLength(eventsAfterFirstProbe);
+  });
+
+  test('repeated offline suppresses duplicate emits', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockRejectedValue(new Error('network error')),
+    );
+    vi.stubGlobal('performance', { now: vi.fn().mockReturnValue(0) });
+
+    const events: DetectorEvent[] = [];
+    const detector = heartbeatDetector({ url: '/health', intervalMs: 1000 });
+    const cleanup = detector.start((e) => events.push(e));
+
+    // First probe -> offline
+    await vi.advanceTimersByTimeAsync(0);
+    const offlineCount1 = events.filter((e) => e.status === 'offline').length;
+    expect(offlineCount1).toBe(1);
+
+    // Second probe -> still offline, should be suppressed
+    await vi.advanceTimersByTimeAsync(1000);
+    const offlineCount2 = events.filter((e) => e.status === 'offline').length;
+    expect(offlineCount2).toBe(1);
+
+    // Third probe -> still offline, should be suppressed
+    await vi.advanceTimersByTimeAsync(1000);
+    const offlineCount3 = events.filter((e) => e.status === 'offline').length;
+    expect(offlineCount3).toBe(1);
+
+    cleanup();
+  });
+
+  test('interval-based repeated probes', async () => {
+    let fetchCallCount = 0;
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockImplementation(() => {
+        fetchCallCount++;
+        return Promise.resolve({ ok: true, status: 200 });
+      }),
+    );
+    vi.stubGlobal('performance', { now: vi.fn().mockReturnValue(0) });
+
+    const events: DetectorEvent[] = [];
+    const detector = heartbeatDetector({ url: '/health', intervalMs: 2000 });
+    const cleanup = detector.start((e) => events.push(e));
+
+    // Initial probe
+    await vi.advanceTimersByTimeAsync(0);
+    expect(fetchCallCount).toBe(1);
+
+    // After 2s -> second probe
+    await vi.advanceTimersByTimeAsync(2000);
+    expect(fetchCallCount).toBe(2);
+
+    // After another 2s -> third probe
+    await vi.advanceTimersByTimeAsync(2000);
+    expect(fetchCallCount).toBe(3);
+
+    // Each online probe emits an event
+    const onlineEvents = events.filter((e) => e.status === 'online');
+    expect(onlineEvents.length).toBe(3);
+
+    cleanup();
+  });
 });

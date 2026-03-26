@@ -4,23 +4,7 @@ import {
   ConnectivityClient,
   getConnectivityClient,
 } from '../src/connectivity-client';
-import type { Detector, DetectorEvent } from '../src/types';
-
-const createMockDetector = () => {
-  let listener: ((event: DetectorEvent) => void) | null = null;
-  const detector: Detector = {
-    start: (l) => {
-      listener = l;
-      return () => {
-        listener = null;
-      };
-    },
-  };
-  const emit = (event: DetectorEvent) => {
-    listener?.(event);
-  };
-  return { detector, emit };
-};
+import { createMockDetector } from './test-utils';
 
 describe('ActionObserver', () => {
   beforeEach(() => {
