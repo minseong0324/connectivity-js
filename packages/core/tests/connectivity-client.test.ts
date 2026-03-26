@@ -2052,4 +2052,140 @@ describe('ConnectivityClient', () => {
       await vi.advanceTimersByTimeAsync(0);
     });
   });
+
+  describe('destroy resolves pending flush waiters', () => {
+    test('flush() awaiter resolves (not hangs) when destroy() is called', async () => {
+      const { client, mock } = createTestClient();
+      mock.emit({ status: 'offline', reason: 'test' });
+
+      client.registerAction('slow', {
+        request: vi
+          .fn()
+          .mockImplementation(
+            () => new Promise((resolve) => setTimeout(resolve, 5000)),
+          ),
+        options: { whenOffline: 'queue' },
+      });
+
+      await client.execute('slow', {});
+      mock.emit({ status: 'online', reason: 'test' });
+
+      let flushResolved = false;
+      const flushPromise = client.flush().then(() => {
+        flushResolved = true;
+      });
+
+      // destroy while flush is in progress
+      client.destroy();
+
+      // The flush promise should resolve, not hang
+      await flushPromise;
+      expect(flushResolved).toBe(true);
+    });
+  });
+
+  describe('flushQueue does not orphan same-actionKey jobs added during flush', () => {
+    test('job enqueued during flush for same actionKey is processed', async () => {
+      let callCount = 0;
+      const mock = createMockDetector();
+      const client = getConnectivityClient({
+        detectors: [mock.detector],
+      });
+      client.start();
+      mock.emit({ status: 'offline', reason: 'test' });
+
+      const gate: { resolve: (() => void) | null } = { resolve: null };
+
+      client.registerAction('save', {
+        request: vi.fn().mockImplementation(() => {
+          callCount++;
+          if (callCount === 1) {
+            return new Promise<void>((r) => {
+              gate.resolve = r;
+            });
+          }
+          return Promise.resolve({ ok: true });
+        }),
+        options: { whenOffline: 'queue' },
+      });
+
+      // Queue first job while offline
+      await client.execute('save', { seq: 1 });
+
+      // Go online → triggers flush → first job starts executing
+      mock.emit({ status: 'online', reason: 'test' });
+      await vi.advanceTimersByTimeAsync(0);
+
+      // While first job is running, go offline and queue second job with same actionKey
+      mock.emit({ status: 'offline', reason: 'test' });
+      await client.execute('save', { seq: 2 });
+
+      // Go back online
+      mock.emit({ status: 'online', reason: 'test' });
+
+      // Resolve the first job
+      gate.resolve?.();
+      await vi.advanceTimersByTimeAsync(0);
+
+      // Both jobs should have been processed (not just the first)
+      expect(callCount).toBe(2);
+    });
+  });
+
+  describe('maxQueueSize', () => {
+    test('throws when queue exceeds maxQueueSize', async () => {
+      const mock = createMockDetector();
+      const client = getConnectivityClient({
+        detectors: [mock.detector],
+        maxQueueSize: 2,
+      });
+      client.start();
+      mock.emit({ status: 'offline', reason: 'test' });
+
+      client.registerAction('save', {
+        request: vi.fn().mockResolvedValue({}),
+        options: { whenOffline: 'queue' },
+      });
+
+      await client.execute('save', { id: 1 });
+      await client.execute('save', { id: 2 });
+
+      await expect(client.execute('save', { id: 3 })).rejects.toThrow(
+        /Queue is full/,
+      );
+    });
+
+    test('allows enqueue after job is removed from queue', async () => {
+      const mock = createMockDetector();
+      const client = getConnectivityClient({
+        detectors: [mock.detector],
+        maxQueueSize: 1,
+      });
+      client.start();
+      mock.emit({ status: 'offline', reason: 'test' });
+
+      client.registerAction('save', {
+        request: vi.fn().mockResolvedValue({}),
+        options: { whenOffline: 'queue' },
+      });
+
+      await client.execute('save', { id: 1 });
+
+      // Flush the queue
+      mock.emit({ status: 'online', reason: 'test' });
+      await vi.advanceTimersByTimeAsync(0);
+
+      // Wait for succeeded job cleanup (5s delay)
+      await vi.advanceTimersByTimeAsync(5000);
+
+      // Now queue should be empty, can enqueue again
+      mock.emit({ status: 'offline', reason: 'test' });
+      await client.execute('save', { id: 2 });
+
+      const queuedJobs = client
+        .getQueue()
+        .filter((j) => j.status === 'queued');
+      expect(queuedJobs).toHaveLength(1);
+    });
+  });
 });
