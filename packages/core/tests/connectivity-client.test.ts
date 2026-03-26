@@ -2182,9 +2182,7 @@ describe('ConnectivityClient', () => {
       mock.emit({ status: 'offline', reason: 'test' });
       await client.execute('save', { id: 2 });
 
-      const queuedJobs = client
-        .getQueue()
-        .filter((j) => j.status === 'queued');
+      const queuedJobs = client.getQueue().filter((j) => j.status === 'queued');
       expect(queuedJobs).toHaveLength(1);
     });
   });
