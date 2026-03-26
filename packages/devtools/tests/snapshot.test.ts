@@ -1,5 +1,5 @@
-import { describe, expect, test, vi } from 'vitest';
 import type { ConnectivityState, QueuedJob } from '@connectivity-js/core';
+import { describe, expect, test } from 'vitest';
 import { createDevToolsSnapshot } from '../src/snapshot';
 
 const BASE_STATE: ConnectivityState = {

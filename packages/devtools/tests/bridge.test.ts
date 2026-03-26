@@ -1,8 +1,8 @@
-import { describe, expect, test, vi, beforeEach, afterEach } from 'vitest';
 import {
   ConnectivityClient,
   getConnectivityClient,
 } from '@connectivity-js/core';
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { createDevToolsBridge } from '../src/bridge';
 
 const createMockDetector = () => {
