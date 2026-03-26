@@ -876,9 +876,9 @@ describe('ConnectivityClient', () => {
     test('registerAction() after destroy() throws', () => {
       const { client } = createTestClient();
       client.destroy();
-      expect(() => client.registerAction('t', { request: vi.fn(), options: {} })).toThrow(
-        'Cannot registerAction',
-      );
+      expect(() =>
+        client.registerAction('t', { request: vi.fn(), options: {} }),
+      ).toThrow('Cannot registerAction');
     });
 
     test('subscribe() after destroy() throws', () => {
