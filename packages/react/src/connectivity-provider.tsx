@@ -1,5 +1,5 @@
 import {
-  ConnectivityClient,
+  type ConnectivityClient,
   type Detector,
   getConnectivityClient,
   type QueuedJob,

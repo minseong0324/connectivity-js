@@ -1,7 +1,7 @@
 import type { QueuedJob } from '@connectivity-js/core';
 import {
-  ConnectivityClient,
   browserOnlineDetector,
+  ConnectivityClient,
 } from '@connectivity-js/core';
 import { describe, expectTypeOf, it } from 'vitest';
 import { ConnectivityProvider } from '../src/connectivity-provider';
