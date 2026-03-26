@@ -1,5 +1,20 @@
 # @connectivity-js/react
 
+## 0.5.1
+
+### Patch Changes
+
+- Eliminate unnecessary re-renders caused by unstable Context value. ([#35](https://github.com/minseong0324/connectivity-js/pull/35))
+
+  - Split single Context into ClientContext + DefaultOptionsContext
+  - Stabilize defaultOptions reference with shallow comparison
+  - Clean up onJobError handler on Provider unmount
+  - Stabilize retry/cancel references in useQueue with useCallback
+  - Add dev-mode warning when hooks are used outside Provider
+
+- Updated dependencies [[`d769da9`](https://github.com/minseong0324/connectivity-js/commit/d769da92735c0ad0a46922771657b965e642d4e4), [`cfddb93`](https://github.com/minseong0324/connectivity-js/commit/cfddb93a7ed1efaba14c276411cc1268a547155d)]:
+  - @connectivity-js/core@0.5.1
+
 ## 0.5.0
 
 ### Minor Changes
