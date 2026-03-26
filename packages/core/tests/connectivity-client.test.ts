@@ -856,6 +856,33 @@ describe('ConnectivityClient', () => {
       mock.emit({ status: 'online', reason: 'test' });
       expect(listener).not.toHaveBeenCalled();
     });
+
+    test('start() after destroy() throws', () => {
+      const { client } = createTestClient();
+      client.destroy();
+      expect(() => client.start()).toThrow('Cannot start a destroyed client');
+    });
+
+    test('execute() after destroy() throws', async () => {
+      const { client } = createTestClient();
+      client.registerAction('t', {
+        request: vi.fn(),
+      });
+      client.destroy();
+      await expect(client.execute('t', {})).rejects.toThrow(
+        'Cannot execute on a destroyed client',
+      );
+    });
+
+    test('stop() then start() works (not destroyed)', () => {
+      const { client, mock } = createTestClient();
+      const listener = vi.fn();
+      client.subscribe(listener);
+      client.stop();
+      client.start();
+      mock.emit({ status: 'offline', reason: 'test' });
+      expect(listener).toHaveBeenCalled();
+    });
   });
 
   describe('per-action queue', () => {

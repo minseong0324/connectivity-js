@@ -163,10 +163,15 @@ export class ConnectivityClient {
    * client.start();
    */
   start() {
+    if (this.#destroyed) {
+      throw new Error(
+        '[connectivity-js] Cannot start a destroyed client. ' +
+          'Use resetInstance() for singletons or create a new instance.',
+      );
+    }
     if (this.#started) {
       return;
     }
-    this.#destroyed = false;
     this.#started = true;
     for (const detector of this.#detectors) {
       const cleanup = detector.start((event) => {
@@ -499,6 +504,12 @@ export class ConnectivityClient {
     configOrKey: string | ActionOptionsConfig<TInput, TResult>,
     input: TInput,
   ): Promise<ActionRunResult<TResult>> {
+    if (this.#destroyed) {
+      throw new Error(
+        '[connectivity-js] Cannot execute on a destroyed client. ' +
+          'Use resetInstance() for singletons or create a new instance.',
+      );
+    }
     const actionKey =
       typeof configOrKey === 'string' ? configOrKey : configOrKey.actionKey;
 
