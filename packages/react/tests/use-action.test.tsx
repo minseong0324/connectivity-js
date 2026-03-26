@@ -147,10 +147,9 @@ describe('useAction', () => {
     });
 
     const onError = vi.fn();
-    const { result } = renderHook(
-      () => useAction(failingAction, { onError }),
-      { wrapper: Wrapper },
-    );
+    const { result } = renderHook(() => useAction(failingAction, { onError }), {
+      wrapper: Wrapper,
+    });
 
     await act(async () => {
       mock.emit({ status: 'online', reason: 'test' });
@@ -176,10 +175,9 @@ describe('useAction', () => {
     });
 
     const onError = vi.fn();
-    const { result } = renderHook(
-      () => useAction(failingAction, { onError }),
-      { wrapper: Wrapper },
-    );
+    const { result } = renderHook(() => useAction(failingAction, { onError }), {
+      wrapper: Wrapper,
+    });
 
     await act(async () => {
       mock.emit({ status: 'online', reason: 'test' });

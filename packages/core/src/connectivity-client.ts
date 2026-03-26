@@ -17,7 +17,9 @@ import type {
   Unsubscribe,
 } from './types';
 
-const DEFAULT_QUALITY: ConnectionQuality = Object.freeze({}) as ConnectionQuality;
+const DEFAULT_QUALITY: ConnectionQuality = Object.freeze(
+  {},
+) as ConnectionQuality;
 const EMPTY_JOBS = Object.freeze([] as QueuedJob[]) as QueuedJob[];
 
 /**
