@@ -2,4 +2,4 @@
 "@connectivity-js/core": patch
 ---
 
-`ActionObserver.execute()` now logs unhandled errors to `console.error` when no `onError` callback is provided, instead of silently swallowing them.
+Fix silent error swallowing in `ActionObserver.execute()`. Previously, errors were caught and discarded with `.catch(() => {})`. Now unhandled errors are logged via `console.error` with a descriptive message when no `onError` callback is provided.
