@@ -10,3 +10,5 @@
 - Provider calls `stop()` on unmount instead of `destroy()`, preserving registered actions
 - All hooks now read the client from Context (falls back to singleton when outside Provider)
 - New `useConnectivityClient()` hook exported for direct client access
+- `destroy()` is now terminal — `start()`, `execute()`, `registerAction()`, `subscribe()`, `subscribeQueue()` throw after destroy
+- Unified `#assertNotDestroyed()` guard with actionable error messages guiding toward `resetInstance()`
