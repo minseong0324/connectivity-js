@@ -318,11 +318,17 @@ export class ConnectivityClient {
       return;
     }
     if (this.#gracePeriodMs > 0 && newStatus !== 'online') {
+      if (quality !== undefined) {
+        this.#notifyState();
+      }
       this.#pendingGraceReason = reason;
       if (this.#pendingGraceTimerId !== null) {
         return;
       }
       this.#pendingGraceTimerId = setTimeout(() => {
+        if (this.#destroyed) {
+          return;
+        }
         const latestReason = this.#pendingGraceReason;
         this.#pendingGraceReason = undefined;
         this.#pendingGraceTimerId = null;

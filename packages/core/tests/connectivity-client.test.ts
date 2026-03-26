@@ -1697,4 +1697,108 @@ describe('ConnectivityClient', () => {
       await vi.advanceTimersByTimeAsync(0);
     });
   });
+
+  describe('grace period + quality', () => {
+    test('quality change during grace period is notified to subscribers', () => {
+      const { client, mock } = createTestClient({ gracePeriodMs: 3_000 });
+      mock.emit({ status: 'online', reason: 'init' });
+      const listener = vi.fn();
+      client.subscribe(listener);
+
+      mock.emit({
+        status: 'offline',
+        reason: 'drop',
+        quality: { rttMs: 200, effectiveType: '2g' },
+      });
+
+      // Quality update should be notified even though status is still online (grace period)
+      expect(listener).toHaveBeenCalledTimes(1);
+      expect(listener).toHaveBeenCalledWith(
+        expect.objectContaining({
+          status: 'online',
+          quality: { rttMs: 200, effectiveType: '2g' },
+        }),
+        undefined,
+      );
+
+      // After grace period, status changes
+      vi.advanceTimersByTime(3_000);
+      expect(client.getState().status).toBe('offline');
+    });
+
+    test('quality and status change without grace period triggers single notification', () => {
+      const { client, mock } = createTestClient();
+      mock.emit({ status: 'online', reason: 'init' });
+      const listener = vi.fn();
+      client.subscribe(listener);
+
+      mock.emit({
+        status: 'offline',
+        reason: 'drop',
+        quality: { rttMs: 300, effectiveType: '3g' },
+      });
+
+      // Exactly 1 notification from commitStatusChange
+      expect(listener).toHaveBeenCalledTimes(1);
+      expect(listener).toHaveBeenCalledWith(
+        expect.objectContaining({ status: 'offline' }),
+        expect.objectContaining({ from: 'online', to: 'offline' }),
+      );
+    });
+
+    test('grace period timer callback is ignored after destroy', () => {
+      const { client, mock } = createTestClient({ gracePeriodMs: 3_000 });
+      mock.emit({ status: 'online', reason: 'init' });
+      mock.emit({ status: 'offline', reason: 'drop' });
+
+      // Status is still online (grace period active)
+      expect(client.getState().status).toBe('online');
+
+      // Destroy client while grace timer is pending
+      ConnectivityClient.resetInstance();
+
+      // Advance past grace period
+      vi.advanceTimersByTime(3_000);
+
+      // Status should NOT have changed to offline (timer callback was guarded)
+      expect(client.getState().status).toBe('online');
+    });
+
+    test('multiple quality changes during grace period all notify', () => {
+      const { client, mock } = createTestClient({ gracePeriodMs: 3_000 });
+      mock.emit({ status: 'online', reason: 'init' });
+      const listener = vi.fn();
+      client.subscribe(listener);
+
+      mock.emit({
+        status: 'offline',
+        reason: 'drop',
+        quality: { rttMs: 100, effectiveType: '4g' },
+      });
+      mock.emit({
+        status: 'offline',
+        reason: 'drop2',
+        quality: { rttMs: 500, effectiveType: '2g' },
+      });
+
+      // Both quality changes should have been notified
+      expect(listener).toHaveBeenCalledTimes(2);
+      expect(listener).toHaveBeenNthCalledWith(
+        1,
+        expect.objectContaining({
+          status: 'online',
+          quality: { rttMs: 100, effectiveType: '4g' },
+        }),
+        undefined,
+      );
+      expect(listener).toHaveBeenNthCalledWith(
+        2,
+        expect.objectContaining({
+          status: 'online',
+          quality: { rttMs: 500, effectiveType: '2g' },
+        }),
+        undefined,
+      );
+    });
+  });
 });
