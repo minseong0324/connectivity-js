@@ -76,7 +76,7 @@ export class ConnectivityClient {
   #started = false;
   #destroyed = false;
 
-  private constructor(options?: ConnectivityClientOptions) {
+  constructor(options?: ConnectivityClientOptions) {
     const initialStatus = options?.initialStatus ?? 'unknown';
     this.#state = {
       status: initialStatus,
@@ -177,21 +177,35 @@ export class ConnectivityClient {
   }
 
   /**
-   * Cleans up all timers, detectors, and listeners, and deactivates the instance.
+   * Stops all detectors without clearing actions, jobs, or listeners.
+   * Use this when the UI unmounts but the client should remain usable.
    * Called automatically when `ConnectivityProvider` unmounts.
+   *
+   * @example
+   * client.stop();
+   * // later…
+   * client.start(); // detectors resume, actions/jobs preserved
+   */
+  stop() {
+    this.#started = false;
+    this.#cancelGracePeriod();
+    for (const cleanup of this.#detectorCleanups) {
+      cleanup();
+    }
+    this.#detectorCleanups.length = 0;
+  }
+
+  /**
+   * Fully destroys the instance — stops detectors and clears all actions, jobs, and listeners.
+   * Use `stop()` instead when you only need to pause detection.
    *
    * @example
    * client.destroy();
    */
   destroy() {
+    this.stop();
     this.#destroyed = true;
-    this.#started = false;
-    this.#cancelGracePeriod();
     this.#clearAllTimers();
-    for (const cleanup of this.#detectorCleanups) {
-      cleanup();
-    }
-    this.#detectorCleanups.length = 0;
     this.#stateListeners.clear();
     this.#queueListeners.clear();
     this.#jobs.clear();
