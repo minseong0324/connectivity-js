@@ -1,4 +1,8 @@
-import type { ActionOptions } from '@connectivity-js/core';
+import type {
+  ActionOptions,
+  ConnectivityClient,
+} from '@connectivity-js/core';
+import { getConnectivityClient } from '@connectivity-js/core';
 import { createContext, type ReactNode, useContext } from 'react';
 
 /**
@@ -19,6 +23,7 @@ export interface ConnectivityProviderOptions {
 }
 
 type ConnectivityContextValue = {
+  client: ConnectivityClient;
   defaultOptions: ConnectivityProviderOptions;
 };
 
@@ -32,4 +37,16 @@ export const ConnectivityContext =
 export function useDefaultConnectivityOptions() {
   const context = useContext(ConnectivityContext);
   return context?.defaultOptions ?? {};
+}
+
+/**
+ * Returns the ConnectivityClient from the nearest Provider.
+ * Falls back to the singleton when used outside a Provider.
+ */
+export function useConnectivityClient() {
+  const context = useContext(ConnectivityContext);
+  if (context !== null) {
+    return context.client;
+  }
+  return getConnectivityClient();
 }

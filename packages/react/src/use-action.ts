@@ -1,11 +1,13 @@
 import {
   ActionObserver,
   type ActionOptionsConfig,
-  getConnectivityClient,
   type UseActionCallbacks,
 } from '@connectivity-js/core';
 import { useCallback, useEffect, useState, useSyncExternalStore } from 'react';
-import { useDefaultConnectivityOptions } from './connectivity-context';
+import {
+  useConnectivityClient,
+  useDefaultConnectivityOptions,
+} from './connectivity-context';
 
 const SERVER_SNAPSHOT = { pendingCount: 0, lastError: undefined };
 const getServerSnapshot = () => SERVER_SNAPSHOT;
@@ -28,7 +30,7 @@ export function useAction<TInput, TResult>(
   options: ActionOptionsConfig<TInput, TResult>,
   callbacks?: UseActionCallbacks<TResult>,
 ) {
-  const client = getConnectivityClient();
+  const client = useConnectivityClient();
   const defaults = useDefaultConnectivityOptions();
 
   // One observer per hook — stable via useState
