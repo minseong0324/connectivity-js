@@ -1,7 +1,4 @@
-import type {
-  ActionOptions,
-  ConnectivityClient,
-} from '@connectivity-js/core';
+import type { ActionOptions, ConnectivityClient } from '@connectivity-js/core';
 import { getConnectivityClient } from '@connectivity-js/core';
 import { createContext, type ReactNode, useContext } from 'react';
 

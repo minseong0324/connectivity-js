@@ -104,10 +104,7 @@ describe('ConnectivityProvider', () => {
     });
     return (
       // @ts-expect-error — gracePeriodMs is not allowed with client prop
-      <ConnectivityProvider
-        client={client}
-        gracePeriodMs={3_000}
-      >
+      <ConnectivityProvider client={client} gracePeriodMs={3_000}>
         <div>test</div>
       </ConnectivityProvider>
     );
