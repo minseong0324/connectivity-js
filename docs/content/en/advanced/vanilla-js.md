@@ -69,7 +69,8 @@ if (result.enqueued) {
 const jobs = client.getQueue();
 const saveJobs = client.getActionQueue('save');
 
-client.subscribeQueue((jobs) => {
+client.subscribeQueue(() => {
+  const jobs = client.getQueue();
   updateBadge(jobs.filter(j => j.status === 'queued').length);
 });
 
