@@ -1,5 +1,24 @@
 # @connectivity-js/react
 
+## 0.5.0
+
+### Minor Changes
+
+- **BREAKING:** `ConnectivityProvider` now accepts a `client` prop for explicit client injection. The previous `detectors` prop pattern still works but the `client` prop is recommended. ([#29](https://github.com/minseong0324/connectivity-js/pull/29))
+
+  - `ConnectivityClient` constructor is now public — use `new ConnectivityClient(options)` directly
+  - Added `stop()` method that stops detectors without clearing actions/jobs/listeners
+  - Provider calls `stop()` on unmount instead of `destroy()`, preserving registered actions
+  - All hooks now read the client from Context (falls back to singleton when outside Provider)
+  - New `useConnectivityClient()` hook exported for direct client access
+  - `destroy()` is now terminal — `start()`, `execute()`, `registerAction()`, `subscribe()`, `subscribeQueue()` throw after destroy
+  - Unified `#assertNotDestroyed()` guard with actionable error messages guiding toward `resetInstance()`
+
+### Patch Changes
+
+- Updated dependencies [[`f88e2e9`](https://github.com/minseong0324/connectivity-js/commit/f88e2e9b8dca94aa21b31bc768b9b3c2d23e1ec1), [`8378a7e`](https://github.com/minseong0324/connectivity-js/commit/8378a7e4844947720e37da7733a7159d81cb6d35), [`c2d78bc`](https://github.com/minseong0324/connectivity-js/commit/c2d78bc9dac35c5ba007e5c688bbb0f7b9316b00)]:
+  - @connectivity-js/core@0.5.0
+
 ## 0.4.0
 
 ### Minor Changes
