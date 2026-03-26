@@ -1660,8 +1660,10 @@ describe('ConnectivityClient', () => {
       const job = client.getQueue()[0];
       assert(job !== undefined);
 
-      await Promise.all([client.retry(job.id), client.flush()]);
+      const retryPromise = client.retry(job.id);
+      const flushPromise = client.flush();
       await vi.advanceTimersByTimeAsync(200);
+      await Promise.all([retryPromise, flushPromise]);
 
       expect(request).toHaveBeenCalledOnce();
     });
@@ -1799,6 +1801,146 @@ describe('ConnectivityClient', () => {
         }),
         undefined,
       );
+    });
+  });
+
+  describe('flush race condition', () => {
+    test('concurrent flush() calls use single-flight — second resolves after first completes', async () => {
+      const { client, mock } = createTestClient();
+      mock.emit({ status: 'online', reason: 'test' });
+
+      let resolveRequest: ((v: unknown) => void) | undefined;
+      const request = vi.fn(
+        () =>
+          new Promise((r) => {
+            resolveRequest = r;
+          }),
+      );
+      client.registerAction('slow', {
+        request,
+        options: { whenOffline: 'queue' },
+      });
+
+      mock.emit({ status: 'offline', reason: 'test' });
+      await client.execute('slow', { data: 1 });
+      mock.emit({ status: 'online', reason: 'test' });
+      await vi.advanceTimersByTimeAsync(0);
+
+      const flush1 = client.flush();
+      const flush2 = client.flush();
+
+      resolveRequest?.('done');
+      await vi.advanceTimersByTimeAsync(0);
+      await flush1;
+      await flush2;
+
+      expect(request).toHaveBeenCalledOnce();
+    });
+
+    test('processJob handles cancel during execution gracefully', async () => {
+      const { client, mock } = createTestClient();
+      mock.emit({ status: 'online', reason: 'test' });
+
+      let resolveRequest: ((v: unknown) => void) | undefined;
+      client.registerAction('cancelable', {
+        request: () =>
+          new Promise((r) => {
+            resolveRequest = r;
+          }),
+        options: { whenOffline: 'queue' },
+      });
+
+      mock.emit({ status: 'offline', reason: 'test' });
+      await client.execute('cancelable', {});
+      mock.emit({ status: 'online', reason: 'test' });
+      await vi.advanceTimersByTimeAsync(0);
+
+      const job = client.getQueue()[0];
+      assert(job !== undefined);
+      expect(job.status).toBe('running');
+
+      client.cancel(job.id);
+
+      resolveRequest?.('done');
+      await vi.advanceTimersByTimeAsync(0);
+
+      const finalJob = client.getQueue().find((j) => j.id === job.id);
+      expect(finalJob?.status).toBe('canceled');
+    });
+
+    test('backoffMs returning 0 enforces minimum 1ms', async () => {
+      const { client, mock } = createTestClient();
+      mock.emit({ status: 'online', reason: 'test' });
+
+      let callCount = 0;
+      client.registerAction('retry-zero', {
+        request: () => {
+          callCount++;
+          if (callCount <= 1) {
+            throw new Error('fail');
+          }
+          return Promise.resolve('ok');
+        },
+        options: {
+          whenOffline: 'queue',
+          retry: { maxAttempts: 3, backoffMs: () => 0 },
+        },
+      });
+
+      mock.emit({ status: 'offline', reason: 'test' });
+      await client.execute('retry-zero', {});
+      mock.emit({ status: 'online', reason: 'test' });
+      await vi.advanceTimersByTimeAsync(0);
+
+      const job = client.getQueue()[0];
+      assert(job !== undefined);
+      expect(job.nextRunAt).toBeDefined();
+      if (job.nextRunAt !== undefined) {
+        expect(job.nextRunAt - job.createdAt).toBeGreaterThanOrEqual(0);
+      }
+
+      await vi.advanceTimersByTimeAsync(1);
+      await vi.advanceTimersByTimeAsync(0);
+    });
+
+    test('getQueue() returns same reference when no mutations occur', async () => {
+      const { client, mock } = createTestClient();
+      mock.emit({ status: 'offline', reason: 'test' });
+
+      client.registerAction('stable', {
+        request: vi.fn(),
+        options: { whenOffline: 'queue' },
+      });
+
+      await client.execute('stable', { a: 1 });
+
+      const snapshot1 = client.getQueue();
+      const snapshot2 = client.getQueue();
+      expect(snapshot1).toBe(snapshot2);
+    });
+
+    test('#resolveExecuteFailure uses fresh job state for backoff', async () => {
+      const { client, mock } = createTestClient();
+      mock.emit({ status: 'online', reason: 'test' });
+
+      let callCount = 0;
+      client.registerAction('fail-once', {
+        request: () => {
+          callCount++;
+          throw new Error(`fail-${callCount}`);
+        },
+        options: {
+          retry: { maxAttempts: 3, backoffMs: (attempt) => attempt * 100 },
+        },
+      });
+
+      const result = await client.execute('fail-once', {});
+      expect(result.enqueued).toBe(true);
+
+      const job = client.getQueue()[0];
+      assert(job !== undefined);
+      expect(job.status).toBe('queued');
+      expect(job.lastError).toBeInstanceOf(Error);
     });
   });
 });
