@@ -220,6 +220,54 @@ describe('ActionObserver', () => {
     );
   });
 
+  test('execute logs console.error when no onError callback is set', async () => {
+    const mock = createMockDetector();
+    const client = getConnectivityClient({ detectors: [mock.detector] });
+    client.start();
+    mock.emit({ status: 'online', reason: 'test' });
+
+    const observer = new ActionObserver(client, {
+      actionKey: 'log-test',
+      request: () => Promise.reject(new Error('fail')),
+    });
+
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    observer.execute(undefined as never);
+    await vi.advanceTimersByTimeAsync(0);
+
+    expect(spy).toHaveBeenCalledWith(
+      expect.stringContaining('[connectivity-js] Unhandled action error'),
+      expect.any(Error),
+    );
+
+    spy.mockRestore();
+  });
+
+  test('execute does not log console.error when onError callback is set', async () => {
+    const mock = createMockDetector();
+    const client = getConnectivityClient({ detectors: [mock.detector] });
+    client.start();
+    mock.emit({ status: 'online', reason: 'test' });
+
+    const onError = vi.fn();
+    const observer = new ActionObserver(client, {
+      actionKey: 'log-test-2',
+      request: () => Promise.reject(new Error('fail')),
+    });
+    observer.setCallbacks({ onError });
+
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    observer.execute(undefined as never);
+    await vi.advanceTimersByTimeAsync(0);
+
+    expect(spy).not.toHaveBeenCalled();
+    expect(onError).toHaveBeenCalledWith(expect.any(Error));
+
+    spy.mockRestore();
+  });
+
   test('execute (void) does not throw synchronously without onError', () => {
     const mock = createMockDetector();
     const client = getConnectivityClient({ detectors: [mock.detector] });

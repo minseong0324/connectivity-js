@@ -103,7 +103,15 @@ export class ActionObserver<TInput = unknown, TResult = unknown> {
    * otherwise silently caught. Use `executeAsync` when you need the result.
    */
   execute(input: TInput): void {
-    void this.executeAsync(input).catch(() => {});
+    void this.executeAsync(input).catch((error) => {
+      if (this.#callbacks?.onError === undefined) {
+        console.error(
+          `[connectivity-js] Unhandled action error in "${this.#options.actionKey}". ` +
+            'Provide an onError callback to handle this.',
+          error,
+        );
+      }
+    });
   }
 
   /**
