@@ -39,8 +39,8 @@
     "build": "tsdown",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "biome lint .",
-    "test": "vitest run",
-    "test:watch": "vitest"
+    "test": "vitest run --passWithNoTests",
+    "test:watch": "vitest --passWithNoTests"
   },
   "dependencies": {
     "@connectivity-js/core": "workspace:*"
