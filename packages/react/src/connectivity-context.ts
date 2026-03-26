@@ -49,6 +49,8 @@ export function useConnectivityClient() {
 /**
  * Internal hook to read default options set by the Provider.
  * Returns an empty object when called outside the Provider.
+ *
+ * @internal
  */
 export function useDefaultConnectivityOptions() {
   return useContext(DefaultOptionsContext);

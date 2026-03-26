@@ -139,17 +139,18 @@ describe('useAction', () => {
   test('execute (void) does not throw when onError is provided', async () => {
     const { Wrapper, mock } = createTestWrapper();
 
-    const onError = vi.fn();
-    const { result } = renderHook(() => useAction(testAction, { onError }), {
-      wrapper: Wrapper,
-    });
-
-    getConnectivityClient().registerAction('purchase', {
-      request: async () => {
+    const failingAction = actionOptions({
+      actionKey: 'purchase-fail',
+      request: async (_input: { orderId: string }) => {
         throw new Error('failed');
       },
-      options: {},
     });
+
+    const onError = vi.fn();
+    const { result } = renderHook(
+      () => useAction(failingAction, { onError }),
+      { wrapper: Wrapper },
+    );
 
     await act(async () => {
       mock.emit({ status: 'online', reason: 'test' });
@@ -167,17 +168,18 @@ describe('useAction', () => {
   test('executeAsync throws even when onError is provided', async () => {
     const { Wrapper, mock } = createTestWrapper();
 
-    const onError = vi.fn();
-    const { result } = renderHook(() => useAction(testAction, { onError }), {
-      wrapper: Wrapper,
-    });
-
-    getConnectivityClient().registerAction('purchase', {
-      request: async () => {
+    const failingAction = actionOptions({
+      actionKey: 'purchase-fail',
+      request: async (_input: { orderId: string }) => {
         throw new Error('failed');
       },
-      options: {},
     });
+
+    const onError = vi.fn();
+    const { result } = renderHook(
+      () => useAction(failingAction, { onError }),
+      { wrapper: Wrapper },
+    );
 
     await act(async () => {
       mock.emit({ status: 'online', reason: 'test' });

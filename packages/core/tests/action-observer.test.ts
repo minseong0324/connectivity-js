@@ -423,7 +423,7 @@ describe('ActionObserver', () => {
     expect(result2).not.toBe(result1);
   });
 
-  test('registerAction after observer creation overrides the request for execute', async () => {
+  test('registerAction after observer creation does not override execute (config overload)', async () => {
     const mock = createMockDetector();
     const client = getConnectivityClient({ detectors: [mock.detector] });
     client.start();
@@ -438,19 +438,16 @@ describe('ActionObserver', () => {
     });
 
     // Override the registration via client.registerAction after the observer was created.
-    // NOTE: this override also replaces the onFlushSuccess/onFlushError/onFlushSettled
-    // callbacks that ActionObserver had registered. As a result, when a queued offline
-    // job is later flushed, those callbacks will NOT be invoked.
-    // In a useAction context this is transient — the next render calls setOptions() →
-    // #register(), which re-registers the observer's own callbacks.
+    // Since ActionObserver uses the config overload (passing its own options),
+    // the observer's request is used, not the Map-registered override.
     client.registerAction('save', { request: override, options: {} });
 
     const r = await observer.executeAsync({});
 
-    // The Map override is used — original is never called
-    expect(original).not.toHaveBeenCalled();
-    expect(override).toHaveBeenCalledOnce();
-    expect(r).toMatchObject({ enqueued: false, result: 'override' });
+    // The observer's own config is used — override is never called
+    expect(original).toHaveBeenCalledOnce();
+    expect(override).not.toHaveBeenCalled();
+    expect(r).toMatchObject({ enqueued: false, result: 'original' });
   });
 
   test('updating callback via setCallbacks invokes the latest callback', async () => {
