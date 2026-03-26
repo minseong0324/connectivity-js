@@ -57,6 +57,10 @@ type HeartbeatDetectorOptions = {
   intervalMs?: number;
   /** Request timeout in milliseconds (default: `5_000`) */
   timeoutMs?: number;
+  /** HTTP method for the health-check request (default: `'HEAD'`) */
+  method?: 'HEAD' | 'GET';
+  /** Custom response validator. When provided, overrides the default `response.ok` check */
+  validateResponse?: (response: Response) => boolean;
 };
 
 const DEFAULT_HEARTBEAT_INTERVAL_MS = 30_000;
@@ -86,6 +90,8 @@ export function heartbeatDetector(options: HeartbeatDetectorOptions) {
       const url = options.url;
       const intervalMs = options.intervalMs ?? DEFAULT_HEARTBEAT_INTERVAL_MS;
       const timeoutMs = options.timeoutMs ?? DEFAULT_HEARTBEAT_TIMEOUT_MS;
+      const method = options.method ?? 'HEAD';
+      const validateResponse = options.validateResponse;
 
       let currentStatus: DetectorEvent['status'] = 'unknown';
       let activeController: AbortController | null = null;
@@ -105,12 +111,22 @@ export function heartbeatDetector(options: HeartbeatDetectorOptions) {
         }, timeoutMs);
 
         try {
-          await fetch(url, {
-            method: 'HEAD',
+          const response = await fetch(url, {
+            method,
             cache: 'no-store',
             signal: controller.signal,
           });
           if (stopped) {
+            return;
+          }
+          const isHealthy = validateResponse !== undefined
+            ? validateResponse(response)
+            : response.ok;
+          if (!isHealthy) {
+            if (currentStatus !== 'offline') {
+              currentStatus = 'offline';
+              listener({ status: 'offline', reason: 'heartbeat' });
+            }
             return;
           }
           const rttMs = Math.round(performance.now() - start);
