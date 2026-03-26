@@ -867,6 +867,7 @@ describe('ConnectivityClient', () => {
       const { client } = createTestClient();
       client.registerAction('t', {
         request: vi.fn(),
+        options: {},
       });
       client.destroy();
       await expect(client.execute('t', {})).rejects.toThrow('Cannot execute');
@@ -875,7 +876,7 @@ describe('ConnectivityClient', () => {
     test('registerAction() after destroy() throws', () => {
       const { client } = createTestClient();
       client.destroy();
-      expect(() => client.registerAction('t', { request: vi.fn() })).toThrow(
+      expect(() => client.registerAction('t', { request: vi.fn(), options: {} })).toThrow(
         'Cannot registerAction',
       );
     });
