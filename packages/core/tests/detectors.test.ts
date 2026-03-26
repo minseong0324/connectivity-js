@@ -237,7 +237,9 @@ describe('heartbeatDetector', () => {
           const signal = init.signal;
           if (signal !== undefined && signal !== null) {
             signal.addEventListener('abort', () => {
-              reject(new DOMException('The operation was aborted.', 'AbortError'));
+              reject(
+                new DOMException('The operation was aborted.', 'AbortError'),
+              );
             });
           }
         });

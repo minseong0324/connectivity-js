@@ -2023,11 +2023,12 @@ describe('ConnectivityClient', () => {
       // Go online triggers auto-flush for all queued jobs.
       // Make log request hang so we can observe selective behavior.
       let resolveLog: ((v: unknown) => void) | undefined;
-      const hangingLogFn = vi
-        .fn()
-        .mockImplementation(
-          () => new Promise((r) => { resolveLog = r; }),
-        );
+      const hangingLogFn = vi.fn().mockImplementation(
+        () =>
+          new Promise((r) => {
+            resolveLog = r;
+          }),
+      );
       // Re-register log with hanging request
       client.registerAction('log', {
         request: hangingLogFn,
