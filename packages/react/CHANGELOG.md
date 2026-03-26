@@ -1,5 +1,14 @@
 # @connectivity-js/react
 
+## 0.5.2
+
+### Patch Changes
+
+- Freeze sentinel objects, add getInstance() options warning, add types export condition, mark internal APIs, fix ActionObserver type cast ([#39](https://github.com/minseong0324/connectivity-js/pull/39))
+
+- Updated dependencies [[`2b0d7c7`](https://github.com/minseong0324/connectivity-js/commit/2b0d7c74c1e3e2f5ea8d19406e4b55eac631ec86)]:
+  - @connectivity-js/core@0.5.2
+
 ## 0.5.1
 
 ### Patch Changes

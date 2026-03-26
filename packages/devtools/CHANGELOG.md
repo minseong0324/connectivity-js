@@ -1,5 +1,12 @@
 # @connectivity-js/devtools
 
+## 0.3.4
+
+### Patch Changes
+
+- Updated dependencies [[`2b0d7c7`](https://github.com/minseong0324/connectivity-js/commit/2b0d7c74c1e3e2f5ea8d19406e4b55eac631ec86)]:
+  - @connectivity-js/core@0.5.2
+
 ## 0.3.3
 
 ### Patch Changes

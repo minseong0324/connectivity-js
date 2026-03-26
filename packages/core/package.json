@@ -1,6 +1,6 @@
 {
   "name": "@connectivity-js/core",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "description": "Type-safe, lightweight, framework-agnostic connectivity detection and offline action queue",
   "author": "@minseong0324 <KIM Minseong>",
   "license": "MIT",
