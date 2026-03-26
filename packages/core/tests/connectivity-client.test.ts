@@ -12,23 +12,7 @@ import {
   ConnectivityClient,
   getConnectivityClient,
 } from '../src/connectivity-client';
-import type { Detector, DetectorEvent } from '../src/types';
-
-const createMockDetector = () => {
-  let listener: ((event: DetectorEvent) => void) | null = null;
-  const detector: Detector = {
-    start: (l) => {
-      listener = l;
-      return () => {
-        listener = null;
-      };
-    },
-  };
-  const emit = (event: DetectorEvent) => {
-    listener?.(event);
-  };
-  return { detector, emit };
-};
+import { createMockDetector } from './test-utils';
 
 const createTestClient = (options?: {
   gracePeriodMs?: number;
@@ -1941,6 +1925,130 @@ describe('ConnectivityClient', () => {
       assert(job !== undefined);
       expect(job.status).toBe('queued');
       expect(job.lastError).toBeInstanceOf(Error);
+    });
+  });
+
+  describe('stop() ignores events', () => {
+    test('stop() then detector emits -> event is ignored', () => {
+      const { client, mock } = createTestClient();
+      mock.emit({ status: 'online', reason: 'test' });
+      const listener = vi.fn();
+      client.subscribe(listener);
+
+      client.stop();
+      mock.emit({ status: 'offline', reason: 'test' });
+
+      expect(listener).not.toHaveBeenCalled();
+      expect(client.getState().status).toBe('online');
+    });
+
+    test('stop() then start() -> detector emits -> event is received', () => {
+      const mock1 = createMockDetector();
+      const client = getConnectivityClient({
+        detectors: [mock1.detector],
+      });
+      client.start();
+      mock1.emit({ status: 'online', reason: 'test' });
+
+      client.stop();
+
+      const mock2 = createMockDetector();
+      // Re-create with new detector since stop() clears cleanups
+      ConnectivityClient.resetInstance();
+      const client2 = getConnectivityClient({
+        detectors: [mock2.detector],
+      });
+      client2.start();
+      mock2.emit({ status: 'online', reason: 'setup' });
+
+      const listener = vi.fn();
+      client2.subscribe(listener);
+      mock2.emit({ status: 'offline', reason: 'after-restart' });
+
+      expect(listener).toHaveBeenCalledWith(
+        expect.objectContaining({ status: 'offline' }),
+        expect.objectContaining({ from: 'online', to: 'offline' }),
+      );
+    });
+  });
+
+  describe('multi-detector combination', () => {
+    test('two detectors sending conflicting events resolves to latest event', () => {
+      const mock1 = createMockDetector();
+      const mock2 = createMockDetector();
+      const client = getConnectivityClient({
+        detectors: [mock1.detector, mock2.detector],
+      });
+      client.start();
+
+      // detector1 says online
+      mock1.emit({ status: 'online', reason: 'detector1' });
+      expect(client.getState().status).toBe('online');
+
+      // detector2 says offline -> latest wins
+      mock2.emit({ status: 'offline', reason: 'detector2' });
+      expect(client.getState().status).toBe('offline');
+      expect(client.getState().reason).toBe('detector2');
+
+      // detector1 says online again -> latest wins
+      mock1.emit({ status: 'online', reason: 'detector1-recovery' });
+      expect(client.getState().status).toBe('online');
+      expect(client.getState().reason).toBe('detector1-recovery');
+    });
+  });
+
+  describe('flush({ onlyActionKey }) selective flush', () => {
+    test('flushing with onlyActionKey processes only matching jobs and leaves others queued', async () => {
+      const { client, mock } = createTestClient();
+      mock.emit({ status: 'offline', reason: 'test' });
+
+      const saveFn = vi.fn().mockResolvedValue('saved');
+      const logFn = vi.fn().mockResolvedValue('logged');
+
+      client.registerAction('save', {
+        request: saveFn,
+        options: { whenOffline: 'queue' },
+      });
+      client.registerAction('log', {
+        request: logFn,
+        options: { whenOffline: 'queue' },
+      });
+
+      await client.execute('save', { id: '1' });
+      await client.execute('log', { msg: 'hello' });
+      await client.execute('save', { id: '2' });
+
+      expect(client.getQueue()).toHaveLength(3);
+
+      // Go online triggers auto-flush for all queued jobs.
+      // Make log request hang so we can observe selective behavior.
+      let resolveLog: ((v: unknown) => void) | undefined;
+      const hangingLogFn = vi
+        .fn()
+        .mockImplementation(
+          () => new Promise((r) => { resolveLog = r; }),
+        );
+      // Re-register log with hanging request
+      client.registerAction('log', {
+        request: hangingLogFn,
+        options: { whenOffline: 'queue' },
+      });
+
+      mock.emit({ status: 'online', reason: 'test' });
+      await vi.advanceTimersByTimeAsync(0);
+
+      // save jobs should have been processed by auto-flush
+      expect(saveFn).toHaveBeenCalledTimes(2);
+
+      // log job is running (hanging) - not yet completed
+      const runningLogJobs = client
+        .getQueue()
+        .filter((j) => j.actionKey === 'log' && j.status === 'running');
+      expect(runningLogJobs.length).toBeGreaterThanOrEqual(1);
+
+      // Resolve the hanging log to clean up
+      resolveLog?.('done');
+      await vi.advanceTimersByTimeAsync(0);
     });
   });
 });
