@@ -127,7 +127,7 @@ function SaveButton({ id, data }: { id: string; data: string }) {
 
 ## 기여하기
 
-커뮤니티의 모든 분들의 기여를 환영합니다. [기여 가이드](https://github.com/offlegacy/event-tracker/blob/main/CONTRIBUTING.md).
+커뮤니티의 모든 분들의 기여를 환영합니다. [기여 가이드](./CONTRIBUTING.md).
 
 
 ## [공식 문서](https://connectivity-js-docs.vercel.app/ko)

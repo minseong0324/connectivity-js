@@ -127,7 +127,7 @@ function SaveButton({ id, data }: { id: string; data: string }) {
 
 ## Contributing
 
-We welcome contribution from everyone in the community. Read for detailed [contribution guide](https://github.com/offlegacy/event-tracker/blob/main/CONTRIBUTING.md).
+We welcome contributions from everyone in the community. Read the detailed [contribution guide](./CONTRIBUTING.md).
 
 
 ## [Check out the docs](https://connectivity-js-docs.vercel.app/en)
