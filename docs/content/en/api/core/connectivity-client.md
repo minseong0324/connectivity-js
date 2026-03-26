@@ -95,7 +95,9 @@ client.registerAction('save', {
 
 ### `execute(actionKey, input)`
 
-Executes a registered action.
+Executes a registered action. Supports two call styles:
+
+**String key (backward compatible):**
 
 ```ts
 const result = await client.execute('save', { id: '1', data: 'hello' });
@@ -111,6 +113,26 @@ if (result.enqueued) {
 | `actionKey` | `string` |
 | `input` | `unknown` |
 | Returns | `Promise<{ enqueued: true; jobId: string } \| { enqueued: false; result: unknown }>` |
+
+**Type-safe with `actionOptions()`:**
+
+Pass an `actionOptions()` config to get fully inferred `TInput` and `TResult`. The action is auto-registered if not already present.
+
+```ts
+import { actionOptions } from '@connectivity-js/core';
+
+const saveAction = actionOptions({
+  actionKey: 'save',
+  request: (input: { id: string; data: string }) => api.save(input),
+  whenOffline: 'queue',
+  dedupeKey: (input) => input.id,
+});
+
+const result = await client.execute(saveAction, { id: '1', data: 'hello' });
+if (!result.enqueued) {
+  console.log(result.result); // fully typed as the return of api.save()
+}
+```
 
 ### `getQueue()`
 
@@ -133,7 +155,8 @@ const saveJobs = client.getActionQueue('save');
 Subscribes to job queue changes.
 
 ```ts
-const unsubscribe = client.subscribeQueue((jobs) => {
+const unsubscribe = client.subscribeQueue(() => {
+  const jobs = client.getQueue();
   console.log('queued:', jobs.filter(j => j.status === 'queued').length);
 });
 ```
@@ -162,6 +185,21 @@ Manually flushes pending jobs.
 await client.flush();
 await client.flush({ onlyActionKey: 'save' });
 ```
+
+### `setOnJobError(handler)`
+
+Updates the error handler called when a job fails during flush. Used by `ConnectivityProvider` to track the latest `onJobError` callback via ref. Pass `undefined` to remove the handler.
+
+```ts
+client.setOnJobError((error, job) => {
+  console.error(`Job ${job.id} failed:`, error);
+  reportError(error);
+});
+```
+
+| Parameter | Type |
+|---|---|
+| `handler` | `((error: unknown, job: QueuedJob) => void) \| undefined` |
 
 ### `resetInstance()` (static)
 

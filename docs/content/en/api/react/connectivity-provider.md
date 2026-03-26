@@ -13,10 +13,13 @@ function ConnectivityProvider(props: ConnectivityProviderProps): ReactElement;
 | Prop | Type | Required | Default | Description |
 |---|---|---|---|---|
 | `children` | `ReactNode` | ✅ | — | React tree |
-| `detectors` | `Detector[]` | ✅ | — | Connectivity detection strategies |
+| `detectors` | `Detector[]` | ✅* | — | Connectivity detection strategies |
+| `client` | `ConnectivityClient` | ✅* | — | Pre-created client instance |
 | `gracePeriodMs` | `number` | | `0` | Grace period before offline transition (ms) |
 | `onJobError` | `(error, job) => void` | | — | Called on final job failure |
 | `defaultOptions` | `ConnectivityProviderOptions` | | — | Global defaults |
+
+> \* Either `detectors` or `client` is required (mutually exclusive). Use `client` when you need full control over the `ConnectivityClient` instance.
 
 ### defaultOptions
 

@@ -47,7 +47,7 @@ const saveAction = actionOptions({
   whenOffline: 'queue',
 });
 
-const result = await client.execute(saveAction.actionKey, { id: '1', data: 'hello' });
+const result = await client.execute(saveAction, { id: '1', data: 'hello' });
 
 if (result.enqueued) {
   console.log('queued:', result.jobId);

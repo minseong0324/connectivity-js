@@ -13,10 +13,13 @@ function ConnectivityProvider(props: ConnectivityProviderProps): ReactElement;
 | Prop | 타입 | 필수 | 기본값 | 설명 |
 |---|---|---|---|---|
 | `children` | `ReactNode` | ✅ | — | React 트리 |
-| `detectors` | `Detector[]` | ✅ | — | connectivity 감지 전략 |
+| `detectors` | `Detector[]` | ✅* | — | connectivity 감지 전략 |
+| `client` | `ConnectivityClient` | ✅* | — | 직접 생성한 client 인스턴스 |
 | `gracePeriodMs` | `number` | | `0` | offline 전환 유예 기간 (ms) |
 | `onJobError` | `(error, job) => void` | | — | job 최종 실패 시 호출 |
 | `defaultOptions` | `ConnectivityProviderOptions` | | — | 전역 기본값 |
+
+> \* `detectors` 또는 `client` 중 하나가 필수입니다 (상호 배타적). `ConnectivityClient` 인스턴스를 직접 제어해야 할 때 `client`를 사용합니다.
 
 ### defaultOptions
 

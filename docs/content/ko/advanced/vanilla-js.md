@@ -80,7 +80,8 @@ const jobs = client.getQueue();
 const saveJobs = client.getActionQueue('save');
 
 // 큐 변경 구독
-client.subscribeQueue((jobs) => {
+client.subscribeQueue(() => {
+  const jobs = client.getQueue();
   const pending = jobs.filter(j => j.status === 'queued');
   updateBadge(pending.length);
 });

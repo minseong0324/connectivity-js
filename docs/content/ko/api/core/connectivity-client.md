@@ -95,7 +95,9 @@ client.registerAction('save', {
 
 ### `execute(actionKey, input)`
 
-등록된 action을 실행합니다.
+등록된 action을 실행합니다. 두 가지 호출 방식을 지원합니다:
+
+**문자열 key (기존 방식):**
 
 ```ts
 const result = await client.execute('save', { id: '1', data: 'hello' });
@@ -111,6 +113,26 @@ if (result.enqueued) {
 | `actionKey` | `string` |
 | `input` | `unknown` |
 | 반환값 | `Promise<{ enqueued: true; jobId: string } \| { enqueued: false; result: unknown }>` |
+
+**`actionOptions()`를 사용한 type-safe 호출:**
+
+`actionOptions()` config를 전달하면 `TInput`과 `TResult`가 완전히 추론됩니다. 미등록 action은 자동으로 등록됩니다.
+
+```ts
+import { actionOptions } from '@connectivity-js/core';
+
+const saveAction = actionOptions({
+  actionKey: 'save',
+  request: (input: { id: string; data: string }) => api.save(input),
+  whenOffline: 'queue',
+  dedupeKey: (input) => input.id,
+});
+
+const result = await client.execute(saveAction, { id: '1', data: 'hello' });
+if (!result.enqueued) {
+  console.log(result.result); // api.save()의 반환 타입으로 완전히 추론됨
+}
+```
 
 ### `getQueue()`
 
@@ -133,7 +155,8 @@ const saveJobs = client.getActionQueue('save');
 job 큐 변경을 구독합니다.
 
 ```ts
-const unsubscribe = client.subscribeQueue((jobs) => {
+const unsubscribe = client.subscribeQueue(() => {
+  const jobs = client.getQueue();
   console.log('queued:', jobs.filter(j => j.status === 'queued').length);
 });
 ```
@@ -162,6 +185,21 @@ client.cancel('job_1_1700000000000');
 await client.flush();
 await client.flush({ onlyActionKey: 'save' });
 ```
+
+### `setOnJobError(handler)`
+
+flush 중 job이 최종 실패했을 때 호출되는 에러 핸들러를 업데이트합니다. `ConnectivityProvider`가 ref를 통해 최신 `onJobError` 콜백을 추적할 때 사용됩니다. `undefined`를 전달하면 핸들러를 제거합니다.
+
+```ts
+client.setOnJobError((error, job) => {
+  console.error(`Job ${job.id} failed:`, error);
+  reportError(error);
+});
+```
+
+| 파라미터 | 타입 |
+|---|---|
+| `handler` | `((error: unknown, job: QueuedJob) => void) \| undefined` |
 
 ### `resetInstance()` (static)
 
