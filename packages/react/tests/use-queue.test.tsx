@@ -5,7 +5,7 @@ import {
   getConnectivityClient,
 } from '@connectivity-js/core';
 import { act, renderHook } from '@testing-library/react';
-import { useRef, type ReactNode } from 'react';
+import { type ReactNode, useRef } from 'react';
 import { afterEach, describe, expect, test, vi } from 'vitest';
 import { ConnectivityProvider } from '../src/connectivity-provider';
 import { useQueue } from '../src/use-queue';
