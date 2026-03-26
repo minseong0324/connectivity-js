@@ -19,31 +19,37 @@ export interface ConnectivityProviderOptions {
   };
 }
 
-type ConnectivityContextValue = {
-  client: ConnectivityClient;
-  defaultOptions: ConnectivityProviderOptions;
-};
-
-export const ConnectivityContext =
-  createContext<ConnectivityContextValue | null>(null);
-
-/**
- * Internal hook to read default options set by the Provider.
- * Returns an empty object when called outside the Provider.
- */
-export function useDefaultConnectivityOptions() {
-  const context = useContext(ConnectivityContext);
-  return context?.defaultOptions ?? {};
-}
+export const ClientContext = createContext<ConnectivityClient | null>(null);
+export const DefaultOptionsContext = createContext<ConnectivityProviderOptions>(
+  {},
+);
 
 /**
  * Returns the ConnectivityClient from the nearest Provider.
  * Falls back to the singleton when used outside a Provider.
  */
 export function useConnectivityClient() {
-  const context = useContext(ConnectivityContext);
-  if (context !== null) {
-    return context.client;
+  const client = useContext(ClientContext);
+  if (client !== null) {
+    return client;
+  }
+  if (
+    typeof process !== 'undefined' &&
+    typeof process.env !== 'undefined' &&
+    process.env.NODE_ENV !== 'production'
+  ) {
+    console.warn(
+      '[connectivity-js] Hook called outside ConnectivityProvider. ' +
+        'Falling back to singleton. Wrap your app in <ConnectivityProvider>.',
+    );
   }
   return getConnectivityClient();
+}
+
+/**
+ * Internal hook to read default options set by the Provider.
+ * Returns an empty object when called outside the Provider.
+ */
+export function useDefaultConnectivityOptions() {
+  return useContext(DefaultOptionsContext);
 }

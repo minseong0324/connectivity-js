@@ -4,11 +4,28 @@ import {
   getConnectivityClient,
   type QueuedJob,
 } from '@connectivity-js/core';
-import { type ReactNode, useEffect, useMemo, useRef } from 'react';
+import { type ReactNode, useEffect, useRef } from 'react';
 import {
-  ConnectivityContext,
+  ClientContext,
   type ConnectivityProviderOptions,
+  DefaultOptionsContext,
 } from './connectivity-context';
+
+const EMPTY_OPTIONS: ConnectivityProviderOptions = {};
+
+function shallowEqual<T extends Record<string, unknown>>(a: T, b: T) {
+  const keysA = Object.keys(a);
+  const keysB = Object.keys(b);
+  if (keysA.length !== keysB.length) {
+    return false;
+  }
+  for (const key of keysA) {
+    if (a[key] !== b[key]) {
+      return false;
+    }
+  }
+  return true;
+}
 
 type ConnectivityProviderProps = {
   children: ReactNode;
@@ -78,20 +95,28 @@ export function ConnectivityProvider({
   useEffect(() => {
     client.setOnJobError((error, job) => onJobErrorRef.current?.(error, job));
     client.start();
-    return () => client.stop();
+    return () => {
+      client.setOnJobError(undefined);
+      client.stop();
+    };
   }, [client]);
 
-  const contextValue = useMemo(
-    () => ({
-      client,
-      defaultOptions: defaultOptions ?? {},
-    }),
-    [client, defaultOptions],
-  );
+  const resolvedOptions = defaultOptions ?? EMPTY_OPTIONS;
+  const stableOptionsRef = useRef(resolvedOptions);
+  if (
+    !shallowEqual(
+      stableOptionsRef.current as Record<string, unknown>,
+      resolvedOptions as Record<string, unknown>,
+    )
+  ) {
+    stableOptionsRef.current = resolvedOptions;
+  }
 
   return (
-    <ConnectivityContext.Provider value={contextValue}>
-      {children}
-    </ConnectivityContext.Provider>
+    <ClientContext.Provider value={client}>
+      <DefaultOptionsContext.Provider value={stableOptionsRef.current}>
+        {children}
+      </DefaultOptionsContext.Provider>
+    </ClientContext.Provider>
   );
 }

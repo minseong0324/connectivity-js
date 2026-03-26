@@ -35,10 +35,8 @@ export function useQueue(filter?: { actionKey?: string }) {
     (j) => j.status === 'queued' || j.status === 'running',
   ).length;
 
-  return {
-    jobs,
-    pendingCount,
-    retry: (jobId: string) => client.retry(jobId),
-    cancel: (jobId: string) => client.cancel(jobId),
-  };
+  const retry = useCallback((jobId: string) => client.retry(jobId), [client]);
+  const cancel = useCallback((jobId: string) => client.cancel(jobId), [client]);
+
+  return { jobs, pendingCount, retry, cancel };
 }
