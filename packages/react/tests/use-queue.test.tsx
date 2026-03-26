@@ -5,7 +5,7 @@ import {
   getConnectivityClient,
 } from '@connectivity-js/core';
 import { act, renderHook } from '@testing-library/react';
-import type { ReactNode } from 'react';
+import { type ReactNode, useRef } from 'react';
 import { afterEach, describe, expect, test, vi } from 'vitest';
 import { ConnectivityProvider } from '../src/connectivity-provider';
 import { useQueue } from '../src/use-queue';
@@ -128,5 +128,33 @@ describe('useQueue', () => {
     expect((failedJob?.lastError as Error).message).toBe('server error');
 
     vi.useRealTimers();
+  });
+
+  test('retry and cancel references are stable across re-renders', () => {
+    const mock = createMockDetector();
+    const client = new ConnectivityClient({
+      detectors: [mock.detector],
+    });
+
+    const Wrapper = ({ children }: { children: ReactNode }) => (
+      <ConnectivityProvider client={client}>{children}</ConnectivityProvider>
+    );
+
+    const { result, rerender } = renderHook(
+      () => {
+        const queue = useQueue();
+        const retryRef = useRef(queue.retry);
+        const cancelRef = useRef(queue.cancel);
+        const retryStable = retryRef.current === queue.retry;
+        const cancelStable = cancelRef.current === queue.cancel;
+        return { retryStable, cancelStable };
+      },
+      { wrapper: Wrapper },
+    );
+
+    rerender();
+
+    expect(result.current.retryStable).toBe(true);
+    expect(result.current.cancelStable).toBe(true);
   });
 });

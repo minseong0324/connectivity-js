@@ -159,4 +159,62 @@ describe('ConnectivityProvider', () => {
     });
     expect(result.current).toBe(client);
   });
+
+  test('defaultOptions reference is stable when top-level values are the same', () => {
+    const mock = createMockDetector();
+    const client = new ConnectivityClient({
+      detectors: [mock.detector],
+    });
+
+    const actionsObj = { whenOffline: 'queue' as const };
+    const optionsSnapshots: unknown[] = [];
+
+    const Wrapper = ({ children }: { children: ReactNode }) => (
+      <ConnectivityProvider
+        client={client}
+        defaultOptions={{ actions: actionsObj }}
+      >
+        {children}
+      </ConnectivityProvider>
+    );
+
+    const { rerender } = renderHook(
+      () => {
+        const opts = useDefaultConnectivityOptions();
+        optionsSnapshots.push(opts);
+        return opts;
+      },
+      { wrapper: Wrapper },
+    );
+
+    // Re-render triggers a new wrapper render with a new { actions: actionsObj } literal,
+    // but shallowEqual sees the same top-level `actions` reference so the ref stays stable.
+    rerender();
+
+    expect(optionsSnapshots.length).toBeGreaterThanOrEqual(2);
+    expect(optionsSnapshots[0]).toBe(optionsSnapshots[1]);
+  });
+
+  test('cleans up onJobError handler on unmount', () => {
+    const mock = createMockDetector();
+    const client = new ConnectivityClient({
+      detectors: [mock.detector],
+    });
+    const setOnJobErrorSpy = vi.spyOn(client, 'setOnJobError');
+
+    const Wrapper = ({ children }: { children: ReactNode }) => (
+      <ConnectivityProvider client={client} onJobError={() => {}}>
+        {children}
+      </ConnectivityProvider>
+    );
+
+    const { unmount } = renderHook(() => null, { wrapper: Wrapper });
+
+    unmount();
+
+    // Last call to setOnJobError should be with undefined (cleanup)
+    const lastCall =
+      setOnJobErrorSpy.mock.calls[setOnJobErrorSpy.mock.calls.length - 1];
+    expect(lastCall?.[0]).toBeUndefined();
+  });
 });
