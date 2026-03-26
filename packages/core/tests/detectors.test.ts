@@ -1,6 +1,14 @@
 // @vitest-environment jsdom
-import { afterEach, assert, beforeEach, describe, expect, test } from 'vitest';
-import { browserOnlineDetector } from '../src/detectors';
+import {
+  afterEach,
+  assert,
+  beforeEach,
+  describe,
+  expect,
+  test,
+  vi,
+} from 'vitest';
+import { browserOnlineDetector, heartbeatDetector } from '../src/detectors';
 import type { DetectorEvent } from '../src/types';
 
 describe('browserOnlineDetector', () => {
@@ -76,5 +84,117 @@ describe('browserOnlineDetector', () => {
     window.dispatchEvent(new Event('offline'));
     // no additional events after initial emit(1)
     expect(events).toHaveLength(1);
+  });
+});
+
+describe('heartbeatDetector', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+  });
+
+  test('reports offline when response is not ok (HTTP 500)', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({ ok: false, status: 500 }),
+    );
+    vi.stubGlobal('performance', { now: vi.fn().mockReturnValue(0) });
+
+    const events: DetectorEvent[] = [];
+    const detector = heartbeatDetector({ url: '/health', intervalMs: 1000 });
+    const cleanup = detector.start((e) => events.push(e));
+
+    await vi.advanceTimersByTimeAsync(0);
+
+    expect(events.some((e) => e.status === 'offline')).toBe(true);
+    expect(events.every((e) => e.status !== 'online')).toBe(true);
+
+    cleanup();
+  });
+
+  test('reports online when response is ok (HTTP 200)', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({ ok: true, status: 200 }),
+    );
+    vi.stubGlobal('performance', { now: vi.fn().mockReturnValue(0) });
+
+    const events: DetectorEvent[] = [];
+    const detector = heartbeatDetector({ url: '/health', intervalMs: 1000 });
+    const cleanup = detector.start((e) => events.push(e));
+
+    await vi.advanceTimersByTimeAsync(0);
+
+    expect(events.some((e) => e.status === 'online')).toBe(true);
+
+    cleanup();
+  });
+
+  test('uses custom validateResponse when provided', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi
+        .fn()
+        .mockResolvedValue({ ok: true, status: 200, headers: new Headers() }),
+    );
+    vi.stubGlobal('performance', { now: vi.fn().mockReturnValue(0) });
+
+    const events: DetectorEvent[] = [];
+    const detector = heartbeatDetector({
+      url: '/health',
+      intervalMs: 1000,
+      validateResponse: () => false,
+    });
+    const cleanup = detector.start((e) => events.push(e));
+
+    await vi.advanceTimersByTimeAsync(0);
+
+    expect(events.some((e) => e.status === 'offline')).toBe(true);
+
+    cleanup();
+  });
+
+  test('uses specified HTTP method', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, status: 200 });
+    vi.stubGlobal('fetch', fetchMock);
+    vi.stubGlobal('performance', { now: vi.fn().mockReturnValue(0) });
+
+    const detector = heartbeatDetector({
+      url: '/health',
+      intervalMs: 1000,
+      method: 'GET',
+    });
+    const cleanup = detector.start(() => {});
+
+    await vi.advanceTimersByTimeAsync(0);
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      '/health',
+      expect.objectContaining({ method: 'GET' }),
+    );
+
+    cleanup();
+  });
+
+  test('reports offline on fetch error', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockRejectedValue(new Error('network error')),
+    );
+    vi.stubGlobal('performance', { now: vi.fn().mockReturnValue(0) });
+
+    const events: DetectorEvent[] = [];
+    const detector = heartbeatDetector({ url: '/health', intervalMs: 1000 });
+    const cleanup = detector.start((e) => events.push(e));
+
+    await vi.advanceTimersByTimeAsync(0);
+
+    expect(events.some((e) => e.status === 'offline')).toBe(true);
+
+    cleanup();
   });
 });
