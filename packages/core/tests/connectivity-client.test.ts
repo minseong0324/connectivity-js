@@ -860,7 +860,7 @@ describe('ConnectivityClient', () => {
     test('start() after destroy() throws', () => {
       const { client } = createTestClient();
       client.destroy();
-      expect(() => client.start()).toThrow('Cannot start a destroyed client');
+      expect(() => client.start()).toThrow('Cannot start');
     });
 
     test('execute() after destroy() throws', async () => {
@@ -870,8 +870,36 @@ describe('ConnectivityClient', () => {
       });
       client.destroy();
       await expect(client.execute('t', {})).rejects.toThrow(
-        'Cannot execute on a destroyed client',
+        'Cannot execute',
       );
+    });
+
+    test('registerAction() after destroy() throws', () => {
+      const { client } = createTestClient();
+      client.destroy();
+      expect(() =>
+        client.registerAction('t', { request: vi.fn() }),
+      ).toThrow('Cannot registerAction');
+    });
+
+    test('subscribe() after destroy() throws', () => {
+      const { client } = createTestClient();
+      client.destroy();
+      expect(() => client.subscribe(vi.fn())).toThrow('Cannot subscribe');
+    });
+
+    test('subscribeQueue() after destroy() throws', () => {
+      const { client } = createTestClient();
+      client.destroy();
+      expect(() => client.subscribeQueue(vi.fn())).toThrow(
+        'Cannot subscribeQueue',
+      );
+    });
+
+    test('error message includes resetInstance guidance', () => {
+      const { client } = createTestClient();
+      client.destroy();
+      expect(() => client.start()).toThrow('resetInstance()');
     });
 
     test('stop() then start() works (not destroyed)', () => {

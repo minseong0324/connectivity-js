@@ -76,6 +76,15 @@ export class ConnectivityClient {
   #started = false;
   #destroyed = false;
 
+  #assertNotDestroyed(method: string) {
+    if (this.#destroyed) {
+      throw new Error(
+        `[connectivity-js] Cannot ${method} on a destroyed client. ` +
+          'Use ConnectivityClient.resetInstance() to reset the singleton, then call getInstance() again.',
+      );
+    }
+  }
+
   constructor(options?: ConnectivityClientOptions) {
     const initialStatus = options?.initialStatus ?? 'unknown';
     this.#state = {
@@ -163,12 +172,7 @@ export class ConnectivityClient {
    * client.start();
    */
   start() {
-    if (this.#destroyed) {
-      throw new Error(
-        '[connectivity-js] Cannot start a destroyed client. ' +
-          'Use resetInstance() for singletons or create a new instance.',
-      );
-    }
+    this.#assertNotDestroyed('start');
     if (this.#started) {
       return;
     }
@@ -250,6 +254,7 @@ export class ConnectivityClient {
   subscribe(
     listener: (s: ConnectivityState, t?: ConnectivityTransition) => void,
   ): Unsubscribe {
+    this.#assertNotDestroyed('subscribe');
     this.#stateListeners.add(listener);
     return () => {
       this.#stateListeners.delete(listener);
@@ -375,6 +380,7 @@ export class ConnectivityClient {
    * });
    */
   subscribeQueue(listener: () => void) {
+    this.#assertNotDestroyed('subscribeQueue');
     this.#queueListeners.add(listener);
     return () => {
       this.#queueListeners.delete(listener);
@@ -461,6 +467,7 @@ export class ConnectivityClient {
    * });
    */
   registerAction(actionKey: string, action: RegisteredAction) {
+    this.#assertNotDestroyed('registerAction');
     this.#actions.set(actionKey, action);
   }
 
@@ -504,12 +511,7 @@ export class ConnectivityClient {
     configOrKey: string | ActionOptionsConfig<TInput, TResult>,
     input: TInput,
   ): Promise<ActionRunResult<TResult>> {
-    if (this.#destroyed) {
-      throw new Error(
-        '[connectivity-js] Cannot execute on a destroyed client. ' +
-          'Use resetInstance() for singletons or create a new instance.',
-      );
-    }
+    this.#assertNotDestroyed('execute');
     const actionKey =
       typeof configOrKey === 'string' ? configOrKey : configOrKey.actionKey;
 
