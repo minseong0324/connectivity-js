@@ -1,5 +1,8 @@
 import type { QueuedJob } from '@connectivity-js/core';
-import { browserOnlineDetector } from '@connectivity-js/core';
+import {
+  ConnectivityClient,
+  browserOnlineDetector,
+} from '@connectivity-js/core';
 import { describe, expectTypeOf, it } from 'vitest';
 import { ConnectivityProvider } from '../src/connectivity-provider';
 
@@ -12,9 +15,20 @@ describe('ConnectivityProvider', () => {
     );
   });
 
-  it('type error when detectors is missing', () => {
+  it('valid JSX when client is passed', () => {
+    const client = new ConnectivityClient({
+      detectors: [browserOnlineDetector()],
+    });
     return (
-      // @ts-expect-error — detectors is required
+      <ConnectivityProvider client={client}>
+        <div>test</div>
+      </ConnectivityProvider>
+    );
+  });
+
+  it('type error when neither client nor detectors is passed', () => {
+    return (
+      // @ts-expect-error — client or detectors is required
       <ConnectivityProvider>
         <div>test</div>
       </ConnectivityProvider>
@@ -26,6 +40,21 @@ describe('ConnectivityProvider', () => {
       <ConnectivityProvider
         // @ts-expect-error — string is not assignable to Detector[]
         detectors="wrong"
+      >
+        <div>test</div>
+      </ConnectivityProvider>
+    );
+  });
+
+  it('type error when passing both client and detectors', () => {
+    const client = new ConnectivityClient({
+      detectors: [browserOnlineDetector()],
+    });
+    return (
+      // @ts-expect-error — client and detectors are mutually exclusive
+      <ConnectivityProvider
+        client={client}
+        detectors={[browserOnlineDetector()]}
       >
         <div>test</div>
       </ConnectivityProvider>
@@ -63,6 +92,21 @@ describe('ConnectivityProvider', () => {
         detectors={[browserOnlineDetector()]}
         // @ts-expect-error — gracePeriodMs must be number type
         gracePeriodMs="3000"
+      >
+        <div>test</div>
+      </ConnectivityProvider>
+    );
+  });
+
+  it('type error when passing gracePeriodMs with client prop', () => {
+    const client = new ConnectivityClient({
+      detectors: [browserOnlineDetector()],
+    });
+    return (
+      // @ts-expect-error — gracePeriodMs is not allowed with client prop
+      <ConnectivityProvider
+        client={client}
+        gracePeriodMs={3_000}
       >
         <div>test</div>
       </ConnectivityProvider>
