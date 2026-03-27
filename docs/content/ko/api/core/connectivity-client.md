@@ -189,7 +189,7 @@ await client.flush({ onlyActionKey: 'save' });
 
 ### `setOnJobError(handler)`
 
-flush 중 job이 최종 실패했을 때 호출되는 에러 핸들러를 업데이트합니다. `ConnectivityProvider`가 ref를 통해 최신 `onJobError` 콜백을 추적할 때 사용됩니다. `undefined`를 전달하면 핸들러를 제거합니다.
+job이 최종 실패에 도달했을 때 호출되는 에러 핸들러를 업데이트합니다. `ConnectivityProvider`가 ref를 통해 최신 `onJobError` 콜백을 추적할 때 사용됩니다. `undefined`를 전달하면 핸들러를 제거합니다.
 
 ```ts
 client.setOnJobError((error, job) => {

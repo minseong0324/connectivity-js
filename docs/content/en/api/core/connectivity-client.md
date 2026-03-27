@@ -189,7 +189,7 @@ await client.flush({ onlyActionKey: 'save' });
 
 ### `setOnJobError(handler)`
 
-Updates the error handler called when a job fails during flush. Used by `ConnectivityProvider` to track the latest `onJobError` callback via ref. Pass `undefined` to remove the handler.
+Updates the error handler called when a job reaches terminal failure. Used by `ConnectivityProvider` to track the latest `onJobError` callback via ref. Pass `undefined` to remove the handler.
 
 ```ts
 client.setOnJobError((error, job) => {
