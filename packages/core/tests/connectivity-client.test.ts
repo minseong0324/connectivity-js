@@ -2128,7 +2128,10 @@ describe('ConnectivityClient', () => {
       await expect(client.execute('t', {})).rejects.toThrow('direct fail');
       expect(onJobError).toHaveBeenCalledOnce();
 
-      const [error, job] = onJobError.mock.calls[0] as [unknown, { actionKey: string; status: string }];
+      const [error, job] = onJobError.mock.calls[0] as [
+        unknown,
+        { actionKey: string; status: string },
+      ];
       expect(error).toBeInstanceOf(Error);
       expect((error as Error).message).toBe('direct fail');
       expect(job.actionKey).toBe('t');
