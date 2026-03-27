@@ -314,6 +314,39 @@ describe('useAction', () => {
       expect(onSettled).toHaveBeenCalledOnce();
     });
 
+    test('does not fire flush callbacks after unmount', async () => {
+      const { Wrapper, mock } = createTestWrapper();
+      const request = vi.fn().mockResolvedValue({ id: '42' });
+      const action = actionOptions({
+        actionKey: 'purchase',
+        request,
+        whenOffline: 'queue',
+      });
+
+      const onSuccess = vi.fn();
+      const { result, unmount } = renderHook(
+        () => useAction(action, { onSuccess }),
+        { wrapper: Wrapper },
+      );
+
+      await act(async () => {
+        mock.emit({ status: 'offline', reason: 'test' });
+      });
+
+      await act(async () => {
+        await result.current.execute({ orderId: '1' });
+      });
+
+      unmount();
+
+      await act(async () => {
+        mock.emit({ status: 'online', reason: 'test' });
+      });
+      await vi.advanceTimersByTimeAsync(0);
+
+      expect(onSuccess).not.toHaveBeenCalled();
+    });
+
     test('enqueue does not call onSettled', async () => {
       const { Wrapper, mock } = createTestWrapper();
       const request = vi.fn().mockResolvedValue({ id: '42' });
