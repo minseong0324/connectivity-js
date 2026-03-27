@@ -2056,46 +2056,39 @@ describe('ConnectivityClient', () => {
   describe('bug fixes', () => {
     test('retry resets attempt counter', async () => {
       const { client, mock } = createTestClient();
-      mock.emit({ status: 'offline', reason: 'test' });
+      mock.emit({ status: 'online', reason: 'test' });
 
-      let callCount = 0;
+      const request = vi.fn().mockRejectedValue(new Error('fail'));
       client.registerAction('t', {
-        request: () => {
-          callCount++;
-          if (callCount === 1) {
-            return Promise.reject(new Error('fail'));
-          }
-          return Promise.resolve('ok');
-        },
+        request,
         options: {
-          whenOffline: 'queue',
-          retry: { maxAttempts: 3, backoffMs: () => 0 },
+          retry: { maxAttempts: 1, backoffMs: () => 0 },
         },
       });
 
-      const r = await client.execute('t', {});
-      assert(r.enqueued);
+      // Execute online — fails terminally (maxAttempts: 1)
+      await expect(client.execute('t', {})).rejects.toThrow('fail');
 
-      // Manually set job to exhausted state
-      const job = client.getQueue().find((j) => j.id === r.jobId);
-      assert(job !== undefined);
-      // Patch job to simulate exhausted attempt state
-      (job as { attempt: number; status: string }).attempt = 3;
-      (job as { status: string }).status = 'failed';
+      const failedJob = client.getQueue().find((j) => j.status === 'failed');
+      assert(failedJob !== undefined);
+      expect(failedJob.attempt).toBe(1);
 
-      await client.retry(r.jobId);
+      // Retry while offline so we can inspect the reset state before execution
+      mock.emit({ status: 'offline', reason: 'test' });
+      await client.retry(failedJob.id);
 
-      // After retry, attempt should be reset to 0
-      const retried = client.getQueue().find((j) => j.id === r.jobId);
+      const retried = client.getQueue().find((j) => j.id === failedJob.id);
       assert(retried !== undefined);
       expect(retried.attempt).toBe(0);
+      expect(retried.status).toBe('queued');
 
-      // Go online - job should succeed (not re-fail due to exhausted attempts)
+      // Make request succeed and go online
+      request.mockResolvedValue('ok');
       mock.emit({ status: 'online', reason: 'test' });
       await vi.advanceTimersByTimeAsync(10);
 
-      const final = client.getQueue().find((j) => j.id === r.jobId);
-      expect(final?.status).not.toBe('failed');
+      const final = client.getQueue().find((j) => j.id === failedJob.id);
+      expect(final?.status).toBe('succeeded');
     });
 
     test('execute failure uses correct backoff attempt', async () => {
@@ -2134,7 +2127,12 @@ describe('ConnectivityClient', () => {
 
       await expect(client.execute('t', {})).rejects.toThrow('direct fail');
       expect(onJobError).toHaveBeenCalledOnce();
-      expect(onJobError.mock.calls[0]?.[0]).toBeInstanceOf(Error);
+
+      const [error, job] = onJobError.mock.calls[0] as [unknown, { actionKey: string; status: string }];
+      expect(error).toBeInstanceOf(Error);
+      expect((error as Error).message).toBe('direct fail');
+      expect(job.actionKey).toBe('t');
+      expect(job.status).toBe('failed');
     });
   });
 });
