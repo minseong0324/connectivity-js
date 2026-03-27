@@ -23,7 +23,8 @@ const client = getConnectivityClient(options);
 | `detectors` | `Detector[]` | (required) | Connectivity detection strategies |
 | `initialStatus` | `ConnectivityStatus` | `'unknown'` | Initial state |
 | `gracePeriodMs` | `number` | `0` | Grace period before offline transition (ms) |
-| `onJobError` | `(error, job) => void` | — | Called on final job failure during flush |
+| `onJobError` | `(error, job) => void` | — | Called when a job reaches terminal failure |
+| `maxQueueSize` | `number` | `undefined` | Maximum number of jobs allowed in the queue. Throws when exceeded. |
 | `defaultOptions.actions` | `ActionOptions` | — | Global action defaults |
 
 ## Methods
@@ -163,7 +164,7 @@ const unsubscribe = client.subscribeQueue(() => {
 
 ### `retry(jobId)`
 
-Retries a failed or queued job.
+Retries a failed or queued job. Resets the attempt counter to 0, allowing the full retry cycle.
 
 ```ts
 await client.retry('job_1_1700000000000');
@@ -188,7 +189,7 @@ await client.flush({ onlyActionKey: 'save' });
 
 ### `setOnJobError(handler)`
 
-Updates the error handler called when a job fails during flush. Used by `ConnectivityProvider` to track the latest `onJobError` callback via ref. Pass `undefined` to remove the handler.
+Updates the error handler called when a job reaches terminal failure. Used by `ConnectivityProvider` to track the latest `onJobError` callback via ref. Pass `undefined` to remove the handler.
 
 ```ts
 client.setOnJobError((error, job) => {

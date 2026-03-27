@@ -23,7 +23,8 @@ const client = getConnectivityClient(options);
 | `detectors` | `Detector[]` | (필수) | connectivity 감지 전략 |
 | `initialStatus` | `ConnectivityStatus` | `'unknown'` | 초기 상태 |
 | `gracePeriodMs` | `number` | `0` | offline 전환 유예 기간 (ms) |
-| `onJobError` | `(error, job) => void` | — | flush 중 job 최종 실패 시 호출 |
+| `onJobError` | `(error, job) => void` | — | job이 최종 실패에 도달했을 때 호출 |
+| `maxQueueSize` | `number` | `undefined` | 큐에 허용되는 최대 작업 수. 초과 시 에러를 throw합니다. |
 | `defaultOptions.actions` | `ActionOptions` | — | 전체 action 기본 옵션 |
 
 ## Methods
@@ -163,7 +164,7 @@ const unsubscribe = client.subscribeQueue(() => {
 
 ### `retry(jobId)`
 
-실패하거나 대기 중인 job을 재시도합니다.
+실패하거나 대기 중인 job을 재시도합니다. 시도 횟수를 0으로 초기화하여 전체 재시도 사이클을 허용합니다.
 
 ```ts
 await client.retry('job_1_1700000000000');
@@ -188,7 +189,7 @@ await client.flush({ onlyActionKey: 'save' });
 
 ### `setOnJobError(handler)`
 
-flush 중 job이 최종 실패했을 때 호출되는 에러 핸들러를 업데이트합니다. `ConnectivityProvider`가 ref를 통해 최신 `onJobError` 콜백을 추적할 때 사용됩니다. `undefined`를 전달하면 핸들러를 제거합니다.
+job이 최종 실패에 도달했을 때 호출되는 에러 핸들러를 업데이트합니다. `ConnectivityProvider`가 ref를 통해 최신 `onJobError` 콜백을 추적할 때 사용됩니다. `undefined`를 전달하면 핸들러를 제거합니다.
 
 ```ts
 client.setOnJobError((error, job) => {
