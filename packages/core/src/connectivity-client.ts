@@ -774,7 +774,11 @@ export class ConnectivityClient {
     ) {
       return;
     }
-    this.#queuePatch(jobId, { status: 'queued', nextRunAt: undefined, attempt: 0 });
+    this.#queuePatch(jobId, {
+      status: 'queued',
+      nextRunAt: undefined,
+      attempt: 0,
+    });
     this.#notifyQueue();
     if (this.#state.status === 'online') {
       const updatedJob = this.#queueGet(jobId);
