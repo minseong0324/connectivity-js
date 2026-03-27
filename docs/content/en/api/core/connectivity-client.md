@@ -24,6 +24,7 @@ const client = getConnectivityClient(options);
 | `initialStatus` | `ConnectivityStatus` | `'unknown'` | Initial state |
 | `gracePeriodMs` | `number` | `0` | Grace period before offline transition (ms) |
 | `onJobError` | `(error, job) => void` | — | Called on final job failure during flush |
+| `maxQueueSize` | `number` | `undefined` | Maximum number of jobs allowed in the queue. Throws when exceeded. |
 | `defaultOptions.actions` | `ActionOptions` | — | Global action defaults |
 
 ## Methods
@@ -163,7 +164,7 @@ const unsubscribe = client.subscribeQueue(() => {
 
 ### `retry(jobId)`
 
-Retries a failed or queued job.
+Retries a failed or queued job. Resets the attempt counter to 0, allowing the full retry cycle.
 
 ```ts
 await client.retry('job_1_1700000000000');

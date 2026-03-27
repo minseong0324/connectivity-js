@@ -24,6 +24,7 @@ const client = getConnectivityClient(options);
 | `initialStatus` | `ConnectivityStatus` | `'unknown'` | 초기 상태 |
 | `gracePeriodMs` | `number` | `0` | offline 전환 유예 기간 (ms) |
 | `onJobError` | `(error, job) => void` | — | flush 중 job 최종 실패 시 호출 |
+| `maxQueueSize` | `number` | `undefined` | 큐에 허용되는 최대 작업 수. 초과 시 에러를 throw합니다. |
 | `defaultOptions.actions` | `ActionOptions` | — | 전체 action 기본 옵션 |
 
 ## Methods
@@ -163,7 +164,7 @@ const unsubscribe = client.subscribeQueue(() => {
 
 ### `retry(jobId)`
 
-실패하거나 대기 중인 job을 재시도합니다.
+실패하거나 대기 중인 job을 재시도합니다. 시도 횟수를 0으로 초기화하여 전체 재시도 사이클을 허용합니다.
 
 ```ts
 await client.retry('job_1_1700000000000');
