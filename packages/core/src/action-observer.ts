@@ -88,7 +88,8 @@ export class ActionObserver<TInput = unknown, TResult = unknown> {
 
     if (
       this.#cachedResult.pendingCount === pendingCount &&
-      this.#cachedFailedJobId === failedJobId
+      this.#cachedFailedJobId === failedJobId &&
+      failedJob?.lastError === this.#cachedResult.lastError
     ) {
       return this.#cachedResult;
     }

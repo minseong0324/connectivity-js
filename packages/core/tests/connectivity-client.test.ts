@@ -2052,4 +2052,89 @@ describe('ConnectivityClient', () => {
       await vi.advanceTimersByTimeAsync(0);
     });
   });
+
+  describe('bug fixes', () => {
+    test('retry resets attempt counter', async () => {
+      const { client, mock } = createTestClient();
+      mock.emit({ status: 'offline', reason: 'test' });
+
+      let callCount = 0;
+      client.registerAction('t', {
+        request: () => {
+          callCount++;
+          if (callCount === 1) {
+            return Promise.reject(new Error('fail'));
+          }
+          return Promise.resolve('ok');
+        },
+        options: {
+          whenOffline: 'queue',
+          retry: { maxAttempts: 3, backoffMs: () => 0 },
+        },
+      });
+
+      const r = await client.execute('t', {});
+      assert(r.enqueued);
+
+      // Manually set job to exhausted state
+      const job = client.getQueue().find((j) => j.id === r.jobId);
+      assert(job !== undefined);
+      // Patch job to simulate exhausted attempt state
+      (job as { attempt: number; status: string }).attempt = 3;
+      (job as { status: string }).status = 'failed';
+
+      await client.retry(r.jobId);
+
+      // After retry, attempt should be reset to 0
+      const retried = client.getQueue().find((j) => j.id === r.jobId);
+      assert(retried !== undefined);
+      expect(retried.attempt).toBe(0);
+
+      // Go online - job should succeed (not re-fail due to exhausted attempts)
+      mock.emit({ status: 'online', reason: 'test' });
+      await vi.advanceTimersByTimeAsync(10);
+
+      const final = client.getQueue().find((j) => j.id === r.jobId);
+      expect(final?.status).not.toBe('failed');
+    });
+
+    test('execute failure uses correct backoff attempt', async () => {
+      const { client, mock } = createTestClient();
+      mock.emit({ status: 'online', reason: 'test' });
+
+      const backoffMs = vi.fn().mockReturnValue(1_000);
+      let callCount = 0;
+      client.registerAction('t', {
+        request: () => {
+          callCount++;
+          if (callCount === 1) {
+            return Promise.reject(new Error('fail'));
+          }
+          return Promise.resolve('ok');
+        },
+        options: {
+          retry: { maxAttempts: 3, backoffMs },
+        },
+      });
+
+      await client.execute('t', {});
+
+      expect(backoffMs).toHaveBeenCalledWith(1);
+    });
+
+    test('onJobError fires on direct execute failure', async () => {
+      const onJobError = vi.fn();
+      const { client, mock } = createTestClient({ onJobError });
+      mock.emit({ status: 'online', reason: 'test' });
+
+      client.registerAction('t', {
+        request: vi.fn().mockRejectedValue(new Error('direct fail')),
+        options: {},
+      });
+
+      await expect(client.execute('t', {})).rejects.toThrow('direct fail');
+      expect(onJobError).toHaveBeenCalledOnce();
+      expect(onJobError.mock.calls[0]?.[0]).toBeInstanceOf(Error);
+    });
+  });
 });

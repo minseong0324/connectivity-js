@@ -712,6 +712,10 @@ export class ConnectivityClient {
         lastError: error,
       });
       this.#notifyQueue();
+      const failedJob = this.#queueGet(jobId);
+      if (failedJob !== undefined) {
+        this.#onJobError?.(error, failedJob);
+      }
       throw error;
     }
 
@@ -737,7 +741,7 @@ export class ConnectivityClient {
       return { enqueued: true as const, jobId };
     }
 
-    const currentAttempt = (freshJob?.attempt ?? 0) + 1;
+    const currentAttempt = freshJob?.attempt ?? 1;
     const rawBackoff =
       mergedOptions.retry?.backoffMs(currentAttempt) ?? DEFAULT_BACKOFF_MS;
     const backoffMs = Math.max(1, rawBackoff);
@@ -770,7 +774,7 @@ export class ConnectivityClient {
     ) {
       return;
     }
-    this.#queuePatch(jobId, { status: 'queued', nextRunAt: undefined });
+    this.#queuePatch(jobId, { status: 'queued', nextRunAt: undefined, attempt: 0 });
     this.#notifyQueue();
     if (this.#state.status === 'online') {
       const updatedJob = this.#queueGet(jobId);
