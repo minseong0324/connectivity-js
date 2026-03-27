@@ -23,7 +23,7 @@ const client = getConnectivityClient(options);
 | `detectors` | `Detector[]` | (required) | Connectivity detection strategies |
 | `initialStatus` | `ConnectivityStatus` | `'unknown'` | Initial state |
 | `gracePeriodMs` | `number` | `0` | Grace period before offline transition (ms) |
-| `onJobError` | `(error, job) => void` | — | Called on final job failure during flush |
+| `onJobError` | `(error, job) => void` | — | Called when a job reaches terminal failure |
 | `maxQueueSize` | `number` | `undefined` | Maximum number of jobs allowed in the queue. Throws when exceeded. |
 | `defaultOptions.actions` | `ActionOptions` | — | Global action defaults |
 

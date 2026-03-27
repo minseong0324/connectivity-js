@@ -23,7 +23,7 @@ const client = getConnectivityClient(options);
 | `detectors` | `Detector[]` | (필수) | connectivity 감지 전략 |
 | `initialStatus` | `ConnectivityStatus` | `'unknown'` | 초기 상태 |
 | `gracePeriodMs` | `number` | `0` | offline 전환 유예 기간 (ms) |
-| `onJobError` | `(error, job) => void` | — | flush 중 job 최종 실패 시 호출 |
+| `onJobError` | `(error, job) => void` | — | job이 최종 실패에 도달했을 때 호출 |
 | `maxQueueSize` | `number` | `undefined` | 큐에 허용되는 최대 작업 수. 초과 시 에러를 throw합니다. |
 | `defaultOptions.actions` | `ActionOptions` | — | 전체 action 기본 옵션 |
 
