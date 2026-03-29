@@ -4,6 +4,7 @@ import {
   delay,
   SUCCEEDED_JOB_CLEANUP_DELAY_MS,
 } from './engine-utils';
+import { reportError } from './report-error';
 import type {
   ActionOptions,
   ActionRunResult,
@@ -283,7 +284,11 @@ export class ConnectivityClient {
   #notifyState(transition?: ConnectivityTransition) {
     this.#stateSnapshot = this.#state;
     for (const listener of this.#stateListeners) {
-      listener(this.#stateSnapshot, transition);
+      try {
+        listener(this.#stateSnapshot, transition);
+      } catch (e) {
+        reportError(e);
+      }
     }
   }
 
@@ -315,6 +320,7 @@ export class ConnectivityClient {
       return;
     }
     clearTimeout(this.#pendingGraceTimerId);
+    this.#timerIds.delete(this.#pendingGraceTimerId);
     this.#pendingGraceTimerId = null;
     this.#pendingGraceReason = undefined;
   }
@@ -344,7 +350,7 @@ export class ConnectivityClient {
       if (this.#pendingGraceTimerId !== null) {
         return;
       }
-      this.#pendingGraceTimerId = setTimeout(() => {
+      this.#pendingGraceTimerId = this.#scheduleTimer(() => {
         if (this.#destroyed) {
           return;
         }
@@ -439,7 +445,11 @@ export class ConnectivityClient {
       }
     }
     for (const listener of this.#queueListeners) {
-      listener();
+      try {
+        listener();
+      } catch (e) {
+        reportError(e);
+      }
     }
   }
 
@@ -670,13 +680,15 @@ export class ConnectivityClient {
       }
     }
 
-    if (
-      this.#maxQueueSize !== undefined &&
-      this.#jobs.size >= this.#maxQueueSize
-    ) {
-      throw new Error(
-        `[connectivity-js] Queue is full (max ${this.#maxQueueSize})`,
-      );
+    if (this.#maxQueueSize !== undefined) {
+      const activeJobCount = this.#queueList().filter(
+        (j) => j.status === 'queued' || j.status === 'running',
+      ).length;
+      if (activeJobCount >= this.#maxQueueSize) {
+        throw new Error(
+          `[connectivity-js] Queue is full (max ${this.#maxQueueSize})`,
+        );
+      }
     }
 
     const job: QueuedJob = {
