@@ -83,19 +83,21 @@ export class ActionObserver<TInput = unknown, TResult = unknown> {
     const pendingCount = jobs.filter(
       (j) => j.status === 'queued' || j.status === 'running',
     ).length;
-    const failedJob = jobs.find((j) => j.status === 'failed');
-    const failedJobId = failedJob?.id;
+    const errorJob =
+      jobs.find((j) => j.status === 'failed') ??
+      jobs.find((j) => j.lastError !== undefined);
+    const errorJobId = errorJob?.id;
 
     if (
       this.#cachedResult.pendingCount === pendingCount &&
-      this.#cachedFailedJobId === failedJobId &&
-      failedJob?.lastError === this.#cachedResult.lastError
+      this.#cachedFailedJobId === errorJobId &&
+      errorJob?.lastError === this.#cachedResult.lastError
     ) {
       return this.#cachedResult;
     }
 
-    this.#cachedFailedJobId = failedJobId;
-    this.#cachedResult = { pendingCount, lastError: failedJob?.lastError };
+    this.#cachedFailedJobId = errorJobId;
+    this.#cachedResult = { pendingCount, lastError: errorJob?.lastError };
     return this.#cachedResult;
   }
 

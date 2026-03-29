@@ -593,8 +593,8 @@ describe('ActionObserver', () => {
       expect(result1.lastError).toBeInstanceOf(Error);
       expect((result1.lastError as Error).message).toBe('error-1');
 
-      // Advance time so retry fires → job fails with Error("error-2")
-      await vi.advanceTimersByTimeAsync(200);
+      // Advance time so one retry fires → job fails with Error("error-2")
+      await vi.advanceTimersByTimeAsync(100);
 
       const result2 = observer.getCurrentResult();
       // Same job id (cachedFailedJobId unchanged) but different lastError
