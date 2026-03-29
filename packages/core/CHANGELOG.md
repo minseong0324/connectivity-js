@@ -1,5 +1,13 @@
 # @connectivity-js/core
 
+## 0.6.1
+
+### Patch Changes
+
+- fix(core): retry attempt reset, backoff off-by-one, onJobError on direct execute, observer cache staleness ([#47](https://github.com/minseong0324/connectivity-js/pull/47))
+
+- fix: add types conditions to exports map, remove phantom react-dom peer dep, add test:types to CI ([#49](https://github.com/minseong0324/connectivity-js/pull/49))
+
 ## 0.6.0
 
 ### Minor Changes
