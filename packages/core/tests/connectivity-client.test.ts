@@ -2186,4 +2186,90 @@ describe('ConnectivityClient', () => {
       expect(queuedJobs).toHaveLength(1);
     });
   });
+
+  describe('bug fixes', () => {
+    test('retry resets attempt counter', async () => {
+      const { client, mock } = createTestClient();
+      mock.emit({ status: 'online', reason: 'test' });
+
+      const request = vi.fn().mockRejectedValue(new Error('fail'));
+      client.registerAction('t', {
+        request,
+        options: {
+          retry: { maxAttempts: 1, backoffMs: () => 0 },
+        },
+      });
+
+      // Execute online — fails terminally (maxAttempts: 1)
+      await expect(client.execute('t', {})).rejects.toThrow('fail');
+
+      const failedJob = client.getQueue().find((j) => j.status === 'failed');
+      assert(failedJob !== undefined);
+      expect(failedJob.attempt).toBe(1);
+
+      // Retry while offline so we can inspect the reset state before execution
+      mock.emit({ status: 'offline', reason: 'test' });
+      await client.retry(failedJob.id);
+
+      const retried = client.getQueue().find((j) => j.id === failedJob.id);
+      assert(retried !== undefined);
+      expect(retried.attempt).toBe(0);
+      expect(retried.status).toBe('queued');
+
+      // Make request succeed and go online
+      request.mockResolvedValue('ok');
+      mock.emit({ status: 'online', reason: 'test' });
+      await vi.advanceTimersByTimeAsync(10);
+
+      const final = client.getQueue().find((j) => j.id === failedJob.id);
+      expect(final?.status).toBe('succeeded');
+    });
+
+    test('execute failure uses correct backoff attempt', async () => {
+      const { client, mock } = createTestClient();
+      mock.emit({ status: 'online', reason: 'test' });
+
+      const backoffMs = vi.fn().mockReturnValue(1_000);
+      let callCount = 0;
+      client.registerAction('t', {
+        request: () => {
+          callCount++;
+          if (callCount === 1) {
+            return Promise.reject(new Error('fail'));
+          }
+          return Promise.resolve('ok');
+        },
+        options: {
+          retry: { maxAttempts: 3, backoffMs },
+        },
+      });
+
+      await client.execute('t', {});
+
+      expect(backoffMs).toHaveBeenCalledWith(1);
+    });
+
+    test('onJobError fires on direct execute failure', async () => {
+      const onJobError = vi.fn();
+      const { client, mock } = createTestClient({ onJobError });
+      mock.emit({ status: 'online', reason: 'test' });
+
+      client.registerAction('t', {
+        request: vi.fn().mockRejectedValue(new Error('direct fail')),
+        options: {},
+      });
+
+      await expect(client.execute('t', {})).rejects.toThrow('direct fail');
+      expect(onJobError).toHaveBeenCalledOnce();
+
+      const [error, job] = onJobError.mock.calls[0] as [
+        unknown,
+        { actionKey: string; status: string },
+      ];
+      expect(error).toBeInstanceOf(Error);
+      expect((error as Error).message).toBe('direct fail');
+      expect(job.actionKey).toBe('t');
+      expect(job.status).toBe('failed');
+    });
+  });
 });
