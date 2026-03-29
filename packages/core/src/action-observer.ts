@@ -83,10 +83,10 @@ export class ActionObserver<TInput = unknown, TResult = unknown> {
     const pendingCount = jobs.filter(
       (j) => j.status === 'queued' || j.status === 'running',
     ).length;
-    const reversed = [...jobs].reverse();
+    const newestFirst = [...jobs].reverse();
     const errorJob =
-      reversed.find((j) => j.status === 'failed') ??
-      reversed.find((j) => j.lastError !== undefined);
+      newestFirst.find((j) => j.status === 'failed') ??
+      newestFirst.find((j) => j.lastError !== undefined);
     const errorJobId = errorJob?.id;
 
     if (
