@@ -14,14 +14,24 @@ import {
 } from '../src/connectivity-client';
 import { createMockDetector } from './test-utils';
 
+/**
+ * Flushes pending microtasks without advancing fake timers.
+ * `process.nextTick` is not mocked by fake timers, so the callback
+ * runs after all currently queued microtasks have drained.
+ */
+const flushMicrotasks = () =>
+  new Promise<void>((resolve) => process.nextTick(resolve));
+
 const createTestClient = (options?: {
   gracePeriodMs?: number;
+  maxQueueSize?: number;
   onJobError?: (error: unknown, job: unknown) => void;
 }) => {
   const mock = createMockDetector();
   const client = getConnectivityClient({
     detectors: [mock.detector],
     gracePeriodMs: options?.gracePeriodMs,
+    maxQueueSize: options?.maxQueueSize,
     onJobError: options?.onJobError,
   });
   client.start();
@@ -2136,6 +2146,192 @@ describe('ConnectivityClient', () => {
       expect((error as Error).message).toBe('direct fail');
       expect(job.actionKey).toBe('t');
       expect(job.status).toBe('failed');
+    });
+  });
+
+  describe('listener error isolation', () => {
+    test('throwing listener does not prevent other listeners from being notified', () => {
+      const { client, mock } = createTestClient();
+      const calls: string[] = [];
+
+      client.subscribe(() => {
+        calls.push('A-before-throw');
+        throw new Error('listener A exploded');
+      });
+      client.subscribe(() => {
+        calls.push('B');
+      });
+
+      mock.emit({ status: 'online', reason: 'test' });
+
+      expect(calls).toEqual(['A-before-throw', 'B']);
+    });
+
+    test('throwing queue listener does not prevent other queue listeners', async () => {
+      const { client, mock } = createTestClient();
+      mock.emit({ status: 'online', reason: 'test' });
+
+      const calls: string[] = [];
+
+      client.subscribeQueue(() => {
+        calls.push('Q-A-before-throw');
+        throw new Error('queue listener exploded');
+      });
+      client.subscribeQueue(() => {
+        calls.push('Q-B');
+      });
+
+      client.registerAction('t', {
+        request: vi.fn().mockResolvedValue('ok'),
+        options: {},
+      });
+      await client.execute('t', {});
+
+      expect(calls).toContain('Q-A-before-throw');
+      expect(calls).toContain('Q-B');
+    });
+
+    test('state transition completes and flushQueue fires even when listener throws', async () => {
+      const { client, mock } = createTestClient();
+      const requestFn = vi.fn().mockResolvedValue('ok');
+
+      client.registerAction('t', {
+        request: requestFn,
+        options: { whenOffline: 'queue' },
+      });
+
+      mock.emit({ status: 'offline', reason: 'test' });
+      await client.execute('t', { data: 1 });
+
+      client.subscribe(() => {
+        throw new Error('boom');
+      });
+
+      mock.emit({ status: 'online', reason: 'recovery' });
+
+      await flushMicrotasks();
+
+      expect(requestFn).toHaveBeenCalledTimes(1);
+      expect(client.getState().status).toBe('online');
+    });
+
+    test('client remains functional when all listeners throw', () => {
+      const { client, mock } = createTestClient();
+
+      client.subscribe(() => {
+        throw new Error('A');
+      });
+      client.subscribe(() => {
+        throw new Error('B');
+      });
+
+      mock.emit({ status: 'online', reason: 'test' });
+      expect(client.getState().status).toBe('online');
+
+      const calls: string[] = [];
+      client.subscribe(() => {
+        calls.push('C');
+      });
+      mock.emit({ status: 'offline', reason: 'test' });
+      expect(calls).toContain('C');
+    });
+
+    test('queue listener throw does not abort job processing', async () => {
+      const { client, mock } = createTestClient();
+      const requestFn = vi.fn().mockResolvedValue('ok');
+
+      client.registerAction('t', {
+        request: requestFn,
+        options: { whenOffline: 'queue' },
+      });
+
+      mock.emit({ status: 'offline', reason: 'test' });
+      await client.execute('t', { a: 1 });
+      await client.execute('t', { a: 2 });
+
+      client.subscribeQueue(() => {
+        throw new Error('queue listener boom');
+      });
+
+      mock.emit({ status: 'online', reason: 'test' });
+
+      await flushMicrotasks();
+
+      expect(requestFn).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  describe('maxQueueSize counts only active jobs', () => {
+    test('failed jobs do not consume queue capacity', async () => {
+      const { client, mock } = createTestClient({ maxQueueSize: 2 });
+      mock.emit({ status: 'online', reason: 'test' });
+
+      let callCount = 0;
+      client.registerAction('t', {
+        request: vi.fn().mockImplementation(() => {
+          callCount++;
+          if (callCount <= 2) {
+            return Promise.reject(new Error(`fail-${callCount}`));
+          }
+          return Promise.resolve('ok');
+        }),
+        options: {},
+      });
+
+      // Fail 2 jobs
+      await expect(client.execute('t', {})).rejects.toThrow('fail-1');
+      await expect(client.execute('t', {})).rejects.toThrow('fail-2');
+
+      // Should still be able to enqueue — failed jobs don't count
+      const result = await client.execute('t', {});
+      expect(result).toEqual({ enqueued: false, result: 'ok' });
+    });
+
+    test('active jobs reaching limit throws', async () => {
+      const { client, mock } = createTestClient({ maxQueueSize: 1 });
+      mock.emit({ status: 'offline', reason: 'test' });
+
+      client.registerAction('t', {
+        request: vi.fn().mockResolvedValue('ok'),
+        options: { whenOffline: 'queue' },
+      });
+
+      await client.execute('t', {});
+
+      await expect(client.execute('t', {})).rejects.toThrow('Queue is full');
+    });
+
+    test('succeeded jobs in cleanup window do not consume capacity', async () => {
+      const { client, mock } = createTestClient({ maxQueueSize: 1 });
+      mock.emit({ status: 'online', reason: 'test' });
+
+      client.registerAction('t', {
+        request: vi.fn().mockResolvedValue('ok'),
+        options: {},
+      });
+
+      await client.execute('t', { n: 1 });
+
+      const result = await client.execute('t', { n: 2 });
+      expect(result).toEqual({ enqueued: false, result: 'ok' });
+    });
+
+    test('canceled jobs do not consume capacity', async () => {
+      const { client, mock } = createTestClient({ maxQueueSize: 1 });
+      mock.emit({ status: 'offline', reason: 'test' });
+
+      client.registerAction('t', {
+        request: vi.fn().mockResolvedValue('ok'),
+        options: { whenOffline: 'queue' },
+      });
+
+      const result = await client.execute('t', { n: 1 });
+      if (result.enqueued) {
+        client.cancel(result.jobId);
+      }
+
+      const result2 = await client.execute('t', { n: 2 });
+      expect(result2.enqueued).toBe(true);
     });
   });
 });

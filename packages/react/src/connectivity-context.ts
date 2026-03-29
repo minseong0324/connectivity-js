@@ -24,6 +24,8 @@ export const DefaultOptionsContext = createContext<ConnectivityProviderOptions>(
   {},
 );
 
+let hasWarned = false;
+
 /**
  * Returns the ConnectivityClient from the nearest Provider.
  * Falls back to the singleton when used outside a Provider.
@@ -34,6 +36,7 @@ export function useConnectivityClient() {
     return client;
   }
   if (
+    !hasWarned &&
     typeof process !== 'undefined' &&
     typeof process.env !== 'undefined' &&
     process.env.NODE_ENV !== 'production'
@@ -42,6 +45,7 @@ export function useConnectivityClient() {
       '[connectivity-js] Hook called outside ConnectivityProvider. ' +
         'Falling back to singleton. Wrap your app in <ConnectivityProvider>.',
     );
+    hasWarned = true;
   }
   return getConnectivityClient();
 }

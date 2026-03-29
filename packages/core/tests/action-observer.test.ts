@@ -603,4 +603,28 @@ describe('ActionObserver', () => {
       expect((result2.lastError as Error).message).toBe('error-2');
     });
   });
+
+  test('getCurrentResult returns the latest (most recent) error, not the oldest', async () => {
+    const mock = createMockDetector();
+    const client = getConnectivityClient({ detectors: [mock.detector] });
+    client.start();
+    mock.emit({ status: 'online', reason: 'test' });
+
+    let callCount = 0;
+    const observer = new ActionObserver(client, {
+      actionKey: 'save',
+      request: async () => {
+        callCount++;
+        throw new Error(`error-${callCount}`);
+      },
+    });
+
+    // Fail two separate jobs
+    await observer.executeAsync({}).catch(() => {});
+    await observer.executeAsync({}).catch(() => {});
+
+    const result = observer.getCurrentResult();
+    // Should return the latest error (error-2), not the first (error-1)
+    expect((result.lastError as Error).message).toBe('error-2');
+  });
 });
