@@ -46,6 +46,12 @@ export function useAction<TInput, TResult>(
   // Callbacks updated synchronously on every render to avoid stale closures
   observer.setCallbacks(callbacks);
 
+  useEffect(() => {
+    return () => {
+      observer.setCallbacks(undefined);
+    };
+  }, [observer]);
+
   const result = useSyncExternalStore(
     useCallback((cb) => observer.subscribe(cb), [observer]),
     () => observer.getCurrentResult(),

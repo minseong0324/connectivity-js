@@ -1,5 +1,16 @@
 # @connectivity-js/devtools
 
+## 0.3.5
+
+### Patch Changes
+
+- docs: fix devtools README to reference correct API name `renderConnectivityDevTools`, add missing props documentation ([#43](https://github.com/minseong0324/connectivity-js/pull/43))
+
+- fix: add explicit `types` conditions in package.json exports for TypeScript moduleResolution bundler/node16+ ([#43](https://github.com/minseong0324/connectivity-js/pull/43))
+
+- Updated dependencies [[`5acde6f`](https://github.com/minseong0324/connectivity-js/commit/5acde6f46286ca9540543b82476dbea1d7949078), [`5acde6f`](https://github.com/minseong0324/connectivity-js/commit/5acde6f46286ca9540543b82476dbea1d7949078), [`ffedd96`](https://github.com/minseong0324/connectivity-js/commit/ffedd963130b21d44d479f45a077213fcf9be1b2)]:
+  - @connectivity-js/core@0.6.0
+
 ## 0.3.4
 
 ### Patch Changes

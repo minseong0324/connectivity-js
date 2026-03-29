@@ -1,5 +1,23 @@
 # @connectivity-js/core
 
+## 0.6.0
+
+### Minor Changes
+
+- feat(core): add `maxQueueSize` option to limit queue capacity ([#42](https://github.com/minseong0324/connectivity-js/pull/42))
+
+  Adds a new `maxQueueSize` option to `ConnectivityClientOptions` that throws when the queue exceeds the configured limit, preventing unbounded memory growth in long-lived offline sessions.
+
+### Patch Changes
+
+- fix(core): resolve pending flush promises on destroy, fix orphaned jobs in flushQueue ([#42](https://github.com/minseong0324/connectivity-js/pull/42))
+
+  - `destroy()` now resolves pending `waitForFlushComplete()` promises before clearing, preventing callers from hanging forever.
+  - Replaced `processedActionKeys` Set guard in `#flushQueue` with a simple pending-jobs check, ensuring jobs enqueued during flush for the same actionKey are not orphaned.
+  - Removed redundant `void this.#flushQueue()` calls in terminal failure states where no pending jobs exist.
+
+- fix: add explicit `types` conditions in package.json exports for TypeScript moduleResolution bundler/node16+ ([#43](https://github.com/minseong0324/connectivity-js/pull/43))
+
 ## 0.5.2
 
 ### Patch Changes

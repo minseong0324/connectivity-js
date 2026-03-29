@@ -193,4 +193,6 @@ export interface ConnectivityClientOptions {
   defaultOptions?: {
     actions?: ActionOptions;
   };
+  /** Maximum number of jobs allowed in the queue. Throws when exceeded. (default: unlimited) */
+  maxQueueSize?: number;
 }
