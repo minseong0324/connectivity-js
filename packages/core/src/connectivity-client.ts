@@ -4,6 +4,7 @@ import {
   delay,
   SUCCEEDED_JOB_CLEANUP_DELAY_MS,
 } from './engine-utils';
+import { reportError } from './report-error';
 import type {
   ActionOptions,
   ActionRunResult,
@@ -286,9 +287,7 @@ export class ConnectivityClient {
       try {
         listener(this.#stateSnapshot, transition);
       } catch (e) {
-        setTimeout(() => {
-          throw e;
-        }, 0);
+        reportError(e);
       }
     }
   }
@@ -449,9 +448,7 @@ export class ConnectivityClient {
       try {
         listener();
       } catch (e) {
-        setTimeout(() => {
-          throw e;
-        }, 0);
+        reportError(e);
       }
     }
   }
