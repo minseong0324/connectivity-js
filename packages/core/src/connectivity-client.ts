@@ -1,9 +1,4 @@
 import { type ActionOptionsConfig, toRegisteredAction } from './action-options';
-import {
-  DEFAULT_BACKOFF_MS,
-  delay,
-  SUCCEEDED_JOB_CLEANUP_DELAY_MS,
-} from './utils/delay';
 import { reportError } from './report-error';
 import type {
   ActionOptions,
@@ -17,6 +12,11 @@ import type {
   RegisteredAction,
   Unsubscribe,
 } from './types';
+import {
+  DEFAULT_BACKOFF_MS,
+  delay,
+  SUCCEEDED_JOB_CLEANUP_DELAY_MS,
+} from './utils/delay';
 
 const DEFAULT_QUALITY: ConnectionQuality = Object.freeze(
   {},
