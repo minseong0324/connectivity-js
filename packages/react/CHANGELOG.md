@@ -1,5 +1,16 @@
 # @connectivity-js/react
 
+## 0.5.4
+
+### Patch Changes
+
+- fix: add types conditions to exports map, remove phantom react-dom peer dep, add test:types to CI ([#49](https://github.com/minseong0324/connectivity-js/pull/49))
+
+- fix(react): clear useAction flush callbacks on unmount to prevent stale closure invocation ([#48](https://github.com/minseong0324/connectivity-js/pull/48))
+
+- Updated dependencies [[`69f6f49`](https://github.com/minseong0324/connectivity-js/commit/69f6f498220285ad0e5ae1522e39aaba4bf69bf8), [`e8a4819`](https://github.com/minseong0324/connectivity-js/commit/e8a48196c7ab399ab84f61fb08bff54c3f734903)]:
+  - @connectivity-js/core@0.6.1
+
 ## 0.5.3
 
 ### Patch Changes
