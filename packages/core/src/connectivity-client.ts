@@ -3,7 +3,7 @@ import {
   DEFAULT_BACKOFF_MS,
   delay,
   SUCCEEDED_JOB_CLEANUP_DELAY_MS,
-} from './engine-utils';
+} from './utils/delay';
 import type {
   ActionOptions,
   ActionRunResult,
