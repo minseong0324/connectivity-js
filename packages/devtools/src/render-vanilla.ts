@@ -76,7 +76,7 @@ function applyStyles(el: HTMLElement, styles: Record<string, string>) {
   }
 }
 
-function statusColor(status: string): string {
+function statusColor(status: string) {
   switch (status) {
     case 'online':
       return '#22c55e';
