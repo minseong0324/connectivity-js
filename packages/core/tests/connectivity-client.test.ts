@@ -2179,8 +2179,8 @@ describe('ConnectivityClient', () => {
       });
       await client.execute('t', {});
 
-      expect(calls.includes('Q-A-before-throw')).toBe(true);
-      expect(calls.includes('Q-B')).toBe(true);
+      expect(calls).toContain('Q-A-before-throw');
+      expect(calls).toContain('Q-B');
     });
 
     test('state transition completes and flushQueue fires even when listener throws', async () => {
