@@ -684,9 +684,12 @@ export class ConnectivityClient {
     }
 
     if (this.#maxQueueSize !== undefined) {
-      const activeJobCount = this.#queueList().filter(
-        (j) => j.status === 'queued' || j.status === 'running',
-      ).length;
+      let activeJobCount = 0;
+      for (const j of this.#jobs.values()) {
+        if (j.status === 'queued' || j.status === 'running') {
+          activeJobCount++;
+        }
+      }
       if (activeJobCount >= this.#maxQueueSize) {
         throw new Error(
           `[connectivity-js] Queue is full (max ${this.#maxQueueSize})`,

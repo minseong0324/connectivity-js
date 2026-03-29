@@ -83,10 +83,21 @@ export class ActionObserver<TInput = unknown, TResult = unknown> {
     const pendingCount = jobs.filter(
       (j) => j.status === 'queued' || j.status === 'running',
     ).length;
-    const reversed = [...jobs].reverse();
-    const errorJob =
-      reversed.find((j) => j.status === 'failed') ??
-      reversed.find((j) => j.lastError !== undefined);
+    let errorJob: (typeof jobs)[number] | undefined;
+    for (let i = jobs.length - 1; i >= 0; i--) {
+      if (jobs[i]!.status === 'failed') {
+        errorJob = jobs[i];
+        break;
+      }
+    }
+    if (errorJob === undefined) {
+      for (let i = jobs.length - 1; i >= 0; i--) {
+        if (jobs[i]!.lastError !== undefined) {
+          errorJob = jobs[i];
+          break;
+        }
+      }
+    }
     const errorJobId = errorJob?.id;
 
     if (
