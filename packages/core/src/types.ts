@@ -187,7 +187,7 @@ export interface ConnectivityClientOptions {
   initialStatus?: ConnectivityStatus;
   /** Grace period in milliseconds before transitioning to offline. A recovery within this window cancels the transition */
   gracePeriodMs?: number;
-  /** Error handler called when a job fails during flush */
+  /** Error handler called when a job reaches terminal failure */
   onJobError?: (error: unknown, job: QueuedJob) => void;
   /** Default options applied to all actions */
   defaultOptions?: {

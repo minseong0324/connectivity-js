@@ -569,4 +569,38 @@ describe('ActionObserver', () => {
       expect(onSuccess2).toHaveBeenCalledOnce();
     });
   });
+
+  describe('bug fixes', () => {
+    test('ActionObserver cache invalidates on error change', async () => {
+      const mock = createMockDetector();
+      const client = getConnectivityClient({ detectors: [mock.detector] });
+      client.start();
+      mock.emit({ status: 'online', reason: 'test' });
+
+      let callCount = 0;
+      const observer = new ActionObserver(client, {
+        actionKey: 'save',
+        request: () => {
+          callCount++;
+          return Promise.reject(new Error(`error-${callCount}`));
+        },
+        retry: { maxAttempts: 3, backoffMs: () => 100 },
+      });
+
+      // First failure: job fails with Error("error-1")
+      await observer.executeAsync({}).catch(() => {});
+      const result1 = observer.getCurrentResult();
+      expect(result1.lastError).toBeInstanceOf(Error);
+      expect((result1.lastError as Error).message).toBe('error-1');
+
+      // Advance time so one retry fires → job fails with Error("error-2")
+      await vi.advanceTimersByTimeAsync(100);
+
+      const result2 = observer.getCurrentResult();
+      // Same job id (cachedFailedJobId unchanged) but different lastError
+      // → cache must be invalidated → new reference
+      expect(result2).not.toBe(result1);
+      expect((result2.lastError as Error).message).toBe('error-2');
+    });
+  });
 });
