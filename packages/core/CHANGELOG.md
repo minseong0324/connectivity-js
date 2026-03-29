@@ -1,5 +1,13 @@
 # @connectivity-js/core
 
+## 0.6.2
+
+### Patch Changes
+
+- fix(core): isolate listener errors in #notifyState/#notifyQueue, count only active jobs for maxQueueSize, return latest error in getCurrentResult ([#53](https://github.com/minseong0324/connectivity-js/pull/53))
+
+  fix(react): emit useConnectivityClient provider warning only once per module lifecycle
+
 ## 0.6.1
 
 ### Patch Changes
