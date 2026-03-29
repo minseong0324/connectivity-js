@@ -14,6 +14,14 @@ import {
 } from '../src/connectivity-client';
 import { createMockDetector } from './test-utils';
 
+/**
+ * Flushes pending microtasks without advancing fake timers.
+ * `process.nextTick` is not mocked by fake timers, so the callback
+ * runs after all currently queued microtasks have drained.
+ */
+const flushMicrotasks = () =>
+  new Promise<void>((resolve) => process.nextTick(resolve));
+
 const createTestClient = (options?: {
   gracePeriodMs?: number;
   maxQueueSize?: number;
@@ -2201,9 +2209,7 @@ describe('ConnectivityClient', () => {
 
       mock.emit({ status: 'online', reason: 'recovery' });
 
-      // Flush microtasks to let async flushQueue complete
-      // without advancing fake timers (which would fire the error rethrow)
-      for (let i = 0; i < 10; i++) await Promise.resolve();
+      await flushMicrotasks();
 
       expect(requestFn).toHaveBeenCalledTimes(1);
       expect(client.getState().status).toBe('online');
@@ -2249,9 +2255,7 @@ describe('ConnectivityClient', () => {
 
       mock.emit({ status: 'online', reason: 'test' });
 
-      // Flush microtasks to let async flushQueue complete
-      // without advancing fake timers (which would fire the error rethrow)
-      for (let i = 0; i < 10; i++) await Promise.resolve();
+      await flushMicrotasks();
 
       expect(requestFn).toHaveBeenCalledTimes(2);
     });
