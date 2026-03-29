@@ -41,8 +41,7 @@
     "lint": "biome lint ."
   },
   "peerDependencies": {
-    "react": "^18 || ^19",
-    "react-dom": "^18 || ^19"
+    "react": "^18 || ^19"
   },
   "dependencies": {
     "@connectivity-js/core": "workspace:*",
@@ -51,7 +50,6 @@
   "devDependencies": {
     "@types/react": "^19.2.3",
     "react": "^19.2.3",
-    "react-dom": "^19.2.3",
     "tsdown": "^0.20.3"
   }
 }
