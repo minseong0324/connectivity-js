@@ -16,6 +16,10 @@ export type ConnectivityDevToolsProps = RenderConnectivityDevToolsOptions & {
  * This is a thin React wrapper around `renderConnectivityDevTools` from
  * `@connectivity-js/devtools`. All UI logic lives in the framework-agnostic core;
  * this component only handles mounting / unmounting via a ref + useEffect.
+ *
+ * **Note:** The `position` prop is only applied on the initial mount.
+ * Changing it after mount has no effect (the underlying vanilla renderer
+ * does not support runtime repositioning).
  */
 export function ConnectivityDevTools({
   client,

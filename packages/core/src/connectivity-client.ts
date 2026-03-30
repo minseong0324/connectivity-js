@@ -18,9 +18,7 @@ import {
   SUCCEEDED_JOB_CLEANUP_DELAY_MS,
 } from './utils/delay';
 
-const DEFAULT_QUALITY: ConnectionQuality = Object.freeze(
-  {},
-) as ConnectionQuality;
+const DEFAULT_QUALITY: ConnectionQuality = Object.freeze({});
 const EMPTY_JOBS = Object.freeze([] as QueuedJob[]) as QueuedJob[];
 
 /**
@@ -1014,6 +1012,9 @@ export class ConnectivityClient {
   }
 
   async #flushQueue(onlyActionKey?: string) {
+    // Prevents concurrent flush loops — the while(true) loop inside
+    // already re-checks #getPendingJobs() each iteration, so a second
+    // flush call would be redundant and could cause double-processing.
     if (this.#flushing) {
       return;
     }
