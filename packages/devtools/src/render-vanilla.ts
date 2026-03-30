@@ -4,7 +4,7 @@ import type {
 } from '@connectivity-js/core';
 import { createDevToolsBridge } from './bridge';
 
-function escapeHtml(s: string): string {
+function escapeHtml(s: string) {
   const div = document.createElement('div');
   div.textContent = s;
   return div.innerHTML;
@@ -112,7 +112,7 @@ export function renderConnectivityDevTools(
   container: HTMLElement,
   client: ConnectivityClient,
   options?: RenderConnectivityDevToolsOptions,
-): () => void {
+) {
   const { position = 'bottom-right', initialOpen = true } = options ?? {};
   const bridge = createDevToolsBridge(client);
 
@@ -172,7 +172,7 @@ export function renderConnectivityDevTools(
       if (snap.state.quality.rttMs !== undefined) {
         qualityParts.push(`rtt ${snap.state.quality.rttMs}ms`);
       }
-      if (snap.state.quality.effectiveType) {
+      if (snap.state.quality.effectiveType !== undefined) {
         qualityParts.push(snap.state.quality.effectiveType);
       }
       if (snap.state.quality.downlink !== undefined) {
