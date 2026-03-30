@@ -1,7 +1,5 @@
 import {
   ConnectivityClient,
-  type Detector,
-  type DetectorEvent,
   getConnectivityClient,
 } from '@connectivity-js/core';
 import { act, renderHook } from '@testing-library/react';
@@ -12,22 +10,7 @@ import {
   useDefaultConnectivityOptions,
 } from '../src/connectivity-context';
 import { ConnectivityProvider } from '../src/connectivity-provider';
-
-const createMockDetector = () => {
-  let listener: ((event: DetectorEvent) => void) | null = null;
-  const detector: Detector = {
-    start: (l: (event: DetectorEvent) => void) => {
-      listener = l;
-      return () => {
-        listener = null;
-      };
-    },
-  };
-  const emit = (event: DetectorEvent) => {
-    listener?.(event);
-  };
-  return { detector, emit };
-};
+import { createMockDetector } from './test-utils';
 
 describe('ConnectivityProvider', () => {
   afterEach(() => {

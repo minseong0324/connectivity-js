@@ -1,8 +1,6 @@
 import {
   actionOptions,
   ConnectivityClient,
-  type Detector,
-  type DetectorEvent,
   getConnectivityClient,
 } from '@connectivity-js/core';
 import { act, renderHook } from '@testing-library/react';
@@ -10,22 +8,7 @@ import type { ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { ConnectivityProvider } from '../src/connectivity-provider';
 import { useAction } from '../src/use-action';
-
-const createMockDetector = () => {
-  let listener: ((event: DetectorEvent) => void) | null = null;
-  const detector: Detector = {
-    start: (l: (event: DetectorEvent) => void) => {
-      listener = l;
-      return () => {
-        listener = null;
-      };
-    },
-  };
-  const emit = (event: DetectorEvent) => {
-    listener?.(event);
-  };
-  return { detector, emit };
-};
+import { createMockDetector } from './test-utils';
 
 const createTestWrapper = () => {
   const mock = createMockDetector();
