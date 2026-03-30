@@ -37,7 +37,7 @@ describe('useOnConnectivityChange', () => {
     it('no error when passing only online handler', () => {
       useOnConnectivityChange({
         online: (transition) => {
-          console.log(`reconnected after ${transition.duration}ms`);
+          void transition.duration;
         },
       });
     });
