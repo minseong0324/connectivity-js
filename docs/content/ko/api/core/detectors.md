@@ -51,6 +51,8 @@ const detector = heartbeatDetector({
 | `url` | `string` | (필수) | health check 엔드포인트 |
 | `intervalMs` | `number` | `30_000` | polling 간격 (ms) |
 | `timeoutMs` | `number` | `5_000` | 요청 타임아웃 (ms) |
+| `method` | `'HEAD' \| 'GET'` | `'HEAD'` | health check 요청의 HTTP 메서드 |
+| `validateResponse` | `(response: Response) => boolean` | `response.ok` | 커스텀 응답 검증 함수. 기본 `response.ok` 체크를 오버라이드 |
 
 - 성공 시 RTT와 Network Information API 데이터를 `quality`로 제공
 - `browserOnlineDetector`와 함께 사용 권장

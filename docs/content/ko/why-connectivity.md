@@ -91,7 +91,7 @@ function SaveButton({ data }) {
 | 관심사               | Connectivity 없이                | Connectivity 사용 시                      |
 | -------------------- | -------------------------------- | ----------------------------------------- |
 | 온라인/오프라인 감지 | 수동 `navigator.onLine` + 이벤트 | `useConnectivity()` 또는 `<Connectivity>` |
-| 오프라인 동작        | 차단 또는 무시                   | 설정 가능: `queue`, `throw`, `skip`       |
+| 오프라인 동작        | 차단 또는 무시                   | 설정 가능: `queue` 또는 `fail`            |
 | 큐잉                 | 직접 구현                        | 자동 FIFO 큐, 연결 복구 시 전송           |
 | 중복 제거            | 수동 가드                        | 내장 `dedupeKey` — 최신 데이터만 전송     |
 | 재시도               | 호출마다 try/catch 루프          | 선언적 재시도 정책 + 백오프               |

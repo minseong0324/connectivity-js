@@ -91,7 +91,7 @@ No manual online/offline tracking. No retry plumbing. No dedup guards.
 | Concern                  | Without Connectivity               | With Connectivity                               |
 | ------------------------ | ---------------------------------- | ----------------------------------------------- |
 | Online/offline detection | Manual `navigator.onLine` + events | `useConnectivity()` or `<Connectivity>`         |
-| Offline behavior         | Block or ignore                    | Configurable: `queue`, `throw`, or `skip`       |
+| Offline behavior         | Block or ignore                    | Configurable: `queue` or `fail`                  |
 | Queuing                  | Build your own                     | Automatic FIFO queue, flushed on reconnect      |
 | Deduplication            | Manual guards                      | Built-in `dedupeKey` — only latest payload sent |
 | Retry                    | Per-call try/catch loops           | Declarative retry policy with backoff           |

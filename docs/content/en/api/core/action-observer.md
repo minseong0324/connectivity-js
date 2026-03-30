@@ -37,6 +37,6 @@ class ActionObserver<TInput = unknown, TResult = unknown> {
 
 ## Related
 
-- [useAction API](./use-action.md)
+- [useAction API](../react/use-action)
 - [ConnectivityClient API](./connectivity-client.md)
 

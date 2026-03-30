@@ -55,6 +55,6 @@ execute({ wrong: true });             // ❌ 컴파일 에러
 
 ## 관련 문서
 
-- [useAction API](./use-action.md)
+- [useAction API](../react/use-action)
 - [액션](../guide/actions.md)
 

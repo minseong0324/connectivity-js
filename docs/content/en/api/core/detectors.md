@@ -51,6 +51,8 @@ const detector = heartbeatDetector({
 | `url` | `string` | (required) | Health check endpoint |
 | `intervalMs` | `number` | `30_000` | Polling interval (ms) |
 | `timeoutMs` | `number` | `5_000` | Request timeout (ms) |
+| `method` | `'HEAD' \| 'GET'` | `'HEAD'` | HTTP method for health-check request |
+| `validateResponse` | `(response: Response) => boolean` | `response.ok` | Custom response validator. Overrides the default `response.ok` check |
 
 - On success: provides RTT and Network Information API data as `quality`
 - Recommended to use alongside `browserOnlineDetector`
