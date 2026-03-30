@@ -17,9 +17,10 @@ export type ConnectivityDevToolsProps = RenderConnectivityDevToolsOptions & {
  * `@connectivity-js/devtools`. All UI logic lives in the framework-agnostic core;
  * this component only handles mounting / unmounting via a ref + useEffect.
  *
- * **Note:** The `position` prop is only applied on the initial mount.
- * Changing it after mount has no effect (the underlying vanilla renderer
- * does not support runtime repositioning).
+ * **Note:** The `position` prop is read only when the vanilla renderer is
+ * (re-)mounted — on initial mount or when `client`/`enabled` changes.
+ * Changing `position` alone does not trigger a re-mount because it is
+ * not in the effect's dependency array.
  */
 export function ConnectivityDevTools({
   client,
