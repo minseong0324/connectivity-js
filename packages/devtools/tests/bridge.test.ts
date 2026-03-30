@@ -4,14 +4,15 @@ import type { ConnectivityState, QueuedJob } from '@connectivity-js/core';
 
 const BASE_TIME = 1_700_000_000_000;
 
-function makeState(status: ConnectivityState['status'] = 'online'): ConnectivityState {
+function makeState(
+  status: ConnectivityState['status'] = 'online',
+): ConnectivityState {
   return { status, since: BASE_TIME, quality: {} };
 }
 
-function makeClient(overrides: {
-  state?: ConnectivityState;
-  queue?: QueuedJob[];
-} = {}) {
+function makeClient(
+  overrides: { state?: ConnectivityState; queue?: QueuedJob[] } = {},
+) {
   let stateSubscriber: (() => void) | null = null;
   let queueSubscriber: (() => void) | null = null;
 

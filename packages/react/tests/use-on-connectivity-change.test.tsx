@@ -69,7 +69,9 @@ describe('useOnConnectivityChange', () => {
     );
 
     const unknown = vi.fn();
-    renderHook(() => useOnConnectivityChange({ unknown }), { wrapper: Wrapper });
+    renderHook(() => useOnConnectivityChange({ unknown }), {
+      wrapper: Wrapper,
+    });
 
     act(() => {
       mock.emit({ status: 'online', reason: 'test' });
