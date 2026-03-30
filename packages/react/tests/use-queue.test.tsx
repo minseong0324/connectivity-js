@@ -154,7 +154,11 @@ describe('useQueue', () => {
     const { result } = renderHook(() => useQueue(), { wrapper: Wrapper });
     expect(result.current.jobs).toHaveLength(1);
 
-    const jobId = result.current.jobs[0]!.id;
+    const jobId = result.current.jobs[0]?.id;
+
+    if (jobId === undefined) {
+      throw new Error('expected at least one job');
+    }
 
     act(() => {
       result.current.cancel(jobId);
