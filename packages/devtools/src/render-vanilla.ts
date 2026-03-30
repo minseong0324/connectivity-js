@@ -1,4 +1,7 @@
-import type { ConnectivityClient } from '@connectivity-js/core';
+import type {
+  ConnectivityClient,
+  ConnectivityStatus,
+} from '@connectivity-js/core';
 import { createDevToolsBridge } from './bridge';
 
 function escapeHtml(s: string): string {
@@ -76,14 +79,18 @@ function applyStyles(el: HTMLElement, styles: Record<string, string>) {
   }
 }
 
-function statusColor(status: string) {
+function statusColor(status: ConnectivityStatus) {
   switch (status) {
     case 'online':
       return '#22c55e';
     case 'offline':
       return '#ef4444';
-    default:
+    case 'unknown':
       return '#a3a3a3';
+    default: {
+      const _exhaustive: never = status;
+      throw new Error(`Unhandled status: ${_exhaustive}`);
+    }
   }
 }
 
