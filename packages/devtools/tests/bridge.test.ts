@@ -10,7 +10,13 @@ const BASE_TIME = 1_700_000_000_000;
 
 type BridgeClient = Pick<
   ConnectivityClient,
-  'getState' | 'getQueue' | 'subscribe' | 'subscribeQueue' | 'retry' | 'cancel' | 'flush'
+  | 'getState'
+  | 'getQueue'
+  | 'subscribe'
+  | 'subscribeQueue'
+  | 'retry'
+  | 'cancel'
+  | 'flush'
 >;
 
 function makeState(
