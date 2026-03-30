@@ -1,8 +1,6 @@
 import {
   actionOptions,
   ConnectivityClient,
-  type Detector,
-  type DetectorEvent,
   getConnectivityClient,
 } from '@connectivity-js/core';
 import { act, renderHook } from '@testing-library/react';
@@ -10,22 +8,7 @@ import type { ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { ConnectivityProvider } from '../src/connectivity-provider';
 import { useAction } from '../src/use-action';
-
-const createMockDetector = () => {
-  let listener: ((event: DetectorEvent) => void) | null = null;
-  const detector: Detector = {
-    start: (l: (event: DetectorEvent) => void) => {
-      listener = l;
-      return () => {
-        listener = null;
-      };
-    },
-  };
-  const emit = (event: DetectorEvent) => {
-    listener?.(event);
-  };
-  return { detector, emit };
-};
+import { createMockDetector } from './test-utils';
 
 const createTestWrapper = () => {
   const mock = createMockDetector();
@@ -214,6 +197,35 @@ describe('useAction', () => {
       returned = await result.current.executeAsync({ orderId: '1' });
     });
     expect(returned).toEqual({ enqueued: false, result: { id: '42' } });
+  });
+
+  test('lastError reflects the latest failed action error', async () => {
+    const { Wrapper, mock } = createTestWrapper();
+    const serverError = new Error('server error');
+
+    const failingAction = actionOptions({
+      actionKey: 'purchase-fail',
+      request: async (_input: { orderId: string }) => {
+        throw serverError;
+      },
+      whenOffline: 'queue',
+    });
+
+    const onError = vi.fn();
+    const { result } = renderHook(() => useAction(failingAction, { onError }), {
+      wrapper: Wrapper,
+    });
+
+    await act(async () => {
+      mock.emit({ status: 'online', reason: 'test' });
+    });
+
+    await act(async () => {
+      result.current.execute({ orderId: '1' });
+    });
+
+    expect(result.current.lastError).toBeInstanceOf(Error);
+    expect((result.current.lastError as Error).message).toBe('server error');
   });
 
   test('calls onSettled on success', async () => {

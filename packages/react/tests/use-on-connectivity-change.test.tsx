@@ -1,7 +1,5 @@
 import {
   ConnectivityClient,
-  type Detector,
-  type DetectorEvent,
   getConnectivityClient,
 } from '@connectivity-js/core';
 import { act, renderHook } from '@testing-library/react';
@@ -9,22 +7,7 @@ import type { ReactNode } from 'react';
 import { afterEach, describe, expect, test, vi } from 'vitest';
 import { ConnectivityProvider } from '../src/connectivity-provider';
 import { useOnConnectivityChange } from '../src/use-on-connectivity-change';
-
-const createMockDetector = () => {
-  let listener: ((event: DetectorEvent) => void) | null = null;
-  const detector: Detector = {
-    start: (l) => {
-      listener = l;
-      return () => {
-        listener = null;
-      };
-    },
-  };
-  const emit = (event: DetectorEvent) => {
-    listener?.(event);
-  };
-  return { detector, emit };
-};
+import { createMockDetector } from './test-utils';
 
 describe('useOnConnectivityChange', () => {
   afterEach(() => {
@@ -73,6 +56,31 @@ describe('useOnConnectivityChange', () => {
 
     expect(offline).toHaveBeenCalledWith(
       expect.objectContaining({ from: 'online', to: 'offline' }),
+    );
+  });
+
+  test('calls unknown callback when status transitions to unknown', () => {
+    const mock = createMockDetector();
+    getConnectivityClient({ detectors: [mock.detector] });
+    const Wrapper = ({ children }: { children: ReactNode }) => (
+      <ConnectivityProvider detectors={[mock.detector]}>
+        {children}
+      </ConnectivityProvider>
+    );
+
+    const unknown = vi.fn();
+    renderHook(() => useOnConnectivityChange({ unknown }), { wrapper: Wrapper });
+
+    act(() => {
+      mock.emit({ status: 'online', reason: 'test' });
+    });
+
+    act(() => {
+      mock.emit({ status: 'unknown', reason: 'test' });
+    });
+
+    expect(unknown).toHaveBeenCalledWith(
+      expect.objectContaining({ from: 'online', to: 'unknown' }),
     );
   });
 

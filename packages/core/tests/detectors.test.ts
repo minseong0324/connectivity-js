@@ -346,6 +346,31 @@ describe('heartbeatDetector', () => {
     cleanup();
   });
 
+  test('includes effectiveType and downlink from navigator.connection', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({ ok: true, status: 200 }),
+    );
+    vi.stubGlobal('performance', { now: vi.fn().mockReturnValue(0) });
+    vi.stubGlobal('navigator', {
+      ...navigator,
+      connection: { effectiveType: '4g', downlink: 10 },
+    });
+
+    const events: DetectorEvent[] = [];
+    const detector = heartbeatDetector({ url: '/health', intervalMs: 1000 });
+    const cleanup = detector.start((e) => events.push(e));
+
+    await vi.advanceTimersByTimeAsync(0);
+
+    const onlineEvent = events.find((e) => e.status === 'online');
+    expect(onlineEvent).toBeDefined();
+    expect(onlineEvent?.quality?.effectiveType).toBe('4g');
+    expect(onlineEvent?.quality?.downlink).toBe(10);
+
+    cleanup();
+  });
+
   test('interval-based repeated probes', async () => {
     let fetchCallCount = 0;
     vi.stubGlobal(
