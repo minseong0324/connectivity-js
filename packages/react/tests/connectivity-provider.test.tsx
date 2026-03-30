@@ -4,9 +4,9 @@ import {
   type DetectorEvent,
   getConnectivityClient,
 } from '@connectivity-js/core';
-import { renderHook } from '@testing-library/react';
+import { act, renderHook } from '@testing-library/react';
 import type { ReactNode } from 'react';
-import { afterEach, describe, expect, test, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import {
   useConnectivityClient,
   useDefaultConnectivityOptions,
@@ -193,6 +193,49 @@ describe('ConnectivityProvider', () => {
 
     expect(optionsSnapshots.length).toBeGreaterThanOrEqual(2);
     expect(optionsSnapshots[0]).toBe(optionsSnapshots[1]);
+  });
+
+  describe('onJobError', () => {
+    beforeEach(() => vi.useFakeTimers());
+    afterEach(() => vi.useRealTimers());
+
+    test('is called when a queued job fails on flush', async () => {
+      const mock = createMockDetector();
+      const client = new ConnectivityClient({
+        detectors: [mock.detector],
+      });
+
+      const serverError = new Error('server error');
+      client.registerAction('save', {
+        request: vi.fn().mockRejectedValue(serverError),
+        options: { whenOffline: 'queue' },
+      });
+
+      const onJobError = vi.fn();
+      const Wrapper = ({ children }: { children: ReactNode }) => (
+        <ConnectivityProvider client={client} onJobError={onJobError}>
+          {children}
+        </ConnectivityProvider>
+      );
+
+      renderHook(() => null, { wrapper: Wrapper });
+
+      await act(async () => {
+        mock.emit({ status: 'offline', reason: 'test' });
+      });
+
+      await client.execute('save', { data: 'test' });
+
+      await act(async () => {
+        mock.emit({ status: 'online', reason: 'test' });
+        await vi.advanceTimersByTimeAsync(0);
+      });
+
+      expect(onJobError).toHaveBeenCalledWith(
+        serverError,
+        expect.objectContaining({ actionKey: 'save', status: 'failed' }),
+      );
+    });
   });
 
   test('cleans up onJobError handler on unmount', () => {

@@ -198,6 +198,36 @@ describe('heartbeatDetector', () => {
     cleanup();
   });
 
+  test('successful probe includes navigator.connection quality', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({ ok: true, status: 200 }),
+    );
+    vi.stubGlobal('performance', { now: vi.fn().mockReturnValue(0) });
+    Object.defineProperty(navigator, 'connection', {
+      value: { effectiveType: '4g', downlink: 10 },
+      configurable: true,
+    });
+
+    const events: DetectorEvent[] = [];
+    const detector = heartbeatDetector({ url: '/health', intervalMs: 5000 });
+    const cleanup = detector.start((e) => events.push(e));
+
+    await vi.advanceTimersByTimeAsync(0);
+
+    const onlineEvent = events.find((e) => e.status === 'online');
+    expect(onlineEvent).toBeDefined();
+    expect(onlineEvent?.quality?.effectiveType).toBe('4g');
+    expect(onlineEvent?.quality?.downlink).toBe(10);
+
+    cleanup();
+
+    Object.defineProperty(navigator, 'connection', {
+      value: undefined,
+      configurable: true,
+    });
+  });
+
   test('successful probe emits online with quality.rttMs', async () => {
     vi.stubGlobal(
       'fetch',

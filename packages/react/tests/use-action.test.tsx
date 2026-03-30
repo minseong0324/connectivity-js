@@ -216,6 +216,35 @@ describe('useAction', () => {
     expect(returned).toEqual({ enqueued: false, result: { id: '42' } });
   });
 
+  test('lastError reflects the latest failed action error', async () => {
+    const { Wrapper, mock } = createTestWrapper();
+    const serverError = new Error('server error');
+
+    const failingAction = actionOptions({
+      actionKey: 'purchase-fail',
+      request: async (_input: { orderId: string }) => {
+        throw serverError;
+      },
+      whenOffline: 'queue',
+    });
+
+    const onError = vi.fn();
+    const { result } = renderHook(() => useAction(failingAction, { onError }), {
+      wrapper: Wrapper,
+    });
+
+    await act(async () => {
+      mock.emit({ status: 'online', reason: 'test' });
+    });
+
+    await act(async () => {
+      result.current.execute({ orderId: '1' });
+    });
+
+    expect(result.current.lastError).toBeInstanceOf(Error);
+    expect((result.current.lastError as Error).message).toBe('server error');
+  });
+
   test('calls onSettled on success', async () => {
     const { Wrapper, mock } = createTestWrapper();
     getConnectivityClient().registerAction('purchase', {
