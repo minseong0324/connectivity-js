@@ -1,6 +1,6 @@
+import type { ConnectivityState, QueuedJob } from '@connectivity-js/core';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { createDevToolsSnapshot } from '../src/snapshot';
-import type { ConnectivityState, QueuedJob } from '@connectivity-js/core';
 
 const BASE_TIME = 1_700_000_000_000;
 
