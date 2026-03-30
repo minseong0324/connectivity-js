@@ -160,9 +160,9 @@ describe('useQueue', () => {
       result.current.cancel(jobId);
     });
 
-    expect(
-      result.current.jobs.find((j) => j.id === jobId)?.status,
-    ).toBe('canceled');
+    expect(result.current.jobs.find((j) => j.id === jobId)?.status).toBe(
+      'canceled',
+    );
   });
 
   test('retry and cancel references are stable across re-renders', () => {
