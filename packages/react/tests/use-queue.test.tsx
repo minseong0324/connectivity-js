@@ -1,7 +1,5 @@
 import {
   ConnectivityClient,
-  type Detector,
-  type DetectorEvent,
   getConnectivityClient,
 } from '@connectivity-js/core';
 import { act, renderHook } from '@testing-library/react';
@@ -9,22 +7,7 @@ import { type ReactNode, useRef } from 'react';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { ConnectivityProvider } from '../src/connectivity-provider';
 import { useQueue } from '../src/use-queue';
-
-const createMockDetector = () => {
-  let listener: ((event: DetectorEvent) => void) | null = null;
-  const detector: Detector = {
-    start: (l) => {
-      listener = l;
-      return () => {
-        listener = null;
-      };
-    },
-  };
-  const emit = (event: DetectorEvent) => {
-    listener?.(event);
-  };
-  return { detector, emit };
-};
+import { createMockDetector } from './test-utils';
 
 describe('useQueue', () => {
   afterEach(() => {
