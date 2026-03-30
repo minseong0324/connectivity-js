@@ -114,9 +114,7 @@ describe('ConnectivityDevTools', () => {
 
   it('passes position option to renderConnectivityDevTools', () => {
     const client = createMockClient();
-    render(
-      <ConnectivityDevTools client={client} position="bottom-left" />,
-    );
+    render(<ConnectivityDevTools client={client} position="bottom-left" />);
 
     expect(mockedRender).toHaveBeenCalledWith(
       expect.any(HTMLDivElement),
