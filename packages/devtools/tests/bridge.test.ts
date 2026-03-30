@@ -1,8 +1,17 @@
-import type { ConnectivityState, QueuedJob } from '@connectivity-js/core';
+import type {
+  ConnectivityClient,
+  ConnectivityState,
+  QueuedJob,
+} from '@connectivity-js/core';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { createDevToolsBridge } from '../src/bridge';
 
 const BASE_TIME = 1_700_000_000_000;
+
+type BridgeClient = Pick<
+  ConnectivityClient,
+  'getState' | 'getQueue' | 'subscribe' | 'subscribeQueue' | 'retry' | 'cancel' | 'flush'
+>;
 
 function makeState(
   status: ConnectivityState['status'] = 'online',
@@ -15,29 +24,37 @@ function makeClient(
 ) {
   let stateSubscriber: (() => void) | null = null;
   let queueSubscriber: (() => void) | null = null;
+  const unsubState = vi.fn(() => {
+    stateSubscriber = null;
+  });
+  const unsubQueue = vi.fn(() => {
+    queueSubscriber = null;
+  });
 
   let currentState = overrides.state ?? makeState();
   let currentQueue = overrides.queue ?? [];
 
-  return {
+  const client: BridgeClient & {
+    _triggerState: (s: ConnectivityState) => void;
+    _triggerQueue: (q: QueuedJob[]) => void;
+    _unsubState: ReturnType<typeof vi.fn>;
+    _unsubQueue: ReturnType<typeof vi.fn>;
+  } = {
     getState: vi.fn(() => currentState),
     getQueue: vi.fn(() => currentQueue),
-    subscribe: vi.fn((cb: () => void) => {
-      stateSubscriber = cb;
-      return () => {
-        stateSubscriber = null;
-      };
+    subscribe: vi.fn((_listener) => {
+      stateSubscriber = () => _listener(currentState);
+      return unsubState;
     }),
-    subscribeQueue: vi.fn((cb: () => void) => {
-      queueSubscriber = cb;
-      return () => {
-        queueSubscriber = null;
-      };
+    subscribeQueue: vi.fn((_listener) => {
+      queueSubscriber = _listener;
+      return unsubQueue;
     }),
     retry: vi.fn((_jobId: string) => Promise.resolve()),
     cancel: vi.fn((_jobId: string) => {}),
     flush: vi.fn((_options?: { onlyActionKey?: string }) => Promise.resolve()),
-    // helpers for triggering subscribers in tests
+    _unsubState: unsubState,
+    _unsubQueue: unsubQueue,
     _triggerState(newState: ConnectivityState) {
       currentState = newState;
       stateSubscriber?.();
@@ -47,6 +64,8 @@ function makeClient(
       queueSubscriber?.();
     },
   };
+
+  return client;
 }
 
 describe('createDevToolsBridge', () => {
@@ -62,7 +81,7 @@ describe('createDevToolsBridge', () => {
   test('getSnapshot returns initial snapshot', () => {
     const state = makeState('offline');
     const client = makeClient({ state });
-    const bridge = createDevToolsBridge(client as never);
+    const bridge = createDevToolsBridge(client as ConnectivityClient);
 
     const snapshot = bridge.getSnapshot();
     expect(snapshot.state).toEqual(state);
@@ -73,7 +92,7 @@ describe('createDevToolsBridge', () => {
 
   test('subscribe listener is called when state changes', () => {
     const client = makeClient();
-    const bridge = createDevToolsBridge(client as never);
+    const bridge = createDevToolsBridge(client as ConnectivityClient);
     const listener = vi.fn();
 
     bridge.subscribe(listener);
@@ -86,7 +105,7 @@ describe('createDevToolsBridge', () => {
 
   test('subscribe listener is called when queue changes', () => {
     const client = makeClient();
-    const bridge = createDevToolsBridge(client as never);
+    const bridge = createDevToolsBridge(client as ConnectivityClient);
     const listener = vi.fn();
 
     bridge.subscribe(listener);
@@ -110,7 +129,7 @@ describe('createDevToolsBridge', () => {
 
   test('snapshot is updated after state change', () => {
     const client = makeClient({ state: makeState('online') });
-    const bridge = createDevToolsBridge(client as never);
+    const bridge = createDevToolsBridge(client as ConnectivityClient);
 
     const offlineState = makeState('offline');
     client._triggerState(offlineState);
@@ -122,7 +141,7 @@ describe('createDevToolsBridge', () => {
 
   test('unsubscribe removes listener', () => {
     const client = makeClient();
-    const bridge = createDevToolsBridge(client as never);
+    const bridge = createDevToolsBridge(client as ConnectivityClient);
     const listener = vi.fn();
 
     const unsubscribe = bridge.subscribe(listener);
@@ -137,7 +156,7 @@ describe('createDevToolsBridge', () => {
 
   test('destroy unsubscribes from client', () => {
     const client = makeClient();
-    const bridge = createDevToolsBridge(client as never);
+    const bridge = createDevToolsBridge(client as ConnectivityClient);
     const listener = vi.fn();
 
     bridge.subscribe(listener);
@@ -146,11 +165,30 @@ describe('createDevToolsBridge', () => {
     client._triggerState(makeState('offline'));
 
     expect(listener).toHaveBeenCalledTimes(0);
+    expect(client._unsubState).toHaveBeenCalledTimes(1);
+    expect(client._unsubQueue).toHaveBeenCalledTimes(1);
+  });
+
+  test('multiple listeners all receive notifications', () => {
+    const client = makeClient();
+    const bridge = createDevToolsBridge(client as ConnectivityClient);
+    const listenerA = vi.fn();
+    const listenerB = vi.fn();
+
+    bridge.subscribe(listenerA);
+    bridge.subscribe(listenerB);
+
+    client._triggerState(makeState('offline'));
+
+    expect(listenerA).toHaveBeenCalledTimes(1);
+    expect(listenerB).toHaveBeenCalledTimes(1);
+
+    bridge.destroy();
   });
 
   test('destroy clears all listeners', () => {
     const client = makeClient();
-    const bridge = createDevToolsBridge(client as never);
+    const bridge = createDevToolsBridge(client as ConnectivityClient);
     const listenerA = vi.fn();
     const listenerB = vi.fn();
 
@@ -166,7 +204,7 @@ describe('createDevToolsBridge', () => {
 
   test('retry delegates to client.retry', async () => {
     const client = makeClient();
-    const bridge = createDevToolsBridge(client as never);
+    const bridge = createDevToolsBridge(client as ConnectivityClient);
 
     bridge.retry('job_1');
 
@@ -178,7 +216,7 @@ describe('createDevToolsBridge', () => {
 
   test('cancel delegates to client.cancel', () => {
     const client = makeClient();
-    const bridge = createDevToolsBridge(client as never);
+    const bridge = createDevToolsBridge(client as ConnectivityClient);
 
     bridge.cancel('job_2');
 
@@ -189,7 +227,7 @@ describe('createDevToolsBridge', () => {
 
   test('flush delegates to client.flush', async () => {
     const client = makeClient();
-    const bridge = createDevToolsBridge(client as never);
+    const bridge = createDevToolsBridge(client as ConnectivityClient);
 
     await bridge.flush({ onlyActionKey: 'save' });
 
@@ -200,7 +238,7 @@ describe('createDevToolsBridge', () => {
 
   test('flush without options delegates to client.flush with no args', async () => {
     const client = makeClient();
-    const bridge = createDevToolsBridge(client as never);
+    const bridge = createDevToolsBridge(client as ConnectivityClient);
 
     await bridge.flush();
 
