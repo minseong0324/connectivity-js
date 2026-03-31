@@ -112,14 +112,27 @@ describe('ConnectivityDevTools', () => {
     expect(mockedRender).toHaveBeenCalledTimes(1);
   });
 
-  it('passes position option to renderConnectivityDevTools', () => {
+  it('passes defaultPosition option to renderConnectivityDevTools', () => {
     const client = createMockClient();
-    render(<ConnectivityDevTools client={client} position="bottom-left" />);
+    render(
+      <ConnectivityDevTools client={client} defaultPosition="bottom-left" />,
+    );
 
     expect(mockedRender).toHaveBeenCalledWith(
       expect.any(HTMLDivElement),
       client,
       expect.objectContaining({ position: 'bottom-left' }),
+    );
+  });
+
+  it('passes defaultOpen option to renderConnectivityDevTools', () => {
+    const client = createMockClient();
+    render(<ConnectivityDevTools client={client} defaultOpen={false} />);
+
+    expect(mockedRender).toHaveBeenCalledWith(
+      expect.any(HTMLDivElement),
+      client,
+      expect.objectContaining({ initialOpen: false }),
     );
   });
 });

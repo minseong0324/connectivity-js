@@ -41,8 +41,8 @@ function App() {
 | Prop          | Type                              | Default          | Description                          |
 | ------------- | --------------------------------- | ---------------- | ------------------------------------ |
 | `client`      | `ConnectivityClient`              | —                | ConnectivityClient instance (required) |
-| `position`    | `'bottom-left' \| 'bottom-right'` | `'bottom-right'` | Panel position                       |
-| `initialOpen` | `boolean`                         | `true`           | Whether panel is open initially      |
+| `defaultPosition` | `'bottom-left' \| 'bottom-right'` | `'bottom-right'` | Initial panel position (read at mount only) |
+| `defaultOpen`     | `boolean`                         | `true`           | Whether panel starts open (read at mount only) |
 | `enabled`     | `boolean`                         | `true`           | Whether to show the panel            |
 
 ## Vanilla JS Usage
