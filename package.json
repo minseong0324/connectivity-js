@@ -35,7 +35,7 @@
     "@typescript-eslint/parser": "^8.57.2",
     "@vitest/coverage-v8": "^4.0.18",
     "eslint": "10.1.0",
-    "eslint-plugin-no-misleading-return-type": "^0.7.0",
+    "eslint-plugin-no-misleading-return-type": "^0.7.3",
     "happy-dom": "^20.7.0",
     "knip": "^5.84.1",
     "next": "^16.1.6",
