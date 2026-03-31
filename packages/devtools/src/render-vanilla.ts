@@ -4,7 +4,7 @@ import type {
 } from '@connectivity-js/core';
 import { createDevToolsBridge } from './bridge';
 
-function escapeHtml(s: string): string {
+function escapeHtml(s: string) {
   const div = document.createElement('div');
   div.textContent = s;
   return div.innerHTML;

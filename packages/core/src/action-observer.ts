@@ -123,11 +123,7 @@ export class ActionObserver<TInput = unknown, TResult = unknown> {
    * Always throws on error (after calling `onError` if provided).
    * Follows the same contract as React Query's `mutateAsync`.
    */
-  async executeAsync(
-    input: TInput,
-  ): Promise<
-    { enqueued: true; jobId: string } | { enqueued: false; result: TResult }
-  > {
+  async executeAsync(input: TInput) {
     let wasEnqueued = false;
     try {
       const engineResult = await this.#client.execute(this.#options, input);

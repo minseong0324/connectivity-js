@@ -28,7 +28,7 @@ export interface DevToolsSnapshot {
   queueDisplay: DevToolsJobDisplay[];
 }
 
-function formatRelativeTime(ms: number): string {
+function formatRelativeTime(ms: number) {
   if (ms < 1000) {
     return `${ms}ms`;
   }
@@ -61,7 +61,7 @@ function serializeInput(input: unknown): string {
   }
 }
 
-function errorToString(err: unknown): string {
+function errorToString(err: unknown) {
   if (err instanceof Error) {
     return err.message;
   }
