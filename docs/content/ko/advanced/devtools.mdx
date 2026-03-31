@@ -20,17 +20,21 @@ pnpm add @connectivity-js/react-devtools
 
 ```tsx
 import {
+  ConnectivityClient,
   ConnectivityProvider,
   browserOnlineDetector,
 } from "@connectivity-js/react";
-import { getConnectivityClient } from "@connectivity-js/core";
 import { ConnectivityDevTools } from "@connectivity-js/react-devtools";
+
+const client = new ConnectivityClient({
+  detectors: [browserOnlineDetector()],
+});
 
 function App() {
   return (
-    <ConnectivityProvider detectors={[browserOnlineDetector()]}>
+    <ConnectivityProvider client={client}>
       <YourApp />
-      <ConnectivityDevTools client={getConnectivityClient()} />
+      <ConnectivityDevTools client={client} />
     </ConnectivityProvider>
   );
 }
