@@ -1,9 +1,5 @@
 export { ActionObserver, type UseActionCallbacks } from './action-observer';
-export {
-  type ActionOptionsConfig,
-  actionOptions,
-  toRegisteredAction,
-} from './action-options';
+export { type ActionOptionsConfig, actionOptions } from './action-options';
 export {
   ConnectivityClient,
   getConnectivityClient,
