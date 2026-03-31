@@ -5,9 +5,19 @@ import {
 } from '@connectivity-js/devtools';
 import { useEffect, useRef } from 'react';
 
-export type ConnectivityDevToolsProps = RenderConnectivityDevToolsOptions & {
+export type ConnectivityDevToolsProps = {
   client: ConnectivityClient;
   enabled?: boolean;
+  /**
+   * Initial position of the devtools panel.
+   * Read only at mount time — changing this prop after mount has no effect.
+   */
+  defaultPosition?: RenderConnectivityDevToolsOptions['position'];
+  /**
+   * Whether the panel starts open.
+   * Read only at mount time — changing this prop after mount has no effect.
+   */
+  defaultOpen?: RenderConnectivityDevToolsOptions['initialOpen'];
 };
 
 /**
@@ -17,22 +27,21 @@ export type ConnectivityDevToolsProps = RenderConnectivityDevToolsOptions & {
  * `@connectivity-js/devtools`. All UI logic lives in the framework-agnostic core;
  * this component only handles mounting / unmounting via a ref + useEffect.
  *
- * **Note:** The `position` prop is read only when the vanilla renderer is
- * (re-)mounted — on initial mount or when `client`/`enabled` changes.
- * Changing `position` alone does not trigger a re-mount because it is
- * not in the effect's dependency array.
+ * `defaultPosition` and `defaultOpen` are read only when the vanilla renderer
+ * is (re-)mounted — on initial mount or when `client`/`enabled` changes.
  */
 export function ConnectivityDevTools({
   client,
   enabled = true,
-  ...options
+  defaultPosition,
+  defaultOpen,
 }: ConnectivityDevToolsProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const optionsRef = useRef(options);
-  optionsRef.current = options;
+  const optionsRef = useRef({ position: defaultPosition, initialOpen: defaultOpen });
+  optionsRef.current = { position: defaultPosition, initialOpen: defaultOpen };
 
   useEffect(() => {
-    if (!enabled || !containerRef.current) {
+    if (!enabled || containerRef.current === null) {
       return;
     }
     return renderConnectivityDevTools(
