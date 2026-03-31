@@ -4,7 +4,7 @@
 
 # connectivity-js
 
-Declarative, type-safe, offline-first solution for connectivity management for web apps.
+Declarative, type-safe connectivity detection and offline action queue for web apps.
 
 | Package | Version | Description |
 |---------|---------|-------------|
@@ -13,14 +13,14 @@ Declarative, type-safe, offline-first solution for connectivity management for w
 | [`@connectivity-js/devtools`](./packages/devtools) | [![NPM Version](https://img.shields.io/npm/v/%40connectivity-js%2Fdevtools)](https://www.npmjs.com/package/@connectivity-js/devtools) | Framework-agnostic DevTools panel |
 | [`@connectivity-js/react-devtools`](./packages/react-devtools) | [![NPM Version](https://img.shields.io/npm/v/%40connectivity-js%2Freact-devtools)](https://www.npmjs.com/package/@connectivity-js/react-devtools) | React DevTools panel |
 
+- **Declarative**: `<Connectivity fallback={...}>` for online/offline UI switching
 - **Framework-agnostic**: core has no framework dependency — works with vanilla JS, Vue, Svelte, and more
 - **Type-safe**: `TInput` and `TResult` fully inferred — no manual annotation
 - **Auto-queue**: offline actions are queued and flushed on reconnect
 - **Deduplication**: rapid saves collapsed — only the latest reaches the server
 - **Retry**: failed requests retried with configurable backoff
-- **Declarative**: React adapter provides `<Connectivity fallback={...}>` for online/offline UI switching
 
-> **Important**: The queue is memory-backed. Pending actions are lost on page refresh or tab close. For durable delivery, implement server-side idempotency keys.
+> **Note**: The action queue is session-scoped (memory-backed). Pending actions are lost on page refresh or tab close. For durable delivery, implement server-side idempotency keys.
 
 ## Quick Start
 
@@ -30,14 +30,14 @@ Works with vanilla JS/TS, Vue, Svelte, or any other environment.
 
 ```ts
 import {
-  getConnectivityClient,
+  ConnectivityClient,
   browserOnlineDetector,
   heartbeatDetector,
   actionOptions,
 } from '@connectivity-js/core';
 
 // 1. Create client and start detection
-const client = getConnectivityClient({
+const client = new ConnectivityClient({
   detectors: [
     browserOnlineDetector(),
     heartbeatDetector({ url: '/api/health' }),
