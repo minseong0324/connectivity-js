@@ -172,7 +172,7 @@ export function renderConnectivityDevTools(
       if (snap.state.quality.rttMs !== undefined) {
         qualityParts.push(`rtt ${snap.state.quality.rttMs}ms`);
       }
-      if (snap.state.quality.effectiveType) {
+      if (snap.state.quality.effectiveType !== undefined) {
         qualityParts.push(snap.state.quality.effectiveType);
       }
       if (snap.state.quality.downlink !== undefined) {

@@ -32,7 +32,7 @@ export function ConnectivityDevTools({
   optionsRef.current = options;
 
   useEffect(() => {
-    if (!enabled || !containerRef.current) {
+    if (!enabled || containerRef.current === null) {
       return;
     }
     return renderConnectivityDevTools(
