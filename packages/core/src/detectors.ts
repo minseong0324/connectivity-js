@@ -101,6 +101,7 @@ export function heartbeatDetector(options: HeartbeatDetectorOptions) {
         if (stopped) {
           return;
         }
+        activeController?.abort();
         const controller = new AbortController();
         activeController = controller;
         const start = performance.now();
@@ -147,7 +148,9 @@ export function heartbeatDetector(options: HeartbeatDetectorOptions) {
           }
         } finally {
           clearTimeout(timer);
-          activeController = null;
+          if (activeController === controller) {
+            activeController = null;
+          }
         }
       };
 
