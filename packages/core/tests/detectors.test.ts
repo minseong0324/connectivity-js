@@ -386,7 +386,9 @@ describe('heartbeatDetector', () => {
         return new Promise((resolve, reject) => {
           const signal = init.signal as AbortSignal;
           signal.addEventListener('abort', () => {
-            reject(new DOMException('The operation was aborted.', 'AbortError'));
+            reject(
+              new DOMException('The operation was aborted.', 'AbortError'),
+            );
           });
           if (callIndex === 1) {
             // First probe: resolves after 300ms (slower than intervalMs=100)
