@@ -1,5 +1,14 @@
 # @connectivity-js/devtools
 
+## 0.3.9
+
+### Patch Changes
+
+- fix(package): add types conditions to exports and correct types field to .d.ts ([#68](https://github.com/minseong0324/connectivity-js/pull/68))
+
+- Updated dependencies [[`6176a2c`](https://github.com/minseong0324/connectivity-js/commit/6176a2c6c0f996a85263d209c688b58eade21f32), [`7081eb4`](https://github.com/minseong0324/connectivity-js/commit/7081eb4276ed1a271bc3b3e522c6341f4bd3ed66)]:
+  - @connectivity-js/core@0.6.4
+
 ## 0.3.8
 
 ### Patch Changes

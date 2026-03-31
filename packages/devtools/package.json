@@ -1,6 +1,6 @@
 {
   "name": "@connectivity-js/devtools",
-  "version": "0.3.8",
+  "version": "0.3.9",
   "description": "Framework-agnostic devtools panel for Connectivity",
   "author": "@minseong0324 <KIM Minseong>",
   "license": "MIT",
