@@ -1,5 +1,13 @@
 # @connectivity-js/core
 
+## 0.6.3
+
+### Patch Changes
+
+- Align codebase with project coding style rules: early-return pattern, explicit boolean conditions, remove unnecessary return type annotations ([#65](https://github.com/minseong0324/connectivity-js/pull/65))
+
+- Remove `toRegisteredAction` from public API — this was an internal implementation detail not intended for external use ([#63](https://github.com/minseong0324/connectivity-js/pull/63))
+
 ## 0.6.2
 
 ### Patch Changes
