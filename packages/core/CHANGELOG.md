@@ -1,5 +1,13 @@
 # @connectivity-js/core
 
+## 0.6.4
+
+### Patch Changes
+
+- fix(package): add types conditions to exports and correct types field to .d.ts ([#68](https://github.com/minseong0324/connectivity-js/pull/68))
+
+- fix(core): prevent stale heartbeat probe from overwriting newer status ([#75](https://github.com/minseong0324/connectivity-js/pull/75))
+
 ## 0.6.3
 
 ### Patch Changes
