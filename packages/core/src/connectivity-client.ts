@@ -118,12 +118,12 @@ export class ConnectivityClient {
   static getInstance(options?: ConnectivityClientOptions) {
     if (ConnectivityClient.#instance === null) {
       ConnectivityClient.#instance = new ConnectivityClient(options);
-    } else if (options !== undefined) {
-      if (process.env.NODE_ENV === 'development') {
-        console.warn(
-          '[connectivity-js] getInstance() options ignored — instance already exists. Use resetInstance() first to reconfigure.',
-        );
-      }
+      return ConnectivityClient.#instance;
+    }
+    if (options !== undefined && process.env.NODE_ENV === 'development') {
+      console.warn(
+        '[connectivity-js] getInstance() options ignored — instance already exists. Use resetInstance() first to reconfigure.',
+      );
     }
     return ConnectivityClient.#instance;
   }
