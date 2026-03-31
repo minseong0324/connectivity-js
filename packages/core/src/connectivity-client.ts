@@ -58,6 +58,7 @@ export class ConnectivityClient {
   #pendingGraceTimerId: ReturnType<typeof setTimeout> | null = null;
   #pendingGraceReason: string | undefined = undefined;
   #onJobError?: (error: unknown, job: QueuedJob) => void;
+  #onListenerError: (error: unknown) => void;
   #defaultActionOptions?: ActionOptions;
 
   #state: ConnectivityState;
@@ -100,6 +101,7 @@ export class ConnectivityClient {
     this.#detectors = options?.detectors ?? [];
     this.#gracePeriodMs = options?.gracePeriodMs ?? 0;
     this.#onJobError = options?.onJobError;
+    this.#onListenerError = options?.onListenerError ?? reportError;
     this.#defaultActionOptions = options?.defaultOptions?.actions;
     this.#maxQueueSize = options?.maxQueueSize;
   }
@@ -285,7 +287,7 @@ export class ConnectivityClient {
       try {
         listener(this.#stateSnapshot, transition);
       } catch (e) {
-        reportError(e);
+        this.#onListenerError(e);
       }
     }
   }
@@ -446,7 +448,7 @@ export class ConnectivityClient {
       try {
         listener();
       } catch (e) {
-        reportError(e);
+        this.#onListenerError(e);
       }
     }
   }

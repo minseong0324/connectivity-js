@@ -195,4 +195,10 @@ export interface ConnectivityClientOptions {
   };
   /** Maximum number of jobs allowed in the queue. Throws when exceeded. (default: unlimited) */
   maxQueueSize?: number;
+  /**
+   * Custom handler for errors thrown by state/queue listeners.
+   * When provided, called instead of the default `reportError` which re-throws
+   * on a separate call stack (surfacing via `window.onerror` / `process.uncaughtException`).
+   */
+  onListenerError?: (error: unknown) => void;
 }
