@@ -31,7 +31,10 @@ export class ActionObserver<TInput = unknown, TResult = unknown> {
   #options: ActionOptionsConfig<TInput, TResult>;
   #callbacks?: UseActionCallbacks<TResult>;
   #defaultActionOptions?: Partial<ActionOptions>;
-  #cachedResult = { pendingCount: 0, lastError: undefined as unknown };
+  #cachedResult: { pendingCount: number; lastError: unknown } = {
+    pendingCount: 0,
+    lastError: undefined,
+  };
   #cachedFailedJobId: string | undefined = undefined;
 
   constructor(
