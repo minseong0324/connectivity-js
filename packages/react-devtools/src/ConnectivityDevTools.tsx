@@ -37,7 +37,10 @@ export function ConnectivityDevTools({
   defaultOpen,
 }: ConnectivityDevToolsProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const optionsRef = useRef({ position: defaultPosition, initialOpen: defaultOpen });
+  const optionsRef = useRef({
+    position: defaultPosition,
+    initialOpen: defaultOpen,
+  });
   optionsRef.current = { position: defaultPosition, initialOpen: defaultOpen };
 
   useEffect(() => {
