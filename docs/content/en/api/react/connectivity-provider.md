@@ -74,5 +74,5 @@ See [Without React](../advanced/vanilla-js.md).
 
 - [Actions](../guide/actions.md)
 - [Default Options](../advanced/default-options.md)
-- [ConnectivityClient API](./connectivity-client.md)
+- [ConnectivityClient API](../core/connectivity-client)
 

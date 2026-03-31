@@ -74,5 +74,5 @@ interface ConnectivityProviderOptions {
 
 - [액션](../guide/actions.md)
 - [전역 기본값](../advanced/default-options.md)
-- [ConnectivityClient API](./connectivity-client.md)
+- [ConnectivityClient API](../core/connectivity-client)
 

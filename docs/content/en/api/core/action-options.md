@@ -53,6 +53,6 @@ For single-component usage, pass config inline to `useAction()`.
 
 ## Related
 
-- [useAction API](./use-action.md)
+- [useAction API](../react/use-action)
 - [Actions](../guide/actions.md)
 
