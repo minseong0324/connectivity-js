@@ -6,14 +6,13 @@ Connectivity의 core는 framework-agnostic합니다. React 없이 직접 사용�
 
 ```ts
 import {
-  getConnectivityClient,
+  ConnectivityClient,
   browserOnlineDetector,
   heartbeatDetector,
-  ConnectivityClient,
 } from '@connectivity-js/core';
 
 // 1. 인스턴스 생성 및 시작
-const client = getConnectivityClient({
+const client = new ConnectivityClient({
   detectors: [
     browserOnlineDetector(),
     heartbeatDetector({ url: '/api/health' }),
@@ -95,28 +94,20 @@ await client.retry('job_1_1700000000000');
 client.cancel('job_1_1700000000000');
 ```
 
-## Provider 없이 React hook 사용
+## 편의 싱글턴
 
-모든 React hook은 내부적으로 singleton을 직접 참조합니다. `ConnectivityProvider` 없이도 동작합니다:
+단일 앱에서 간단하게 사용할 수 있는 싱글턴 단축 함수입니다:
 
-```tsx
-// Provider 없이 직접 초기화
-getConnectivityClient({
+```ts
+import { getConnectivityClient, browserOnlineDetector } from '@connectivity-js/core';
+
+const client = getConnectivityClient({
   detectors: [browserOnlineDetector()],
 });
-getConnectivityClient().start();
-
-// hook 정상 동작
-function StatusBadge() {
-  const { status } = useConnectivity(); // ✅ 동작
-  return <span>{status}</span>;
-}
+client.start();
 ```
 
-단, Provider가 없으면:
-- `defaultOptions`가 적용되지 않습니다
-- `start()`를 직접 호출해야 합니다
-- `destroy()` 호출도 직접 관리해야 합니다
+> **참고:** 싱글턴은 첫 호출의 옵션만 적용됩니다. SSR, 테스트, 마이크로 프론트엔드에서는 `new ConnectivityClient()`를 사용하세요.
 
 ## 정리
 

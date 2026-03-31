@@ -18,14 +18,13 @@ Includes `@connectivity-js/devtools` — no separate install needed.
 
 ```tsx
 import { ConnectivityDevTools } from '@connectivity-js/react-devtools';
-import { getConnectivityClient } from '@connectivity-js/core';
 
-function App() {
+function App({ client }: { client: ConnectivityClient }) {
   return (
     <>
       <MyApp />
       <ConnectivityDevTools
-        client={getConnectivityClient()}
+        client={client}
         enabled={process.env.NODE_ENV === 'development'}
       />
     </>

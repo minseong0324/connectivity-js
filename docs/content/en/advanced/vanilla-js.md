@@ -6,14 +6,13 @@ The core of Connectivity is framework-agnostic. Use it directly without React.
 
 ```ts
 import {
-  getConnectivityClient,
+  ConnectivityClient,
   browserOnlineDetector,
   heartbeatDetector,
-  ConnectivityClient,
 } from '@connectivity-js/core';
 
 // 1. Create and start
-const client = getConnectivityClient({
+const client = new ConnectivityClient({
   detectors: [
     browserOnlineDetector(),
     heartbeatDetector({ url: '/api/health' }),
@@ -81,24 +80,20 @@ await client.retry('job_1_1700000000000');
 client.cancel('job_1_1700000000000');
 ```
 
-## React hooks without Provider
+## Convenience singleton
 
-All React hooks reference the singleton internally. They work without `ConnectivityProvider`:
+For simple single-app setups, you can use the singleton shorthand:
 
-```tsx
-getConnectivityClient({ detectors: [browserOnlineDetector()] });
-getConnectivityClient().start();
+```ts
+import { getConnectivityClient, browserOnlineDetector } from '@connectivity-js/core';
 
-function StatusBadge() {
-  const { status } = useConnectivity(); // ✅ works
-  return <span>{status}</span>;
-}
+const client = getConnectivityClient({
+  detectors: [browserOnlineDetector()],
+});
+client.start();
 ```
 
-Without Provider:
-- `defaultOptions` won't apply
-- You must call `start()` manually
-- You must manage `destroy()` yourself
+> **Note:** The singleton applies only the first caller's options. For SSR, testing, or micro-frontend scenarios, always use `new ConnectivityClient()` instead.
 
 ## Cleanup
 

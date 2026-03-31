@@ -18,9 +18,9 @@ npm install @connectivity-js/devtools
 
 ```ts
 import { renderConnectivityDevTools } from '@connectivity-js/devtools';
-import { getConnectivityClient } from '@connectivity-js/core';
+import type { ConnectivityClient } from '@connectivity-js/core';
 
-const client = getConnectivityClient();
+// Pass your ConnectivityClient instance
 const container = document.getElementById('devtools')!;
 
 const cleanup = renderConnectivityDevTools(container, client, {

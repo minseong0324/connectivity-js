@@ -16,14 +16,14 @@ npm install @connectivity-js/core
 
 ```ts
 import {
-  getConnectivityClient,
+  ConnectivityClient,
   browserOnlineDetector,
   heartbeatDetector,
   actionOptions,
 } from '@connectivity-js/core';
 
-// Initialize client
-const client = getConnectivityClient({
+// Create a client instance
+const client = new ConnectivityClient({
   detectors: [
     browserOnlineDetector(),
     heartbeatDetector({ url: '/api/health', intervalMs: 10_000 }),
