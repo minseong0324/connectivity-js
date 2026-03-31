@@ -376,6 +376,64 @@ describe('heartbeatDetector', () => {
     cleanup();
   });
 
+  test('stale timed-out probe does not overwrite newer successful probe status', async () => {
+    let fetchCallCount = 0;
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockImplementation((_url: string, init: RequestInit) => {
+        fetchCallCount++;
+        const callIndex = fetchCallCount;
+        return new Promise((resolve, reject) => {
+          const signal = init.signal as AbortSignal;
+          signal.addEventListener('abort', () => {
+            reject(
+              new DOMException('The operation was aborted.', 'AbortError'),
+            );
+          });
+          if (callIndex === 1) {
+            // First probe: resolves after 300ms (slower than intervalMs=100)
+            setTimeout(() => {
+              if (!signal.aborted) {
+                resolve({ ok: true, status: 200 });
+              }
+            }, 300);
+          } else {
+            // Second probe: resolves immediately
+            resolve({ ok: true, status: 200 });
+          }
+        });
+      }),
+    );
+    vi.stubGlobal('performance', { now: vi.fn().mockReturnValue(0) });
+
+    const events: DetectorEvent[] = [];
+    const detector = heartbeatDetector({
+      url: '/health',
+      intervalMs: 100,
+      timeoutMs: 500,
+    });
+    const cleanup = detector.start((e) => events.push(e));
+
+    // T=0: Probe A starts (resolves at T=300ms)
+    await vi.advanceTimersByTimeAsync(0);
+
+    // T=100: Probe B starts (aborts Probe A), Probe B resolves immediately
+    await vi.advanceTimersByTimeAsync(100);
+
+    // Drain microtask queue so Probe B's resolution is processed
+    await vi.advanceTimersByTimeAsync(0);
+
+    // T=500: Probe A's timeout would have fired, but it's already aborted
+    await vi.advanceTimersByTimeAsync(400);
+
+    const lastEvent = events[events.length - 1];
+    assert(lastEvent !== undefined);
+    expect(lastEvent.status).toBe('online');
+    expect(events.every((e) => e.status === 'online')).toBe(true);
+
+    cleanup();
+  });
+
   test('interval-based repeated probes', async () => {
     let fetchCallCount = 0;
     vi.stubGlobal(
