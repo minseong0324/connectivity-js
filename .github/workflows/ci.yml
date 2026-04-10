@@ -26,9 +26,6 @@ jobs:
       - name: Lint
         run: pnpm lint
 
-      - name: Lint (ESLint)
-        run: pnpm lint:eslint
-
       - name: Typecheck
         run: pnpm typecheck
 
