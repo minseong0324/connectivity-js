@@ -1,6 +1,6 @@
 {
   "name": "@connectivity-js/react",
-  "version": "0.5.7",
+  "version": "0.5.8",
   "description": "React adapter for Connectivity",
   "author": "@minseong0324 <KIM Minseong>",
   "license": "MIT",

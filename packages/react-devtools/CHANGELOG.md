@@ -1,5 +1,17 @@
 # @connectivity-js/react-devtools
 
+## 1.0.0
+
+### Major Changes
+
+- Rename `position` to `defaultPosition` and `initialOpen` to `defaultOpen` in `ConnectivityDevTools` to clarify initial-only semantics. ([#81](https://github.com/minseong0324/connectivity-js/pull/81))
+
+### Patch Changes
+
+- Updated dependencies [[`d2ae9aa`](https://github.com/minseong0324/connectivity-js/commit/d2ae9aa14689e6c0bc50d8fa2f831706ebc7d8cd)]:
+  - @connectivity-js/core@0.7.0
+  - @connectivity-js/devtools@0.3.10
+
 ## 0.3.9
 
 ### Patch Changes
