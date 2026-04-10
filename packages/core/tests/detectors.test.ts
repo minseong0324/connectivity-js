@@ -322,11 +322,11 @@ describe('heartbeatDetector', () => {
   });
 
   test('after cleanup, no more emits', async () => {
-    let fetchCallCount = 0;
+    let _fetchCallCount = 0;
     vi.stubGlobal(
       'fetch',
       vi.fn().mockImplementation(() => {
-        fetchCallCount++;
+        _fetchCallCount++;
         return Promise.resolve({ ok: true, status: 200 });
       }),
     );

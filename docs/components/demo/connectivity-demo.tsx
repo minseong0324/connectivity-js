@@ -174,6 +174,7 @@ function SyntaxCode({ code }: { code: string }) {
       style={{ background: '#0d1117', margin: 0 }}
     >
       {tokenize(code).map((tok, idx) => (
+        // biome-ignore lint/suspicious/noArrayIndexKey: tokens are derived from a static code string and never reorder
         <span key={`${tok.text}-${idx}`} style={{ color: tok.color }}>
           {tok.text}
         </span>

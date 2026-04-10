@@ -495,7 +495,7 @@ describe('renderConnectivityDevTools', () => {
       );
 
       expect(flushBtn).not.toBeUndefined();
-      flushBtn!.click();
+      flushBtn?.click();
 
       expect(client.flush).toHaveBeenCalled();
 
@@ -520,7 +520,7 @@ describe('renderConnectivityDevTools', () => {
       );
 
       expect(retryBtn).not.toBeUndefined();
-      retryBtn!.click();
+      retryBtn?.click();
 
       expect(client.retry).toHaveBeenCalledWith('job_42');
 
@@ -589,7 +589,7 @@ describe('renderConnectivityDevTools', () => {
       );
 
       expect(cancelBtn).not.toBeUndefined();
-      cancelBtn!.click();
+      cancelBtn?.click();
 
       expect(client.cancel).toHaveBeenCalledWith('job_99');
 
