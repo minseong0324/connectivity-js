@@ -19,6 +19,9 @@
     "rules": {
       "style": {
         "useBlockStatements": "warn"
+      },
+      "nursery": {
+        "noMisleadingReturnType": "warn"
       }
     }
   },
