@@ -1,5 +1,12 @@
 # @connectivity-js/react
 
+## 0.5.8
+
+### Patch Changes
+
+- Updated dependencies [[`d2ae9aa`](https://github.com/minseong0324/connectivity-js/commit/d2ae9aa14689e6c0bc50d8fa2f831706ebc7d8cd)]:
+  - @connectivity-js/core@0.7.0
+
 ## 0.5.7
 
 ### Patch Changes

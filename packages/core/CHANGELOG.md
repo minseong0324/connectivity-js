@@ -1,5 +1,11 @@
 # @connectivity-js/core
 
+## 0.7.0
+
+### Minor Changes
+
+- Add `onListenerError` option to `ConnectivityClientOptions` for custom listener error handling. Default behavior (`reportError`) is unchanged. ([#81](https://github.com/minseong0324/connectivity-js/pull/81))
+
 ## 0.6.4
 
 ### Patch Changes
