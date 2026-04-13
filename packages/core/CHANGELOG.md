@@ -1,5 +1,11 @@
 # @connectivity-js/core
 
+## 1.0.0
+
+### Major Changes
+
+- Release v1.0.0 — promote stable API (no behavior changes). ([#84](https://github.com/minseong0324/connectivity-js/pull/84))
+
 ## 0.7.0
 
 ### Minor Changes
