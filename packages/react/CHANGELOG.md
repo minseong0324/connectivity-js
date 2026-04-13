@@ -1,5 +1,16 @@
 # @connectivity-js/react
 
+## 1.0.0
+
+### Major Changes
+
+- Release v1.0.0 — promote stable API (no behavior changes). ([#84](https://github.com/minseong0324/connectivity-js/pull/84))
+
+### Patch Changes
+
+- Updated dependencies [[`ac66fcf`](https://github.com/minseong0324/connectivity-js/commit/ac66fcfe0cae113fc952450324196bb6abb0060c)]:
+  - @connectivity-js/core@1.0.0
+
 ## 0.5.8
 
 ### Patch Changes
